@@ -138,9 +138,12 @@ echo "== missing prompt =="
 assert_exit "empty prompt fails" 2 "$BIN" generate --dry-run --prompt "" --image /tmp/t.png --model m
 
 echo "== missing key on real generate (no network path) =="
-# unset key and avoid durable config pollution: use empty env
-out="$(env -u TZAI_API_KEY -u TZAI_IMAGE_CONFIG \
-  "$BIN" generate --prompt "x" --image /tmp/nope.png --model m 2>&1)" || true
+# Isolate from durable/global keys (HOME points to empty tree)
+out="$(
+  env -u TZAI_API_KEY -u TZAI_IMAGE_CONFIG \
+    HOME="${TMPDIR:-/tmp}/tzai-test-home-gen-$$" \
+    "$BIN" generate --prompt "x" --image /tmp/nope.png --model m 2>&1
+)" || true
 assert_contains "missing key hints console" "tzai.kdp.cool" "$out"
 assert_contains "missing key hints export" "TZAI_API_KEY" "$out"
 
