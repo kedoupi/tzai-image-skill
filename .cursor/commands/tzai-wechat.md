@@ -1,0 +1,1 @@
+/Users/codepi/Coding/Skills/tzai-image-skill/commands/tzai-wechat.md

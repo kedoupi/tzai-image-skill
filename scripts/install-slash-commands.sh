@@ -1,45 +1,65 @@
 #!/usr/bin/env bash
-# Install /tzai-* slash command wrappers into agent command directories.
+# Install /tzai-* slash wrappers for multiple agent clients (not only Grok).
 set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 SRC="${ROOT}/commands"
-if [[ ! -d "$SRC" ]]; then
-  echo "Missing $SRC — run scripts/gen-kind-skills.sh first" >&2
+if [[ ! -d "$SRC" ]] || ! compgen -G "${SRC}/tzai-*.md" >/dev/null; then
+  echo "Missing command files. Run: bash scripts/gen-kind-skills.sh" >&2
   exit 1
 fi
 
-install_dir() {
+link_commands() {
   local dest="$1"
   mkdir -p "$dest"
   local n=0
-  for f in "$SRC"/*.md; do
+  local f base
+  for f in "$SRC"/tzai-*.md; do
     [[ -f "$f" ]] || continue
     base="$(basename "$f")"
     ln -sfn "$f" "${dest}/${base}"
     n=$((n + 1))
   done
-  echo "  linked ${n} commands → ${dest}"
+  echo "  commands: ${n} → ${dest}"
 }
 
-echo "Installing tzai-image slash commands from ${SRC}"
-install_dir "${HOME}/.grok/commands"
-install_dir "${HOME}/.claude/commands"
-install_dir "${HOME}/.agents/commands"
+echo "== Slash command wrappers (commands/*.md) =="
+# Claude Code + Grok + shared agents roots
+link_commands "${HOME}/.agents/commands"
+link_commands "${HOME}/.grok/commands"
+link_commands "${HOME}/.claude/commands"
+# Other clients that use commands/ or similar
+link_commands "${HOME}/.cursor/commands"
+link_commands "${HOME}/.codex/commands"
+link_commands "${HOME}/.config/opencode/commands"
+link_commands "${HOME}/.opencode/commands"
+link_commands "${HOME}/.windsurf/commands"
+link_commands "${HOME}/.continue/commands"
 
-# Optional project-local (run from a project if desired)
-if [[ -d "${PWD}/.grok" ]] || [[ -d "${PWD}/.git" ]]; then
-  mkdir -p "${PWD}/.grok/commands" "${PWD}/.agents/commands" 2>/dev/null || true
-  if [[ -d "${PWD}/.grok/commands" ]]; then
-    install_dir "${PWD}/.grok/commands"
-  fi
-  if [[ -d "${PWD}/.agents/commands" ]]; then
-    install_dir "${PWD}/.agents/commands"
-  fi
+# Project-local (if invoked from a project tree)
+if git rev-parse --show-toplevel >/dev/null 2>&1; then
+  PROJ="$(git rev-parse --show-toplevel)"
+  for d in .agents/commands .grok/commands .claude/commands .cursor/commands; do
+    mkdir -p "${PROJ}/${d}" 2>/dev/null || true
+    if [[ -d "${PROJ}/${d}" ]]; then
+      link_commands "${PROJ}/${d}"
+    fi
+  done
 fi
 
 echo
-echo "Done. In Grok/Claude, type / and search: tzai-icon, tzai-flowchart, tzai-xhs, …"
-echo "Also ensure engine is installed:"
+echo "== Skills install (all agents) =="
+echo "Run this so every agent gets /tzai-* skills:"
+echo
 echo "  npx skills add kedoupi/tzai-image-skill -g --all"
-echo "  export TZAI_API_KEY=...   # or tzai-image init"
+echo "  # same as: -g --agent '*' --skill '*' -y"
+echo
+echo "Supported agents depend on your skills CLI version (claude-code, cursor,"
+echo "codex, grok, opencode, windsurf, …). Unsupported agents are skipped."
+echo
+echo "== API key (shared) =="
+echo "  export TZAI_API_KEY='sk-...'"
+echo "  # or: bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-..."
+echo
+echo "Scene catalog: docs/SCENES.md"
+echo "Then open any agent and type /  → search tzai-"

@@ -375,19 +375,22 @@ Always state **style + lighting + background + what to avoid** (watermark, garbl
 npx skills add kedoupi/tzai-image-skill -g --all
 ```
 
-### Slash commands in agent apps (classified)
+### Slash commands in agent apps (multi-agent)
 
-Install all skills from this repo (engine + every scene slash):
+Works with **Claude Code, Cursor, Codex, Grok, OpenCode, …** — not Grok-only.
 
 ```bash
+# 1) Install engine + every scene skill into ALL agents skills CLI supports
 npx skills add kedoupi/tzai-image-skill -g --all
-# Also link client command wrappers (Grok/Claude / menu):
-bash /path/to/tzai-image-skill/scripts/install-slash-commands.sh
-# or after clone:
+
+# 2) Link slash wrappers into each client's commands/ directory
+git clone https://github.com/kedoupi/tzai-image-skill.git && cd tzai-image-skill
 bash scripts/install-slash-commands.sh
 ```
 
-Then type **`/`** and search `tzai-`.
+Full scene map (baoyu alignment): **[docs/SCENES.md](./docs/SCENES.md)**.
+
+Then type **`/`** and search `tzai-` in any supported agent.
 
 #### Engine
 
