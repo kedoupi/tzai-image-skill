@@ -4,7 +4,23 @@ How **tzai-image** maps workplace / content image jobs — inspired by
 [baoyu-skills](https://github.com/JimLiu/baoyu-skills) scene skills, delivered as
 **one engine + classified kinds + multi-agent slash commands**.
 
+**能力规划（大众优先 · 借鉴对照）→ [CAPABILITY-ROADMAP.md](./CAPABILITY-ROADMAP.md)**  
+**教学画廊（命令 × 示例图）→ [README](../README.md#gallery--learn-by-example)** · demos: [demos.tsv](./demos.tsv)
+
 Default model: **`gpt-image-2`** · Gateway: **https://tzai.kdp.cool**
+
+---
+
+## Plan C slash surface
+
+Not every kind gets a slash. **Whitelist:** `skills/tzai-image/references/slash-whitelist.txt`.
+
+| Layer | Count | Entries |
+| --- | --- | --- |
+| Engine | 1 | `/tzai-image` |
+| Category hubs | 6 | `/tzai-brand` `/tzai-diagram` `/tzai-product` `/tzai-marketing` `/tzai-social` `/tzai-photo` |
+| High-freq kinds | 11 | `/tzai-icon` `/tzai-logo` `/tzai-flowchart` `/tzai-architecture` `/tzai-infographic` `/tzai-cover` `/tzai-slide` `/tzai-xhs` `/tzai-xhs-cover` `/tzai-wechat` `/tzai-ui` |
+| Long-tail | ~19 kinds | Engine only: `/tzai-image mindmap …` etc. |
 
 ---
 
@@ -13,9 +29,9 @@ Default model: **`gpt-image-2`** · Gateway: **https://tzai.kdp.cool**
 | Layer | baoyu | tzai-image |
 | --- | --- | --- |
 | Engine | `baoyu-image-gen` (multi-provider) | **`tzai-image`** (TaoziAPI only) |
-| Scenes | Separate skills (`baoyu-xhs-images`, `baoyu-infographic`, …) | **`kind` + slash** `/tzai-xhs`, `/tzai-infographic`, … |
+| Scenes | Separate skills (`baoyu-xhs-images`, `baoyu-infographic`, …) | **kind + Plan C slash** (hubs + high-freq only) |
 | Install | Many packages | **One repo** `npx skills add kedoupi/tzai-image-skill -g --all` |
-| Slash | One per skill | **One slash per scene** (+ category hubs) |
+| Slash | One per skill | **~18 slashes** (not 30+ thin skills) |
 
 ```text
 npx skills add → each skills/tzai-*/SKILL.md

@@ -2,370 +2,41 @@
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-**一个 skill，一条命令，覆盖工作里几乎所有生图场景。**
+**一个引擎 · Plan C 斜杠面 · 覆盖大众真正会用的生图场景。**
 
-通过 **TaoziAPI**（[tzai.kdp.cool](https://tzai.kdp.cool)）在编码 Agent 中生成图片，默认 **`gpt-image-2`**（网关当前最强图片模型）。
+通过 **TaoziAPI**（[tzai.kdp.cool](https://tzai.kdp.cool)）在各类 Agent 里出图，默认模型 **`gpt-image-2`**。
 
-支持 Claude Code、Codex、Cursor、Grok Build 等，经 [skills CLI](https://skills.sh/) 安装。
+支持 Claude Code、Codex、Cursor、Grok Build 及 [skills CLI](https://skills.sh/) 下 [70+ Agent](https://github.com/vercel-labs/skills#supported-agents)。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-kedoupi%2Ftzai--image--skill-181717?logo=github)](https://github.com/kedoupi/tzai-image-skill)
+[![GitHub](https://img.shields.io/badge/GitHub-kedoupi%2Ftzai--image-skill-181717?logo=github)](https://github.com/kedoupi/tzai-image-skill)
+
+---
+
+## 怎么选命令（30 秒自学）
+
+```text
+场景已经很具体？     →  高频斜杠   例如 /tzai-xhs  /tzai-flowchart
+只知道大方向？       →  分类 hub   例如 /tzai-brand  /tzai-diagram
+长尾 / 任意 kind？   →  引擎       /tzai-image mindmap …
+```
+
+| 层级 | 数量 | 用途 |
+| --- | --- | --- |
+| **引擎** | 1 | `/tzai-image` — 任意 kind、`doctor`、自由生图 |
+| **分类 hub** | 6 | 宽需求 → 再选具体 kind |
+| **高频 kind** | 11 | 大众刚需一句话直达 |
+| **长尾 kind** | ~19 | 仍在 `kinds.tsv`；**无**独立斜杠，走引擎 |
+
+白名单：[`skills/tzai-image/references/slash-whitelist.txt`](./skills/tzai-image/references/slash-whitelist.txt)  
+Demo 索引：[`docs/demos.tsv`](./docs/demos.tsv)  
+场景总表：[`docs/SCENES.md`](./docs/SCENES.md) · 能力规划：[`docs/CAPABILITY-ROADMAP.md`](./docs/CAPABILITY-ROADMAP.md)
 
 <p align="center">
-  <img src="docs/screenshots/icon-app.png" alt="App 图标" width="140" />
-  <img src="docs/screenshots/logo-wordmark.png" alt="Logo" width="220" />
-  <img src="docs/screenshots/flowchart-process.png" alt="流程图" width="280" />
+  <img src="docs/screenshots/icon-app.png" alt="icon" width="120" />
+  <img src="docs/screenshots/flowchart-process.png" alt="flowchart" width="220" />
+  <img src="docs/screenshots/xhs-card.png" alt="xhs" width="140" />
 </p>
-
-<p align="center">
-  <img src="docs/screenshots/ui-dashboard.png" alt="仪表盘 UI" width="320" />
-  <img src="docs/screenshots/architecture-isometric.png" alt="架构图" width="320" />
-</p>
-
-## 产品模块（分类 × 功能）
-
-对齐 baoyu 的场景 skill（`baoyu-xhs-images` / `baoyu-infographic` / `baoyu-diagram` 等），
-我们做成 **一个引擎 + 内置场景 kind**，不必装一堆 skill。
-
-```bash
-tzai-image kinds                 # 列出全部分类功能
-tzai-image kinds xhs             # 查看某一 kind 详情
-tzai-image icon --prompt "..." --image out.png
-tzai-image flowchart --prompt "..." --image out.png
-tzai-image generate --kind infographic --prompt "..." --image out.png
-```
-
-| 模块 | Kind（功能） | 对标场景 |
-| --- | --- | --- |
-| **brand** 品牌 | `icon` `logo` `moodboard` `mascot` `badge` `avatar` | 图标 / Logo / 吉祥物 / 徽章 / 头像 |
-| **diagram** 结构 | `flowchart` `architecture` `mindmap` `diagram` `infographic` `dataviz` | ≈ baoyu-diagram + infographic |
-| **product** 产品 | `ui` `wireframe` `empty-state` `onboarding` | 仪表盘 / 线框 / 空状态 / 引导 |
-| **marketing** 市场 | `slide` `banner` `email-header` `cover` `poster` | PPT / 投放 / 邮件 / 封面 |
-| **social** 社交 | `xhs` `xhs-cover` `wechat` | ≈ **小红书 / 微信**（baoyu-xhs） |
-| **photo** 影像 | `product` `photo` `landscape` `illustration` `storybook` `food` | 商品 / 风光 / 插画 / 美食 |
-
-每个 kind 自带 **默认画幅** + **专业美术方向**；你只需写内容主题。
-
-## 为什么一个 skill 就够
-
-团队日常要：**图标、Logo、PPT 底图、流程图、架构图、UI 示意、投放 Banner、空状态插画、头像、吉祥物、小红书图卡**……往往在多个网页工具之间来回切。
-
-`tzai-image` 用 **kind 模块** 收成一条 Agent CLI：
-
-| 以前的痛 | 用 tzai-image |
-| --- | --- |
-| 5 种图换 5 个网站 | **同一命令**，只改 prompt + 画幅 |
-| 模型质量参差 | 默认 **`gpt-image-2`** |
-| Key 散落在聊天记录 | **环境变量 / 持久配置**，不进安装包 |
-| 难复现 | 任意 Agent / 脚本 / CI 同一路径 |
-
-**本页全部截图均为本 skill 真实生成**（TaoziAPI + `gpt-image-2`）。
-
-### 方向总表（24 个真实案例）
-
-| # | 方向 | 比例 | 样例 |
-| --- | --- | --- | --- |
-| 1 | App **图标** | 1:1 | [icon-app](#1-app-图标设计) |
-| 2 | **Logo** / 标志 | 16:9 | [logo-wordmark](#2-logo--品牌标志) |
-| 3 | 品牌 **情绪板** | 16:9 | [brand-moodboard](#3-品牌情绪板) |
-| 4 | **流程图** | 16:9 | [flowchart-process](#4-流程图--流程设计) |
-| 5 | **架构图** | 16:9 | [architecture-isometric](#5-系统架构图) |
-| 6 | **思维导图** | 1:1 | [mindmap-strategy](#6-思维导图) |
-| 7 | 工作流 **信息图** | 16:9 | [diagram-flow](#7-工作流信息图) |
-| 8 | 数据 **信息图** | 16:9 | [infographic-stats](#8-数据指标信息图) |
-| 9 | **UI 仪表盘** | 16:9 | [ui-dashboard](#9-ui-仪表盘示意) |
-| 10 | 移动端 **线框图** | 9:16 | [wireframe-mobile](#10-移动端线框图) |
-| 11 | **空状态**插画 | 1:1 | [empty-state](#11-空状态插画) |
-| 12 | **Onboarding** 主视觉 | 16:9 | [onboarding-hero](#12-onboarding-主视觉) |
-| 13 | **PPT** 封面底图 | 16:9 | [slide-cover](#13-演示文稿封面底图) |
-| 14 | 投放 **Banner** | 16:9 | [banner-campaign](#14-投放-banner) |
-| 15 | **邮件**头图 | 16:9 | [email-header](#15-邮件头图) |
-| 16 | 成就 **徽章** | 1:1 | [badge-sticker](#16-徽章--贴纸) |
-| 17 | 团队 **头像** | 1:1 | [avatar-professional](#17-职业头像) |
-| 18 | 3D **吉祥物** | 1:1 | [3d-mascot](#18-3d-品牌吉祥物) |
-| 19 | **数据可视化**艺术 | 16:9 | [data-viz-art](#19-数据可视化艺术) |
-| 20 | **商品**目录图 | 1:1 | [product-cube](#20-商品--目录摄影) |
-| 21 | 竖版科技 **海报** | 9:16 | [poster-tech](#21-竖版科技海报) |
-| 22 | 电影感 **风光** | 16:9 | [landscape-dawn](#22-电影感风光) |
-| 23 | **绘本**插画 | 1:1 | [illustration-story](#23-绘本插画) |
-| 24 | **美食**生活方式 | 1:1 | [food-macro](#24-美食--生活方式) |
-
----
-
-## 画廊 — 品牌与视觉识别
-
-### 1. App 图标设计
-
-![App 图标](docs/screenshots/icon-app.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./icon-app.png \
-  --prompt "极简 App 图标，圆角方标，扁平矢量，发光火花隐喻，蓝色渐变，iOS 风格，无文字"
-```
-
-### 2. Logo / 品牌标志
-
-![Logo](docs/screenshots/logo-wordmark.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./logo.png \
-  --prompt "现代科技 Logo 几何 monogram，靛蓝与电光青，扁平矢量，白底，充足留白"
-```
-
-### 3. 品牌情绪板
-
-![情绪板](docs/screenshots/brand-moodboard.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./moodboard.png \
-  --prompt "品牌情绪板：面料纹理、靛蓝青绿奶油色卡、抽象字体条、桌面生活照片角，设计公司风格"
-```
-
----
-
-## 画廊 — 结构图与工作图（高频）
-
-### 4. 流程图 / 流程设计
-
-![流程图](docs/screenshots/flowchart-process.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./flowchart.png \
-  --prompt "专业流程图，从左到右 5 步图标节点与干净箭头，企业蓝，白底，咨询 PPT 风格"
-```
-
-### 5. 系统架构图
-
-![架构图](docs/screenshots/architecture-isometric.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./architecture.png \
-  --prompt "等距软件架构图：客户端、API 网关、微服务、数据库、消息队列、云区域，灰蓝技术插画"
-```
-
-### 6. 思维导图
-
-![思维导图](docs/screenshots/mindmap-strategy.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./mindmap.png \
-  --prompt "清晰战略思维导图，中心节点与 6 个粉彩分支，细连接线，白底，工作坊风格"
-```
-
-### 7. 工作流信息图
-
-![工作流](docs/screenshots/diagram-flow.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./workflow.png \
-  --prompt "扁平信息图：Idea → Scaffold → Generate → Publish，圆角卡片，灰蓝，白底"
-```
-
-### 8. 数据指标信息图
-
-![数据信息图](docs/screenshots/infographic-stats.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./stats.png \
-  --prompt "商务信息图：四张指标卡与增长柱，青绿石板色，干净企业风，白底"
-```
-
----
-
-## 画廊 — 产品设计
-
-### 9. UI 仪表盘示意
-
-![仪表盘](docs/screenshots/ui-dashboard.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./dashboard.png \
-  --prompt "SaaS 分析仪表盘 UI 示意，浅色模式，玻璃卡片，图表与 KPI，现代产品设计，无真实隐私数据"
-```
-
-### 10. 移动端线框图
-
-![线框图](docs/screenshots/wireframe-mobile.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 9:16 --image ./wireframe.png \
-  --prompt "低保真手机线框：登录/首页/个人，灰块与线条，UX 文档风格，白底"
-```
-
-### 11. 空状态插画
-
-![空状态](docs/screenshots/empty-state.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./empty-state.png \
-  --prompt "项目管理 App 空状态：空剪贴板与小火箭植物，柔和扁平粉彩，预留文案空白"
-```
-
-### 12. Onboarding 主视觉
-
-![Onboarding](docs/screenshots/onboarding-hero.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./onboarding.png \
-  --prompt "产品 onboarding 主视觉：团队协作与漂浮 UI 卡片，现代 SaaS 扁平插画，明亮专业"
-```
-
----
-
-## 画廊 — 市场与内容运营
-
-### 13. 演示文稿封面底图
-
-![PPT 封面](docs/screenshots/slide-cover.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./slide.png \
-  --prompt "演示文稿标题页底图，抽象几何，深蓝与金色，咨询 deck 质感，左侧留标题区，无文字"
-```
-
-### 14. 投放 Banner
-
-![Banner](docs/screenshots/banner-campaign.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./banner.png \
-  --prompt "B2B AI 工具上线广告 Banner，斜切构图，深色与青色，抽象 AI 节点，高对比，无品牌字"
-```
-
-### 15. 邮件头图
-
-![邮件头图](docs/screenshots/email-header.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./email-header.png \
-  --prompt "开发者工具邮件头图，代码括号化作路径，靛蓝紫渐变，现代科技 newsletter，无字"
-```
-
-### 16. 徽章 / 贴纸
-
-![徽章](docs/screenshots/badge-sticker.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./badges.png \
-  --prompt "2x2 圆形成就徽章：星/火箭/盾/勾，扁平贴纸风，白底，游戏化 UI"
-```
-
-### 17. 职业头像
-
-![头像](docs/screenshots/avatar-professional.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./avatar.png \
-  --prompt "职业头像插画，友善的产品经理气质，柔和棚光，浅灰底，团队通讯录风格"
-```
-
-### 18. 3D 品牌吉祥物
-
-![吉祥物](docs/screenshots/3d-mascot.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./mascot.png \
-  --prompt "可爱 3D 粘土风狐狸客服吉祥物戴耳机，柔和棚光，粉彩背景，产品 mascot"
-```
-
-### 19. 数据可视化艺术
-
-![数据可视化](docs/screenshots/data-viz-art.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./dataviz.png \
-  --prompt "抽象数据可视化艺术：飘带图表与星座点阵，深色背景，青品红点缀"
-```
-
----
-
-## 画廊 — 商品、海报与生活
-
-### 20. 商品 / 目录摄影
-
-![商品](docs/screenshots/product-cube.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./product.png \
-  --prompt "亮面红色立方体商品摄影，纯白底，柔和棚灯，电商目录风格"
-```
-
-### 21. 竖版科技海报
-
-![海报](docs/screenshots/poster-tech.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 9:16 --image ./poster.png \
-  --prompt "竖版科技海报，AI 编程 Agent，深蓝与霓虹青，抽象神经网络，极简 UI 美学"
-```
-
-### 22. 电影感风光
-
-![风光](docs/screenshots/landscape-dawn.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 16:9 --image ./landscape.png \
-  --prompt "电影感日出高山湖泊，晨雾松林剪影，国家地理摄影风格"
-```
-
-### 23. 绘本插画
-
-![绘本](docs/screenshots/illustration-story.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./story.png \
-  --prompt "童话绘本：小机器人在大蘑菇下读书，柔和水彩粉彩，儿童图画书风格"
-```
-
-### 24. 美食 / 生活方式
-
-![美食](docs/screenshots/food-macro.png)
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --ar 1:1 --image ./food.png \
-  --prompt "美食微距：陶瓷杯拿铁爱心拉花，木桌，清晨窗光，浅景深"
-```
-
----
-
-## 工作向 Prompt 速查
-
-| 任务 | `--ar` | Prompt 要点 |
-| --- | --- | --- |
-| 图标 | `1:1` | 圆角方、扁平矢量、单一隐喻、无字 |
-| Logo | `1:1` / `16:9` | monogram、品牌色、留白、矢量感 |
-| 流程 / 组织 | `16:9` | 从左到右步骤、干净箭头、企业色 |
-| 架构 | `16:9` | 等距、网关、服务、库、队列 |
-| UI 示意 | `16:9` | 深/浅色、卡片图表、勿写真实隐私数据 |
-| 线框 | `9:16` | 灰块低保真、文档风 |
-| 幻灯 / Banner | `16:9` | 留标题区、高对比、少假字 |
-| 空状态 / 引导 | `1:1` / `16:9` | 友好扁平、给文案留白 |
-
-务必写清：**风格 + 光线 + 背景 + 不要什么**（水印、乱码假字）。
 
 ---
 
@@ -373,75 +44,470 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
 
 ```bash
 npx skills add kedoupi/tzai-image-skill -g --all
+
+git clone https://github.com/kedoupi/tzai-image-skill.git && cd tzai-image-skill
+bash scripts/install-slash-commands.sh
 ```
 
-### 在 Agent 软件里用斜杠命令
+### API Key
 
-安装后，在 Agent 输入框打 **`/`**，应能看到 **`tzai-image`**（**skill 名 = 斜杠命令名**）。
+```bash
+export TZAI_API_KEY='sk-xxxxxxxx'
+bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-xxxxxxxx
+bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
+```
 
-| 你输入 | 效果 |
+在 [控制台](https://tzai.kdp.cool/console) 创建 Key；**不要**提交密钥。
+
+### CLI 速查
+
+```bash
+E=~/.agents/skills/tzai-image/scripts/tzai-image
+bash $E kinds
+bash $E icon --prompt "AI 编程 App 火花图标" --image ./icon.png
+bash $E xhs --prompt "三步写好周报" --image ./xhs.png
+bash $E mindmap --prompt "产品战略拆解" --image ./mm.png   # 长尾
+```
+
+---
+
+## Plan C 斜杠一览
+
+### 引擎
+
+| 斜杠 | 作用 |
 | --- | --- |
-| `/tzai-image` | 加载本 skill，按 SKILL.md 执行 |
-| `/tzai-image 画个流程图：注册到付费` | 技能 + 自然语言 → 应走 `flowchart` kind |
-| `/tzai-image xhs 三步写周报` | 走 **小红书** kind |
-| 不打斜杠：`帮我画 App 图标…` | 靠 `description` 触发词自动调用 |
+| **`/tzai-image`** | 总入口：任意 kind、doctor、自由 prompt |
 
-**默认不会**为每个 kind 注册独立斜杠（没有自带的 `/flowchart`、`/xhs`）。产品入口是：
+### 分类 hub（6）
+
+| 斜杠 | 领域 | 高频子命令 | 长尾（hub/引擎） |
+| --- | --- | --- | --- |
+| `/tzai-brand` | 品牌 | icon, logo | moodboard, mascot, badge, avatar |
+| `/tzai-diagram` | 结构图示 | flowchart, architecture, infographic | mindmap, diagram, dataviz |
+| `/tzai-product` | 产品设计 | ui | wireframe, empty-state, onboarding |
+| `/tzai-marketing` | 市场 | cover, slide | banner, email-header, poster |
+| `/tzai-social` | 社交 | xhs, xhs-cover, wechat | — |
+| `/tzai-photo` | 影像 | — | product, photo, landscape, illustration, storybook, food |
+
+### 高频 kind（11）
+
+| 斜杠 | kind | 比例 | 突出能力 |
+| --- | --- | --- | --- |
+| `/tzai-icon` | icon | 1:1 | App 图标、单隐喻、无字 |
+| `/tzai-logo` | logo | 16:9 | 标志/monogram 概念 |
+| `/tzai-flowchart` | flowchart | 16:9 | 流程步骤、咨询清晰度 |
+| `/tzai-architecture` | architecture | 16:9 | 系统分层 / 等距 |
+| `/tzai-infographic` | infographic | 16:9 | 信息层级、指标卡 |
+| `/tzai-cover` | cover | 16:9 | 文章封面 + 标题留白 |
+| `/tzai-slide` | slide | 16:9 | PPT 开场底图 |
+| `/tzai-xhs` | xhs | 3:4 | 小红书知识卡 |
+| `/tzai-xhs-cover` | xhs-cover | 3:4 | 信息流封面 |
+| `/tzai-wechat` | wechat | 16:9 | 公众号配图 |
+| `/tzai-ui` | ui | 16:9 | SaaS 仪表盘示意 |
+
+---
+
+# 画廊 · 对照教学
+
+每个区块：**什么时候用** → **这一层突出什么** → **斜杠 + CLI** → **效果图**。  
+`--prompt` 只写**主题内容**；美术方向由 kind 注入。
+
+重新生成截图（需 Key）：
+
+```bash
+bash scripts/gen-demos.sh
+bash scripts/gen-demos.sh --force
+bash scripts/gen-demos.sh --only xhs cover wechat
+```
+
+---
+
+## A. 引擎 — `/tzai-image`
+
+**何时用：** 自由发挥、长尾 kind、或「随便画一下」。  
+**突出：** 一个 CLI 覆盖全部 kind；`kinds` / `doctor`。
 
 ```text
-/tzai-image           ← 斜杠入口
-  └─ kinds 子功能     ← icon | flowchart | xhs | infographic | …
+/tzai-image icon 火花隐喻，AI 编程 App
+/tzai-image mindmap 产品战略拆解
 ```
 
-若要额外的 `/xhs`、`/flowchart`，可在 Grok/Claude 的 `commands/` 目录放薄包装 md（内容写：调用 tzai-image 且 kind=…）。  
-Grok 也可用 `/skills` 浏览。注意 Agent 进程环境里要有 Key（`export TZAI_API_KEY` 或 `init`）。
-
-## 如何申请并配置 API Key
-
-本 skill **不内置 Key**。
-
-1. 打开 [https://tzai.kdp.cool/console](https://tzai.kdp.cool/console)
-2. 创建 API 令牌
-3. 任选配置方式：
-
 ```bash
-# A) 全局环境变量
-export TZAI_API_KEY='sk-xxxxxxxx'
-
-# B) 持久文件（skills update 不冲）
-bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-xxxxxxxx
-
-# C) 单次参数
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --api-key sk-xxxxxxxx --prompt "一只猫" --image cat.png
-```
-
-切勿提交 Key；不要只写在 skill 包目录里。
-
-## 快速开始
-
-```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
-bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
-
-# 工作：图标 / 流程图 / 架构图
 bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
-  --prompt "AI 编程火花" --image ./icon.png
-bash ~/.agents/skills/tzai-image/scripts/tzai-image flowchart \
-  --prompt "注册 → 激活 → 付费" --image ./flow.png
-bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
-  --prompt "客户端 网关 微服务 DB 队列" --image ./arch.png
-
-# 社交：小红书图卡（对标 baoyu-xhs-images）
-bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
-  --prompt "三步写好周报" --image ./xhs.png
-
-# 信息图（对标 baoyu-infographic）
-bash ~/.agents/skills/tzai-image/scripts/tzai-image infographic \
-  --prompt "Q1 增长四要素" --image ./info.png
+  --prompt "火花隐喻，AI 编程 App 图标" --image ./icon-app.png
 ```
 
-默认模型 **`gpt-image-2`**；场景质量靠 `--kind` / 子命令，不必手搓长 prompt。
+![引擎示例](docs/screenshots/icon-app.png)
+
+---
+
+## B. 分类 hub
+
+### `/tzai-brand` · 品牌识别
+
+**何时用：** 「做点品牌图」，还没想好 icon 还是 logo。  
+**突出：** 品牌资产路由；高频 **icon/logo** 另有直达斜杠。
+
+```text
+/tzai-brand icon 火花与代码感 App 图标
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
+  --prompt "品牌识别：火花与代码感 App 图标概念" --image ./icon-app.png
+```
+
+![品牌 hub](docs/screenshots/icon-app.png)
+
+长尾：`moodboard` `mascot` `badge` `avatar` → `/tzai-image mascot …`
+
+---
+
+### `/tzai-diagram` · 结构图示
+
+**何时用：** 「画个结构/流程/信息图」。  
+**突出：** 职场图示 + 信息图族。
+
+```text
+/tzai-diagram architecture 客户端 网关 微服务 DB 队列
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
+  --prompt "客户端 / 网关 / 微服务 / DB / 队列，等距技术风" --image ./arch.png
+```
+
+![结构 hub](docs/screenshots/architecture-isometric.png)
+
+---
+
+### `/tzai-product` · 产品设计
+
+**何时用：** 产品演示、空状态、线框（**不是**商品摄影）。  
+**突出：** UX 视觉；直达 **`/tzai-ui`**。
+
+```text
+/tzai-product ui SaaS 数据分析仪表盘
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image ui \
+  --prompt "SaaS 数据分析仪表盘，卡片 KPI 图表，浅色模式" --image ./ui.png
+```
+
+![产品 hub](docs/screenshots/ui-dashboard.png)
+
+> **注意：** photo 下的 kind `product` 是**商品摄影**，走 `/tzai-image product` 或 `/tzai-photo`。
+
+---
+
+### `/tzai-marketing` · 市场内容
+
+**何时用：** 封面、PPT、投放。  
+**突出：** 直达 **`/tzai-cover`** **`/tzai-slide`**。
+
+```text
+/tzai-marketing slide 咨询风分享会开场底图
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image slide \
+  --prompt "分享会开场页底图，咨询几何，中部留标题区" --image ./slide.png
+```
+
+![市场 hub](docs/screenshots/slide-cover.png)
+
+---
+
+### `/tzai-social` · 社交种草
+
+**何时用：** 小红书 / 微信。  
+**突出：** 三个社交 kind 都是高频斜杠。
+
+```text
+/tzai-social xhs 三步写好周报
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
+  --prompt "三步写好周报：列清单 写重点 加复盘" --image ./xhs.png
+```
+
+![社交 hub](docs/screenshots/xhs-card.png)
+
+---
+
+### `/tzai-photo` · 影像插画
+
+**何时用：** 商品、风光、美食、绘本等**长尾**影像。  
+**突出：** 本类无高频 kind 斜杠，一律 hub 或引擎。
+
+```text
+/tzai-photo product 哑光几何产品棚拍
+/tzai-image food 拉花拿铁浅景深
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image product \
+  --prompt "哑光几何体商品，柔光棚拍，目录级质感" --image ./product.png
+```
+
+![影像 hub](docs/screenshots/product-cube.png)
+
+---
+
+## C. 高频 kind 命令
+
+### `/tzai-icon` · App 图标
+
+**突出：** 圆角方、扁平矢量、**单一隐喻**、**无字**。
+
+```text
+/tzai-icon 发光火花，AI 编程 App
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
+  --prompt "圆角方 App 图标，发光火花隐喻，扁平矢量，无文字" --image ./icon-app.png
+```
+
+![icon](docs/screenshots/icon-app.png)
+
+---
+
+### `/tzai-logo` · Logo
+
+**突出：** 几何标志、负空间；AI 输出当**概念稿**，非最终矢量。
+
+```text
+/tzai-logo 几何 N，靛蓝与电青绿
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image logo \
+  --prompt "几何 N monogram，靛蓝与电青绿，充足负空间" --image ./logo.png
+```
+
+![logo](docs/screenshots/logo-wordmark.png)
+
+---
+
+### `/tzai-flowchart` · 流程图
+
+**突出：** 从左到右步骤、清晰箭头、职场可读。
+
+```text
+/tzai-flowchart 注册 → 激活 → 付费
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image flowchart \
+  --prompt "注册 → 激活 → 付费，五步从左到右带箭头" --image ./flow.png
+```
+
+![flowchart](docs/screenshots/flowchart-process.png)
+
+---
+
+### `/tzai-architecture` · 架构图
+
+**突出：** 客户端/网关/服务/库/队列；等距或分层。
+
+```text
+/tzai-architecture 客户端 网关 微服务 DB 队列
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
+  --prompt "客户端 / 网关 / 微服务 / DB / 队列，等距技术风" --image ./arch.png
+```
+
+![architecture](docs/screenshots/architecture-isometric.png)
+
+---
+
+### `/tzai-infographic` · 信息图
+
+**突出：** 层级、指标卡、出版级版式（对齐 baoyu-infographic 方向）。
+
+```text
+/tzai-infographic Q1 增长四要素：获客 激活 留存 变现
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image infographic \
+  --prompt "Q1 增长四要素：获客 激活 留存 变现，四卡片指标墙" --image ./info.png
+```
+
+![infographic](docs/screenshots/infographic-stats.png)
+
+---
+
+### `/tzai-cover` · 文章封面
+
+**突出：** 情绪 + **标题安全区**（长标题建议后期叠字）。
+
+```text
+/tzai-cover 技术博客封面，深色代码光轨，标题留白
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image cover \
+  --prompt "技术博客封面：深色渐变与抽象代码光轨，大面积标题留白" --image ./cover.png
+```
+
+![cover](docs/screenshots/cover-article.png)
+
+---
+
+### `/tzai-slide` · PPT 封面
+
+**突出：** 咨询几何、标题留白、少正文。
+
+```text
+/tzai-slide 分享会开场底图
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image slide \
+  --prompt "分享会开场页底图，咨询几何，中部留标题区" --image ./slide.png
+```
+
+![slide](docs/screenshots/slide-cover.png)
+
+---
+
+### `/tzai-xhs` · 小红书图卡
+
+**突出：** 3:4 知识卡、强层级、信息流友好（对齐 baoyu-xhs 方向）。
+
+```text
+/tzai-xhs 三步写好周报
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
+  --prompt "三步写好周报：列清单 写重点 加复盘，高对比知识卡" --image ./xhs.png
+```
+
+![xhs](docs/screenshots/xhs-card.png)
+
+---
+
+### `/tzai-xhs-cover` · 小红书封面
+
+**突出：** 停滑封面、强对比、短标题区。
+
+```text
+/tzai-xhs-cover 职场干货 · 周报模板
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs-cover \
+  --prompt "封面：职场干货 · 周报模板，大标题区强对比" --image ./xhs-cover.png
+```
+
+![xhs-cover](docs/screenshots/xhs-cover.png)
+
+---
+
+### `/tzai-wechat` · 微信配图
+
+**突出：** 公号头图/文内插图气质，柔和专业。
+
+```text
+/tzai-wechat 远程协作与灵感火花
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image wechat \
+  --prompt "公众号配图：远程协作与灵感火花，柔和专业" --image ./wechat.png
+```
+
+![wechat](docs/screenshots/wechat-visual.png)
+
+---
+
+### `/tzai-ui` · UI 仪表盘
+
+**突出：** SaaS 卡片/KPI/图表；勿写真实隐私数据。
+
+```text
+/tzai-ui 数据分析仪表盘浅色模式
+```
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image ui \
+  --prompt "SaaS 数据分析仪表盘，卡片 KPI 图表，浅色模式" --image ./ui.png
+```
+
+![ui](docs/screenshots/ui-dashboard.png)
+
+---
+
+## D. 长尾示例（仅引擎）
+
+没有 `/tzai-mindmap` 这类斜杠——用引擎或分类 hub。
+
+| 需求 | 用法 |
+| --- | --- |
+| 思维导图 | `/tzai-image mindmap …` 或 `/tzai-diagram` |
+| 线框图 | `/tzai-image wireframe …` |
+| 吉祥物 | `/tzai-image mascot …` |
+| 美食 | `/tzai-image food …` |
+| Banner | `/tzai-image banner …` |
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image mindmap \
+  --prompt "策略拆解中心节点，六条分支" --image ./mindmap.png
+```
+
+![mindmap](docs/screenshots/mindmap-strategy.png)
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image wireframe \
+  --prompt "移动端低保真线框多屏" --image ./wire.png
+```
+
+![wireframe](docs/screenshots/wireframe-mobile.png)
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image food \
+  --prompt "拉花拿铁，木桌，晨光浅景深" --image ./food.png
+```
+
+![food](docs/screenshots/food-macro.png)
+
+更多长尾样张：
+
+| kind | 样张 |
+| --- | --- |
+| moodboard | ![mood](docs/screenshots/brand-moodboard.png) |
+| empty-state | ![empty](docs/screenshots/empty-state.png) |
+| onboarding | ![onb](docs/screenshots/onboarding-hero.png) |
+| banner | ![banner](docs/screenshots/banner-campaign.png) |
+| poster | ![poster](docs/screenshots/poster-tech.png) |
+| mascot | ![mascot](docs/screenshots/3d-mascot.png) |
+| landscape | ![land](docs/screenshots/landscape-dawn.png) |
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
+```
+
+---
+
+## Prompt 小抄（只写主题）
+
+| 场景 | `--prompt` 写什么 | kind 已处理 |
+| --- | --- | --- |
+| 图标 | 隐喻 + 产品领域 | 圆角方、扁平、无字 |
+| 流程 | 步骤 A → B → C | 箭头、职场清晰 |
+| 小红书 | 标题 + 要点 | 3:4 图卡气质 |
+| 封面 | 主题 + 情绪 | 标题留白、编辑光线 |
+| 架构 | 组件列表 | 等距/分层 |
+
+---
 
 ## 配置
 
@@ -453,49 +519,25 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image infographic \
 | `TZAI_DEFAULT_AR` | 画幅 | `1:1` |
 | `TZAI_TIMEOUT_SEC` | 超时 | `120` |
 
-**加载顺序（后者覆盖前者）：** `.skill-data` 文件 → **进程环境变量** → `$TZAI_IMAGE_CONFIG` → CLI。
+**加载顺序（后者覆盖）：** `.skill-data` → 进程环境 → `$TZAI_IMAGE_CONFIG` → CLI。
 
-| `--ar` | 适合 |
-| --- | --- |
-| `1:1` | 图标、头像、商品、贴纸 |
-| `16:9` | 图示、幻灯、仪表盘、Banner |
-| `9:16` | 手机 UI、Stories、竖海报 |
+## 维护
 
-## CLI
-
-```text
-kinds [id]
-init / doctor / which-config / models
-generate --kind <id> --prompt ... --image out.png [...]
-<kind> --prompt ... --image out.png     # icon|flowchart|xhs|infographic|...
+```bash
+bash scripts/gen-kind-skills.sh
+bash scripts/install-slash-commands.sh
+bash scripts/gen-demos.sh
+bash tests/run.sh
 ```
-
-Kind 目录：`skills/tzai-image/references/kinds.tsv`。
 
 ## Agent 建议
 
 1. 缺 Key 先 `doctor`  
-2. **意图 → kind**（小红书→`xhs`，流程图→`flowchart`，信息图→`infographic`…）  
-3. `--prompt` 只写**内容主题**（美术方向由 kind 注入）  
-4. 默认 `gpt-image-2` 生成  
+2. 高频 → 直达斜杠；宽需求 → hub；其余 → 引擎 + `kinds`  
+3. `--prompt` 只写主题  
+4. 默认 `gpt-image-2`  
 5. 回报路径  
 
-宿主 doodle 可用原生工具；要 **TaoziAPI + 场景质量** 用本 skill。
+---
 
-## 开发
-
-```bash
-git clone https://github.com/kedoupi/tzai-image-skill.git
-cd tzai-image-skill
-bash tests/run.sh
-```
-
-## 许可证
-
-[MIT](./LICENSE)
-
-## 链接
-
-- GitHub：https://github.com/kedoupi/tzai-image-skill  
-- TaoziAPI：https://tzai.kdp.cool  
-- 孵化器：https://github.com/kedoupi/skills  
+场景深度对齐 [baoyu-skills](https://github.com/JimLiu/baoyu-skills)；交付形态是 **TaoziAPI 单引擎 + Plan C 斜杠**。

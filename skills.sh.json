@@ -3,63 +3,50 @@
   "groupings": [
     {
       "title": "TaoziAPI Image Engine",
-      "description": "Core engine + doctor/init/kinds (gpt-image-2)",
+      "description": "Core engine + doctor/init/kinds (gpt-image-2). Long-tail kinds via this skill.",
       "skills": [
         "tzai-image"
       ]
     },
     {
-      "title": "Brand / 品牌识别",
-      "description": "Icons, logos, mascots, badges, avatars",
+      "title": "Brand identity / 品牌识别",
+      "description": "Icons, logos, mascots, badges, avatars, mood boards (Plan C: hub + high-freq slashes)",
       "skills": [
         "tzai-brand",
         "tzai-icon",
-        "tzai-logo",
-        "tzai-moodboard",
-        "tzai-mascot",
-        "tzai-badge",
-        "tzai-avatar"
+        "tzai-logo"
       ]
     },
     {
-      "title": "Diagram / 结构图示",
-      "description": "Flowcharts, architecture, mind maps, infographics",
+      "title": "Diagrams & structure / 结构图示",
+      "description": "Flowcharts, architecture, mind maps, infographics (Plan C: hub + high-freq slashes)",
       "skills": [
         "tzai-diagram",
         "tzai-flowchart",
         "tzai-architecture",
-        "tzai-mindmap",
-        "tzai-diagram",
-        "tzai-infographic",
-        "tzai-dataviz"
+        "tzai-infographic"
       ]
     },
     {
-      "title": "Product / 产品设计",
-      "description": "UI mocks, wireframes, empty states, onboarding",
+      "title": "Product design / 产品设计",
+      "description": "UI mocks, wireframes, empty states, onboarding (Plan C: hub + high-freq slashes)",
       "skills": [
         "tzai-product",
-        "tzai-ui",
-        "tzai-wireframe",
-        "tzai-empty-state",
-        "tzai-onboarding"
+        "tzai-ui"
       ]
     },
     {
       "title": "Marketing / 市场内容",
-      "description": "Slides, banners, covers, posters, email headers",
+      "description": "Slides, banners, covers, posters, email headers (Plan C: hub + high-freq slashes)",
       "skills": [
         "tzai-marketing",
         "tzai-slide",
-        "tzai-banner",
-        "tzai-email-header",
-        "tzai-cover",
-        "tzai-poster"
+        "tzai-cover"
       ]
     },
     {
-      "title": "Social / 社交种草",
-      "description": "Xiaohongshu (小红书), WeChat visuals",
+      "title": "Social content / 社交种草",
+      "description": "Xiaohongshu (小红书), WeChat visuals (Plan C: hub + high-freq slashes)",
       "skills": [
         "tzai-social",
         "tzai-xhs",
@@ -69,15 +56,9 @@
     },
     {
       "title": "Photo & illustration / 影像插画",
-      "description": "Product, photo, landscape, storybook, food",
+      "description": "Product, photo, landscape, storybook, food (Plan C: hub + high-freq slashes)",
       "skills": [
-        "tzai-photo",
-        "tzai-product",
-        "tzai-photo",
-        "tzai-landscape",
-        "tzai-illustration",
-        "tzai-storybook",
-        "tzai-food"
+        "tzai-photo"
       ]
     }
   ]

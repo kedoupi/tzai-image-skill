@@ -14,6 +14,14 @@ link_commands() {
   mkdir -p "$dest"
   local n=0
   local f base
+  # Prune stale long-tail wrappers not in Plan C source set
+  for f in "$dest"/tzai-*.md; do
+    [[ -e "$f" || -L "$f" ]] || continue
+    base="$(basename "$f")"
+    if [[ ! -f "${SRC}/${base}" ]]; then
+      rm -f "$f"
+    fi
+  done
   for f in "$SRC"/tzai-*.md; do
     [[ -f "$f" ]] || continue
     base="$(basename "$f")"
@@ -61,5 +69,7 @@ echo "== API key (shared) =="
 echo "  export TZAI_API_KEY='sk-...'"
 echo "  # or: bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-..."
 echo
-echo "Scene catalog: docs/SCENES.md"
+echo "Plan C: engine + 6 hubs + 11 high-freq kinds (see slash-whitelist.txt)"
+echo "Scene catalog: docs/SCENES.md · Capability: docs/CAPABILITY-ROADMAP.md"
+echo "Demos: docs/demos.tsv · regenerate: bash scripts/gen-demos.sh"
 echo "Then open any agent and type /  → search tzai-"

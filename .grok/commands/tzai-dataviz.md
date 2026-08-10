@@ -1,1 +1,0 @@
-/Users/codepi/Coding/Skills/tzai-image-skill/commands/tzai-dataviz.md

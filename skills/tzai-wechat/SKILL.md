@@ -4,21 +4,23 @@ description: >
   Generate WeChat article visual (微信配图) images via TaoziAPI using tzai-image kind=wechat.
   Use when the user runs /tzai-wechat, /tzai-image wechat, or asks for 微信配图 / WeChat article visual.
   Category: social (社交种草). Default aspect 16:9. Requires tzai-image engine + TZAI_API_KEY.
+  High-frequency Plan C slash entry.
 argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.2.1"
+  version: "0.4.0"
   short-description: "微信配图 · 社交种草"
   tzai-kind: "wechat"
   tzai-category: "social"
+  tzai-slash: "plan-c"
 ---
 
 # tzai-wechat — 微信配图
 
 Slash: **`/tzai-wechat`** · Engine kind: **`wechat`** · Category: **社交种草** · Default AR: **16:9**
 
-Thin slash entry for the `wechat` scenario. Generation uses the **tzai-image** engine (default `gpt-image-2`).
+High-frequency scene entry (Plan C). Generation uses the **tzai-image** engine (default `gpt-image-2`).
 
 ## Resolve engine
 
@@ -34,14 +36,14 @@ do
   if [ -x "$c" ]; then ENGINE="$c"; break; fi
 done
 if [ -z "$ENGINE" ]; then
-  echo "Install engine: npx skills add kedoupi/tzai-image-skill -g --all" >&2
+  echo "Install engine: npx skills add kedoupi/tzai-image-skill -g --skill tzai-image -y" >&2
   exit 1
 fi
 ```
 
 ## Run
 
-Slash arguments / remaining user text = **subject only**.
+Slash arguments / remaining user text = **subject only** (art direction is injected by kind).
 
 ```bash
 bash "$ENGINE" wechat \
@@ -53,7 +55,14 @@ bash "$ENGINE" wechat \
 
 WeChat Official Account article illustration or header, clean Chinese content-platform aesthetic, readable composition, soft professional colors.
 
+## Teaching tip
+
+- Put **what to draw** in the prompt, not style essays — kind already sets professional direction.
+- Override aspect only when needed: `--ar 1:1|16:9|9:16|3:4`.
+- Long-tail scenes in the same category: open `/tzai-social` or `/tzai-image <kind>`.
+
 ## See also
 
-- `bash $ENGINE kinds` · main slash `/tzai-image`
-- https://github.com/kedoupi/tzai-image-skill
+- Category hub: `/tzai-social`
+- Engine: `/tzai-image` · `bash $ENGINE kinds`
+- Demos: https://github.com/kedoupi/tzai-image-skill#gallery

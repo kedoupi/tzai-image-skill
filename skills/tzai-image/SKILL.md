@@ -7,20 +7,38 @@ description: >
   text-to-image job. Triggers: 画图, 生图, 图标, Logo, 流程图, 架构图, 信息图, 小红书,
   配图, diagram, infographic, xhs, icon, logo, draw, image gen, tzai, TaoziAPI, /tzai-image.
   Prefer --kind or kind subcommands (icon|flowchart|xhs|infographic|...). Not for Feishu push.
+  Plan C slash surface: this engine + 6 category hubs + ~11 high-freq kinds; long-tail via this skill.
 argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到付费"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.3.0"
-  short-description: "TaoziAPI 生图（kind 场景：图标/流程图/小红书…）"
+  version: "0.4.0"
+  short-description: "TaoziAPI 生图（引擎 + 场景 kind，默认 gpt-image-2）"
 ---
 
 # tzai-image
 
 Generate images through **TaoziAPI** (`https://tzai.kdp.cool`) with **scenario kinds**
-(分类功能) — same idea as baoyu's xhs / infographic / diagram skills, one CLI engine.
+— one CLI engine, baoyu-style scenes without installing 20 packages.
 
 Default model: **`gpt-image-2`**.
+
+## Plan C slash surface
+
+| Layer | Count | Examples |
+| --- | --- | --- |
+| **Engine** | 1 | `/tzai-image` (this skill) — any kind + doctor/kinds |
+| **Category hubs** | 6 | `/tzai-brand` `/tzai-diagram` `/tzai-product` `/tzai-marketing` `/tzai-social` `/tzai-photo` |
+| **High-freq kinds** | 11 | `/tzai-xhs` `/tzai-icon` `/tzai-flowchart` `/tzai-architecture` `/tzai-infographic` `/tzai-cover` `/tzai-slide` `/tzai-logo` `/tzai-ui` `/tzai-wechat` `/tzai-xhs-cover` |
+
+**Long-tail kinds** (mindmap, mascot, food, banner, …) stay in `kinds.tsv` but **no thin slash skill** — call:
+
+```bash
+bash <skill-dir>/scripts/tzai-image mindmap --prompt "..." --image out.png
+# or natural language → agent maps to kind
+```
+
+Whitelist: `references/slash-whitelist.txt`.
 
 ## Prerequisites (agents: check these first)
 
@@ -57,39 +75,37 @@ bash <skill-dir>/scripts/tzai-image generate --api-key sk-... --prompt "..." --i
 
 Do **not** put secrets only inside the skill package directory.
 
-## Slash command (in agent UIs)
+## Slash commands (multi-agent)
 
-After install, the skill is invocable as a **slash command named after the skill**:
-
-| Client | Typical slash | Where the skill is installed |
-| --- | --- | --- |
-| **Grok Build** | `/tzai-image` | `~/.agents/skills/tzai-image` or `~/.grok/skills/tzai-image` |
-| **Claude Code** | `/tzai-image` (or skill menu) | `~/.claude/skills/tzai-image` or via `npx skills add -a claude-code` |
-| **Codex / Cursor** | skill panel / natural language | agent skill dirs from `npx skills add` |
-
-Install (recommended global, all agents):
+Install (global, all agents — pulls Plan C skill set only):
 
 ```bash
 npx skills add kedoupi/tzai-image-skill -g --all
+# optional command wrappers:
+bash scripts/install-slash-commands.sh
 ```
 
-Then in the agent:
+| Client | Skills path (typical) |
+| --- | --- |
+| **Grok Build** | `~/.grok/skills/tzai-*` + `~/.agents/skills/tzai-*` |
+| **Claude Code** | `~/.claude/skills/tzai-*` |
+| **Codex / Cursor / others** | via `npx skills add --agent '*'` |
+
+Examples:
 
 ```text
-/tzai-image
-/tzai-image 画一个 App 图标，火花隐喻
-/tzai-image xhs 三步写好周报
-/tzai-image flowchart 注册 → 激活 → 付费
+/tzai-icon 火花隐喻 AI 编程 App
+/tzai-xhs 三步写好周报
+/tzai-flowchart 注册 → 激活 → 付费
+/tzai-diagram          ← category hub: pick flowchart / architecture / …
+/tzai-image mindmap 产品战略拆解   ← long-tail kind via engine
 ```
 
-**Important:**
+Routing rules for agents:
 
-- Slash = **skill name** (`tzai-image`), **not** every kind as its own slash (`/flowchart` is optional, see below).
-- After `/tzai-image`, say the **kind + subject** in natural language; the agent should call  
-  `bash <skill-dir>/scripts/tzai-image <kind> --prompt "…" --image <path>`.
-- Or just chat without slash: “帮我画小红书图卡：三步写周报” — `description` triggers auto-invoke.
-
-Optional: if you want **extra** slashes like `/xhs` or `/flowchart`, add thin files under the client’s `commands/` dir (Grok/Claude), e.g. `.grok/commands/xhs.md` body: “Invoke tzai-image with kind=xhs …”. Kinds themselves stay in this skill.
+1. **Known high-freq scene** → direct slash (`/tzai-xhs`, `/tzai-flowchart`, …).
+2. **Broad category** → hub (`/tzai-brand`, …) then pick kind.
+3. **Anything else** → `/tzai-image` + `kinds` catalog or natural language → kind.
 
 ## Locating the helper
 

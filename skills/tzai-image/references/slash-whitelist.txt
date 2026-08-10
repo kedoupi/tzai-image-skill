@@ -1,0 +1,27 @@
+# Plan C slash surface for tzai-image-skill
+# Lines: type<TAB>id
+#   type = category | kind
+# Engine /tzai-image is always included (not listed here).
+# Long-tail kinds stay in kinds.tsv but do NOT get thin slash skills;
+# reach them via category hub or:  /tzai-image <kind> <subject>
+#
+# ~6 hubs + ~11 high-frequency kinds (+ engine ≈ 18 slashes)
+
+category	brand
+category	diagram
+category	product
+category	marketing
+category	social
+category	photo
+
+kind	icon
+kind	logo
+kind	flowchart
+kind	architecture
+kind	infographic
+kind	cover
+kind	slide
+kind	xhs
+kind	xhs-cover
+kind	wechat
+kind	ui

@@ -81,8 +81,24 @@ kinds_out="$("$BIN" kinds 2>&1)"
 assert_contains "kinds has flowchart" "flowchart" "$kinds_out"
 assert_contains "kinds has xhs" "xhs" "$kinds_out"
 assert_contains "kinds has icon" "icon" "$kinds_out"
+assert_contains "kinds has mindmap long-tail" "mindmap" "$kinds_out"
 detail="$("$BIN" kinds flowchart 2>&1)"
 assert_contains "kind detail ar" "16:9" "$detail"
+
+echo "== Plan C slash whitelist =="
+WHITE="${ROOT}/skills/tzai-image/references/slash-whitelist.txt"
+assert_ok "whitelist exists" test -f "$WHITE"
+# high-freq kinds must have thin skills; long-tail mindmap must not
+assert_ok "slash skill xhs" test -f "${ROOT}/skills/tzai-xhs/SKILL.md"
+assert_ok "slash skill icon" test -f "${ROOT}/skills/tzai-icon/SKILL.md"
+assert_ok "hub skill brand" test -f "${ROOT}/skills/tzai-brand/SKILL.md"
+assert_ok "hub skill diagram" test -f "${ROOT}/skills/tzai-diagram/SKILL.md"
+assert_exit "no thin skill for long-tail mindmap" 1 test -f "${ROOT}/skills/tzai-mindmap/SKILL.md"
+assert_exit "no thin skill for long-tail food" 1 test -f "${ROOT}/skills/tzai-food/SKILL.md"
+# count thin+hub skills (exclude engine)
+n_slash="$(find "${ROOT}/skills" -mindepth 1 -maxdepth 1 -type d ! -name tzai-image | wc -l | tr -d ' ')"
+# 6 hubs + 11 kinds = 17
+assert_eq "plan-c slash skill count" "17" "$n_slash"
 
 echo "== kind enriches prompt (dry-run) =="
 err="$("$BIN" generate --dry-run --kind icon --prompt "spark AI" --image /tmp/i.png 2>&1 >/dev/null)"

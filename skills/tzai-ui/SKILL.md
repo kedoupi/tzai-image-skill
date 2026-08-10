@@ -4,21 +4,23 @@ description: >
   Generate UI dashboard mock (UI仪表盘) images via TaoziAPI using tzai-image kind=ui.
   Use when the user runs /tzai-ui, /tzai-image ui, or asks for UI仪表盘 / UI dashboard mock.
   Category: product (产品设计). Default aspect 16:9. Requires tzai-image engine + TZAI_API_KEY.
+  High-frequency Plan C slash entry.
 argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.2.1"
+  version: "0.4.0"
   short-description: "UI仪表盘 · 产品设计"
   tzai-kind: "ui"
   tzai-category: "product"
+  tzai-slash: "plan-c"
 ---
 
 # tzai-ui — UI仪表盘
 
 Slash: **`/tzai-ui`** · Engine kind: **`ui`** · Category: **产品设计** · Default AR: **16:9**
 
-Thin slash entry for the `ui` scenario. Generation uses the **tzai-image** engine (default `gpt-image-2`).
+High-frequency scene entry (Plan C). Generation uses the **tzai-image** engine (default `gpt-image-2`).
 
 ## Resolve engine
 
@@ -34,14 +36,14 @@ do
   if [ -x "$c" ]; then ENGINE="$c"; break; fi
 done
 if [ -z "$ENGINE" ]; then
-  echo "Install engine: npx skills add kedoupi/tzai-image-skill -g --all" >&2
+  echo "Install engine: npx skills add kedoupi/tzai-image-skill -g --skill tzai-image -y" >&2
   exit 1
 fi
 ```
 
 ## Run
 
-Slash arguments / remaining user text = **subject only**.
+Slash arguments / remaining user text = **subject only** (art direction is injected by kind).
 
 ```bash
 bash "$ENGINE" ui \
@@ -53,7 +55,14 @@ bash "$ENGINE" ui \
 
 SaaS product UI mock dashboard, polished light or dark mode, cards charts KPIs, Figma-like quality, browser chrome subtle, no real PII or confidential metrics text.
 
+## Teaching tip
+
+- Put **what to draw** in the prompt, not style essays — kind already sets professional direction.
+- Override aspect only when needed: `--ar 1:1|16:9|9:16|3:4`.
+- Long-tail scenes in the same category: open `/tzai-product` or `/tzai-image <kind>`.
+
 ## See also
 
-- `bash $ENGINE kinds` · main slash `/tzai-image`
-- https://github.com/kedoupi/tzai-image-skill
+- Category hub: `/tzai-product`
+- Engine: `/tzai-image` · `bash $ENGINE kinds`
+- Demos: https://github.com/kedoupi/tzai-image-skill#gallery
