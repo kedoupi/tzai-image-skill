@@ -225,6 +225,46 @@ else
   FAIL=$((FAIL + 1))
 fi
 
+echo "== --ref dry-run =="
+ref_png="$(mktemp /tmp/tzai-ref-XXXXXX.png)"
+# minimal 1x1 PNG
+printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82' >"$ref_png" 2>/dev/null || \
+  python3 -c "import base64,pathlib; pathlib.Path('$ref_png').write_bytes(base64.b64decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='))"
+err="$("$BIN" illustration --dry-run --ref "$ref_png" --prompt "same series" --image /tmp/out.png 2>&1 >/dev/null)"
+assert_contains "ref uses edits endpoint" "endpoint=edits" "$err"
+assert_contains "ref path in dry-run" "refs=" "$err"
+assert_exit "missing ref fails" 2 "$BIN" illustration --dry-run --ref /tmp/no-such-ref-$$.png --prompt "x" --image /tmp/o.png
+assert_ok "workflows article" test -f "${ROOT}/skills/tzai-image/references/workflows/article-illustrate.md"
+assert_ok "workflows slide-deck" test -f "${ROOT}/skills/tzai-image/references/workflows/slide-deck.md"
+rm -f "$ref_png"
+
+echo "== live smoke (optional TZAI_LIVE=1) =="
+if [[ "${TZAI_LIVE:-}" == "1" ]]; then
+  live_out="$(mktemp /tmp/tzai-live-XXXXXX.png)"
+  if "$BIN" icon --prompt "tiny blue spark app icon, no text" --ar 1:1 --image "$live_out"; then
+    assert_ok "live generate wrote file" test -s "$live_out"
+    echo "  PASS  live generate path=$live_out"
+    PASS=$((PASS + 1))
+  else
+    echo "  FAIL  live generate"
+    FAIL=$((FAIL + 1))
+  fi
+  # optional ref smoke if we have a live file
+  if [[ -s "$live_out" ]]; then
+    live2="$(mktemp /tmp/tzai-live2-XXXXXX.png)"
+    if "$BIN" icon --ref "$live_out" --prompt "same spark metaphor, slightly different blue" --ar 1:1 --image "$live2"; then
+      assert_ok "live ref edit wrote file" test -s "$live2"
+    else
+      echo "  FAIL  live --ref"
+      FAIL=$((FAIL + 1))
+    fi
+    rm -f "$live2"
+  fi
+  rm -f "$live_out"
+else
+  echo "  SKIP  set TZAI_LIVE=1 to run one real generation"
+fi
+
 echo
 echo "Results: ${PASS} passed, ${FAIL} failed"
 [[ "$FAIL" -eq 0 ]]

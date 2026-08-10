@@ -923,6 +923,7 @@ PY
 cmd_generate() {
   local prompt="" image="" model="" size="" ar="" api_key="" base_url="" kind="" dry_run=0 json_out=0 n=1
   local user_prompt="" final_prompt="" kind_ar="" kind_label=""
+  local -a REFS=()
   # Matrix knobs: NOT local — shared with build_matrix_extra / apply_xhs_named_preset
   STYLE=""; LAYOUT=""; PALETTE=""; PRESET=""
   CTYPE=""; RENDERING=""; TEXTLEVEL=""; MOOD=""
@@ -936,6 +937,11 @@ cmd_generate() {
       --size) require_val "$1" "${2-}"; size="$2"; shift 2 ;;
       --ar) require_val "$1" "${2-}"; ar="$2"; shift 2 ;;
       --kind|-k) require_val "$1" "${2-}"; kind="$2"; shift 2 ;;
+      --ref|--reference)
+        require_val "$1" "${2-}"
+        REFS+=("$2")
+        shift 2
+        ;;
       --style) require_val "$1" "${2-}"; STYLE="$2"; shift 2 ;;
       --layout) require_val "$1" "${2-}"; LAYOUT="$2"; shift 2 ;;
       --palette) require_val "$1" "${2-}"; PALETTE="$2"; shift 2 ;;
@@ -962,17 +968,18 @@ Options:
   --kind, -k <id>       Scenario preset (icon|logo|flowchart|xhs|infographic|...)
   --prompt, -p <text>   Subject / content (required). Kind adds professional art direction.
   --image, -o <path>    Output file path (required unless --dry-run)
+  --ref <file>          Reference image path (repeatable). Uses /v1/images/edits.
   --model, -m <id>      Model id (default: ${DEFAULT_IMAGE_MODEL})
   --size <WxH>          e.g. 1024x1024
   --ar <ratio>          Override kind default aspect ratio
-  --style <id>          P0 matrix: xhs / infographic visual style
-  --layout <id>         P0 matrix: xhs / infographic layout
-  --palette <id>        P0 matrix: xhs color override OR cover palette
-  --preset <name>       P0 named combo (xhs presets)
-  --type <id>           P0 cover type (hero|minimal|...)
-  --rendering <id>      P0 cover rendering
-  --text <id>           P0 cover text level (none|title-only|...)
-  --mood <id>           P0 cover mood
+  --style <id>          Matrix: xhs / infographic visual style
+  --layout <id>         Matrix: xhs / infographic layout
+  --palette <id>        Matrix: xhs color override OR cover palette
+  --preset <name>       Named combo (xhs presets)
+  --type <id>           Cover type (hero|minimal|...)
+  --rendering <id>      Cover rendering
+  --text <id>           Cover text level (none|title-only|...)
+  --mood <id>           Cover mood
   --api-key <sk-...>    Override key for this call
   --base-url <url>      Override gateway
   --n <count>           Number of images (default 1; only first saved if >1)
@@ -983,9 +990,10 @@ Examples:
   tzai-image generate --kind icon --prompt "spark for AI coding app" --image icon.png
   tzai-image flowchart --prompt "signup to activation funnel" --image flow.png
   tzai-image xhs --style notion --layout dense --prompt "三步写好周报" --image card.png
-  tzai-image xhs --preset knowledge-card --prompt "三步写好周报" --image card.png
-  tzai-image infographic --layout funnel --style tech-schematic --prompt "转化漏斗" --image f.png
+  tzai-image illustration --ref ./01-cover.png --prompt "同系列第二节配图" --image 02.png
   tzai-image cover --type hero --palette dark --mood bold --text none --prompt "可观测性" --image c.png
+
+Workflows: references/workflows/{article-illustrate,slide-deck,xhs-series}.md
 
 Config:
   export TZAI_API_KEY='sk-...'
@@ -1066,7 +1074,25 @@ EOF
   # Model always resolves (built-in best default at minimum)
   TZAI_IMAGE_MODEL="${TZAI_IMAGE_MODEL:-$DEFAULT_IMAGE_MODEL}"
 
-  local url="${TZAI_BASE_URL}/v1/images/generations"
+  # Validate reference files early
+  local ref_path
+  for ref_path in "${REFS[@]+"${REFS[@]}"}"; do
+    if [[ ! -f "$ref_path" ]]; then
+      echo "Reference image not found: $ref_path" >&2
+      return 2
+    fi
+  done
+
+  local use_edits=0
+  local url endpoint_label
+  if [[ ${#REFS[@]} -gt 0 ]]; then
+    use_edits=1
+    url="${TZAI_BASE_URL}/v1/images/edits"
+    endpoint_label="edits"
+  else
+    url="${TZAI_BASE_URL}/v1/images/generations"
+    endpoint_label="generations"
+  fi
   local model_eff="${TZAI_IMAGE_MODEL:-"(unset)"}"
   prompt="$final_prompt"
 
@@ -1079,13 +1105,18 @@ EOF
   [[ -n "${RENDERING:-}" ]] && matrix_summary+=" rendering=${RENDERING}"
   [[ -n "${TEXTLEVEL:-}" ]] && matrix_summary+=" text=${TEXTLEVEL}"
   [[ -n "${MOOD:-}" ]] && matrix_summary+=" mood=${MOOD}"
+  local refs_summary="(none)"
+  if [[ ${#REFS[@]} -gt 0 ]]; then
+    refs_summary="${REFS[*]}"
+  fi
 
   if [[ "$dry_run" -eq 1 ]]; then
     cat <<EOF >&2
 [dry-run] tzai-image v$(skill_version)
-[dry-run] POST ${url}
+[dry-run] POST ${url}  (endpoint=${endpoint_label})
 [dry-run] kind=${kind:-"(none)"}${kind_label:+ ($kind_label)}
 [dry-run] matrix:${matrix_summary:-" (none)"}
+[dry-run] refs=${refs_summary}
 [dry-run] model=${model_eff}  (source: ${MODEL_SOURCE})
 [dry-run] size=${size}  ar=${TZAI_DEFAULT_AR:-$DEFAULT_AR}
 [dry-run] n=${n}
@@ -1096,27 +1127,29 @@ EOF
 [dry-run] not calling network
 EOF
     if [[ "$json_out" -eq 1 ]]; then
-      # argv-based json.dumps — safe for any prompt characters
       python3 -c 'import json,sys
 print(json.dumps({
   "dry_run": True,
   "url": sys.argv[1],
-  "kind": sys.argv[2],
-  "style": sys.argv[3],
-  "layout": sys.argv[4],
-  "palette": sys.argv[5],
-  "preset": sys.argv[6],
-  "type": sys.argv[7],
-  "rendering": sys.argv[8],
-  "text": sys.argv[9],
-  "mood": sys.argv[10],
-  "model": sys.argv[11],
-  "size": sys.argv[12],
-  "ar": sys.argv[13],
-  "output": sys.argv[14],
-  "final_prompt": sys.argv[15],
+  "endpoint": sys.argv[2],
+  "kind": sys.argv[3],
+  "style": sys.argv[4],
+  "layout": sys.argv[5],
+  "palette": sys.argv[6],
+  "preset": sys.argv[7],
+  "type": sys.argv[8],
+  "rendering": sys.argv[9],
+  "text": sys.argv[10],
+  "mood": sys.argv[11],
+  "model": sys.argv[12],
+  "size": sys.argv[13],
+  "ar": sys.argv[14],
+  "output": sys.argv[15],
+  "final_prompt": sys.argv[16],
+  "refs": sys.argv[17].split("\n") if sys.argv[17] else [],
 }, ensure_ascii=False))' \
         "$url" \
+        "$endpoint_label" \
         "${kind}" \
         "${STYLE}" \
         "${LAYOUT}" \
@@ -1130,7 +1163,8 @@ print(json.dumps({
         "${size}" \
         "${TZAI_DEFAULT_AR:-$DEFAULT_AR}" \
         "${image}" \
-        "${final_prompt}"
+        "${final_prompt}" \
+        "$(printf '%s\n' "${REFS[@]+"${REFS[@]}"}")"
     fi
     return 0
   fi
@@ -1146,10 +1180,51 @@ print(json.dumps({
 
   mkdir -p "$(dirname -- "$image")"
 
-  local req_json resp_file code attempt max_attempts sleep_s
-  req_json="$(mktemp)"
+  local resp_file code attempt max_attempts sleep_s
   resp_file="$(mktemp)"
-  python3 - "$req_json" "$prompt" "$TZAI_IMAGE_MODEL" "$size" "$n" <<'PY'
+  max_attempts=4
+  code="000"
+
+  if [[ "$use_edits" -eq 1 ]]; then
+    # Multipart /v1/images/edits with one or more reference images
+    local -a curl_args=(
+      -sS -o "$resp_file" -w "%{http_code}"
+      --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}"
+      -X POST "$url"
+      -H "Authorization: Bearer ${TZAI_API_KEY}"
+      -F "model=${TZAI_IMAGE_MODEL}"
+      -F "prompt=${prompt}"
+      -F "n=${n}"
+      -F "size=${size}"
+      -F "response_format=b64_json"
+    )
+    if [[ ${#REFS[@]} -eq 1 ]]; then
+      curl_args+=(-F "image=@${REFS[0]}")
+    else
+      for ref_path in "${REFS[@]}"; do
+        # Multi-image field name (OpenAI-compatible)
+        curl_args+=(-F "image[]=@${ref_path}")
+      done
+    fi
+    for attempt in $(seq 1 "$max_attempts"); do
+      code="$(curl "${curl_args[@]}" || echo "000")"
+      case "$code" in
+        200) break ;;
+        429|502|503|504|000)
+          if [[ "$attempt" -lt "$max_attempts" ]]; then
+            sleep_s=$(( attempt * 2 ))
+            echo "HTTP ${code}; retry ${attempt}/${max_attempts} in ${sleep_s}s..." >&2
+            sleep "$sleep_s"
+            continue
+          fi
+          ;;
+        *) break ;;
+      esac
+    done
+  else
+    local req_json
+    req_json="$(mktemp)"
+    python3 - "$req_json" "$prompt" "$TZAI_IMAGE_MODEL" "$size" "$n" <<'PY'
 import json, sys
 path, prompt, model, size, n = sys.argv[1:6]
 body = {
@@ -1162,35 +1237,31 @@ body = {
 with open(path, "w", encoding="utf-8") as f:
     json.dump(body, f, ensure_ascii=False)
 PY
-
-  # Retry transient gateway errors (429 / 502 / 503 / 504)
-  max_attempts=4
-  code="000"
-  for attempt in $(seq 1 "$max_attempts"); do
-    code="$(curl -sS -o "$resp_file" -w "%{http_code}" \
-      --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
-      -X POST "$url" \
-      -H "Authorization: Bearer ${TZAI_API_KEY}" \
-      -H "Content-Type: application/json" \
-      --data-binary @"$req_json" || echo "000")"
-    case "$code" in
-      200) break ;;
-      429|502|503|504|000)
-        if [[ "$attempt" -lt "$max_attempts" ]]; then
-          sleep_s=$(( attempt * 2 ))
-          echo "HTTP ${code}; retry ${attempt}/${max_attempts} in ${sleep_s}s..." >&2
-          sleep "$sleep_s"
-          continue
-        fi
-        ;;
-      *) break ;;
-    esac
-  done
-
-  rm -f "$req_json"
+    for attempt in $(seq 1 "$max_attempts"); do
+      code="$(curl -sS -o "$resp_file" -w "%{http_code}" \
+        --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
+        -X POST "$url" \
+        -H "Authorization: Bearer ${TZAI_API_KEY}" \
+        -H "Content-Type: application/json" \
+        --data-binary @"$req_json" || echo "000")"
+      case "$code" in
+        200) break ;;
+        429|502|503|504|000)
+          if [[ "$attempt" -lt "$max_attempts" ]]; then
+            sleep_s=$(( attempt * 2 ))
+            echo "HTTP ${code}; retry ${attempt}/${max_attempts} in ${sleep_s}s..." >&2
+            sleep "$sleep_s"
+            continue
+          fi
+          ;;
+        *) break ;;
+      esac
+    done
+    rm -f "$req_json"
+  fi
 
   if [[ "$code" != "200" ]]; then
-    echo "Image generation failed: HTTP ${code}" >&2
+    echo "Image generation failed: HTTP ${code} (${endpoint_label})" >&2
     head -c 400 "$resp_file" >&2 || true
     echo >&2
     if [[ "$code" == "401" || "$code" == "403" ]]; then
@@ -1227,7 +1298,11 @@ PY
   rm -f "$resp_file"
 
   echo "Wrote ${image}" >&2
-  echo "Using ${TZAI_BASE_URL} / ${TZAI_IMAGE_MODEL}${kind:+ / kind=${kind}}" >&2
+  if [[ "$use_edits" -eq 1 ]]; then
+    echo "Using ${TZAI_BASE_URL} / ${TZAI_IMAGE_MODEL}${kind:+ / kind=${kind}} / ${endpoint_label} +ref×${#REFS[@]}" >&2
+  else
+    echo "Using ${TZAI_BASE_URL} / ${TZAI_IMAGE_MODEL}${kind:+ / kind=${kind}} / ${endpoint_label}" >&2
+  fi
   if [[ "${n}" -gt 1 ]]; then
     echo "Note: --n=${n} requested; only the first image was saved to ${image}" >&2
   fi
@@ -1242,13 +1317,17 @@ print(json.dumps({
   "base_url": sys.argv[4],
   "size": sys.argv[5],
   "ar": sys.argv[6],
+  "endpoint": sys.argv[7],
+  "refs": sys.argv[8].split("\n") if sys.argv[8] else [],
 }, ensure_ascii=False))' \
       "${image}" \
       "${TZAI_IMAGE_MODEL}" \
       "${kind}" \
       "${TZAI_BASE_URL}" \
       "${size}" \
-      "${TZAI_DEFAULT_AR:-$DEFAULT_AR}"
+      "${TZAI_DEFAULT_AR:-$DEFAULT_AR}" \
+      "${endpoint_label}" \
+      "$(printf '%s\n' "${REFS[@]+"${REFS[@]}"}")"
   else
     printf '%s\n' "$image"
   fi

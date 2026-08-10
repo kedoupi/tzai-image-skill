@@ -76,12 +76,18 @@ bash $E xhs --style notion --layout dense --prompt "三步写周报" --image out
 bash $E cover --type hero --palette dark --text none --prompt "主题" --image c.png
 ```
 
-Matrix flags: `--style` `--layout` `--palette` `--preset` `--type` `--rendering` `--text` `--mood`.
+Matrix flags: `--style` `--layout` `--palette` `--preset` `--type` `--rendering` `--text` `--mood`.  
+Reference image: `--ref path.png` (uses edits endpoint; repeatable).
+
+Multi-image agent workflows: `skills/tzai-image/references/workflows/`.
 
 ## Validation
 
 ```bash
 bash tests/run.sh
+# optional live API smoke (costs credits):
+TZAI_LIVE=1 bash tests/run.sh
+
 bash scripts/gen-kind-skills.sh   # if whitelist/kinds changed
 bash skills/tzai-image/scripts/tzai-image doctor
 ```

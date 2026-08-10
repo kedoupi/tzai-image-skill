@@ -2,6 +2,16 @@
 
 All notable changes to **tzai-image-skill** are documented here.
 
+## [0.5.3] — 2026-08-10
+
+### Added
+- `--ref` / `--reference` (repeatable): reference-guided generate via `/v1/images/edits`
+- Workflows: `article-illustrate.md`, `slide-deck.md` (multi-image agent playbooks)
+- Optional live smoke: `TZAI_LIVE=1 bash tests/run.sh`
+
+### Changed
+- SKILL.md documents multi-image workflows + `--ref`
+
 ## [0.5.2] — 2026-08-10
 
 ### Added

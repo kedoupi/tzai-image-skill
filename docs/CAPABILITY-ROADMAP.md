@@ -89,10 +89,11 @@ tzai-image cover --type hero --palette dark --text none --mood bold --prompt "..
 
 ### P1
 
-1. 文章多点配图工作流  
-2. slide 多页大纲  
-3. icon/logo variant  
-4. `--ref` / prompt 落盘  
+1. 文章多点配图工作流 — **Done (v0.5.3)** `workflows/article-illustrate.md`  
+2. slide 多页大纲 — **Done (v0.5.3)** `workflows/slide-deck.md`  
+3. `--ref` 参考图 — **Done (v0.5.3)** `/v1/images/edits`  
+4. Live smoke `TZAI_LIVE=1` — **Done (v0.5.3)**  
+5. icon/logo variant / prompt 落盘 — 可选后续
 
 ### P2
 
@@ -129,3 +130,4 @@ tzai-image cover --type hero --palette dark --text none --mood bold --prompt "..
 | 2026-08-10 | 对外文档改为自有产品叙事 |
 | 2026-08-10 | v0.5.1 P0 hardening: safe config parse, AR validate, safe --json |
 | 2026-08-10 | v0.5.2 product-photo rename+alias, HTTP retry, CI, CHANGELOG |
+| 2026-08-10 | v0.5.3 --ref edits, multi-image workflows, TZAI_LIVE smoke |

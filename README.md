@@ -519,6 +519,21 @@ Avoid long style essays in the prompt unless you intentionally override the kind
 
 ---
 
+## Multi-image workflows (agents)
+
+| Job | Playbook |
+| --- | --- |
+| Article multi-spot art | `skills/tzai-image/references/workflows/article-illustrate.md` |
+| Multi-page deck visuals | `…/workflows/slide-deck.md` |
+| XHS card series | `…/workflows/xhs-series.md` |
+
+Style anchor with reference image (`/v1/images/edits`):
+
+```bash
+bash $E cover --prompt "series cover…" --image 01.png
+bash $E illustration --ref ./01.png --prompt "section 2, same visual system" --image 02.png
+```
+
 ## Scene matrices (style × layout × cover dimensions)
 
 ```bash

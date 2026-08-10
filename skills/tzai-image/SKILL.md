@@ -12,7 +12,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.2"
+  version: "0.5.3"
   short-description: "TaoziAPI 生图（引擎 + 场景 kind，默认 gpt-image-2）"
 ---
 
@@ -190,7 +190,25 @@ bash <skill-dir>/scripts/tzai-image cover --type hero --palette dark --mood bold
   --prompt "分布式可观测性" --image ./cover.png
 ```
 
-Multi-card XHS / cover dims / infographic tips: `references/workflows/`.
+Workflows (agent multi-image):
+
+| File | Use |
+| --- | --- |
+| `references/workflows/xhs-series.md` | 小红书多卡 |
+| `references/workflows/article-illustrate.md` | 文章多点配图 |
+| `references/workflows/slide-deck.md` | 多页 PPT 视觉 |
+| `references/workflows/cover-dimensions.md` | 封面五维 |
+| `references/workflows/infographic-matrix.md` | 信息图矩阵 |
+
+Reference image (style anchor / series consistency):
+
+```bash
+bash <skill-dir>/scripts/tzai-image illustration \
+  --ref ./01-cover.png \
+  --prompt "同系列第二节配图：…" --image ./02.png
+```
+
+(`--ref` uses `/v1/images/edits`; repeatable.)
 
 Raw generate without kind still works for free-form prompts.
 
@@ -217,6 +235,7 @@ doctor [--strict-auth]
 which-config | config-path
 models
 generate --kind <id> --prompt <text> --image <path>
+         [--ref <file>]...
          [--style] [--layout] [--palette] [--preset]
          [--type] [--rendering] [--text] [--mood]
          [--ar] [--model] [--dry-run] [--json]

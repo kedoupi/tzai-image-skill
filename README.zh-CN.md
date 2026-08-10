@@ -529,6 +529,21 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 
 ---
 
+## 多图工作流（Agent）
+
+| 场景 | 说明 |
+| --- | --- |
+| 文章多点配图 | `skills/tzai-image/references/workflows/article-illustrate.md` |
+| 多页 PPT 视觉 | `…/workflows/slide-deck.md` |
+| 小红书多卡 | `…/workflows/xhs-series.md` |
+
+参考图锚定（系列一致，走 `/v1/images/edits`）：
+
+```bash
+bash $E cover --prompt "系列封面…" --image 01.png
+bash $E illustration --ref ./01.png --prompt "第二节配图，保持同一视觉系统" --image 02.png
+```
+
 ## 场景矩阵（style × layout × 封面维度）
 
 先看有哪些选项：
