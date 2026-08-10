@@ -9,7 +9,7 @@ argument-hint: "kind prompt…  e.g. flowchart <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.4.0"
+  version: "0.5.0"
   short-description: "结构图示分类 · diagram"
   tzai-category: "diagram"
   tzai-slash: "plan-c-hub"

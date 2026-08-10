@@ -108,6 +108,32 @@ err="$("$BIN" xhs --dry-run --prompt "三步周报" --image /tmp/x.png 2>&1 >/de
 assert_contains "xhs alias kind" "kind=xhs" "$err"
 assert_contains "xhs ar 3:4" "ar=3:4" "$err"
 
+echo "== P0 matrix knobs (dry-run) =="
+assert_ok "presets dir" test -d "${ROOT}/skills/tzai-image/references/presets"
+presets_out="$("$BIN" presets xhs 2>&1)"
+assert_contains "presets lists notion style" "notion" "$presets_out"
+assert_contains "presets lists dense layout" "dense" "$presets_out"
+assert_contains "presets lists knowledge-card" "knowledge-card" "$presets_out"
+err="$("$BIN" xhs --dry-run --style notion --layout dense --prompt "周报" --image /tmp/x.png 2>&1 >/dev/null)"
+assert_contains "matrix style in dry-run" "style=notion" "$err"
+assert_contains "matrix layout in dry-run" "layout=dense" "$err"
+# final prompt should grow when matrix applied
+json="$("$BIN" xhs --dry-run --json --style notion --layout dense --prompt "周报" --image /tmp/x.png 2>/dev/null)"
+assert_contains "json has style" '"style": "notion"' "$json"
+fp_len="$(python3 -c "import json,sys; print(len(json.loads(sys.argv[1])['final_prompt']))" "$json")"
+assert_ok "matrix final_prompt longer than 80" test "$fp_len" -gt 80
+err="$("$BIN" xhs --dry-run --preset knowledge-card --prompt "周报" --image /tmp/x.png 2>&1 >/dev/null)"
+assert_contains "preset expands" "preset=knowledge-card" "$err"
+assert_contains "preset sets style" "style=notion" "$err"
+err="$("$BIN" infographic --dry-run --layout funnel --style tech-schematic --prompt "转化" --image /tmp/i.png 2>&1 >/dev/null)"
+assert_contains "infographic layout" "layout=funnel" "$err"
+assert_contains "infographic style" "style=tech-schematic" "$err"
+err="$("$BIN" cover --dry-run --type hero --palette dark --mood bold --text none --prompt "主题" --image /tmp/c.png 2>&1 >/dev/null)"
+assert_contains "cover type" "type=hero" "$err"
+assert_contains "cover palette" "palette=dark" "$err"
+assert_contains "cover mood" "mood=bold" "$err"
+assert_exit "bad style fails" 2 "$BIN" xhs --dry-run --style not-a-style --prompt "x" --image /tmp/x.png
+
 echo "== missing prompt =="
 assert_exit "empty prompt fails" 2 "$BIN" generate --dry-run --prompt "" --image /tmp/t.png --model m
 

@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.4.0"
+  version: "0.5.0"
   short-description: "小红书图卡 · 社交种草"
   tzai-kind: "xhs"
   tzai-category: "social"
@@ -50,6 +50,16 @@ bash "$ENGINE" xhs \
   --prompt "<user subject>" \
   --image "./tzai-xhs-$(date +%Y%m%d-%H%M%S).png"
 ```
+
+### P0 matrix (style × layout)
+
+```bash
+bash "$ENGINE" presets xhs
+bash "$ENGINE" xhs --style notion --layout dense --prompt "<subject>" --image out.png
+bash "$ENGINE" xhs --preset knowledge-card --prompt "<subject>" --image out.png
+```
+
+Series workflow: engine `references/workflows/xhs-series.md`.
 
 ## Kind direction
 

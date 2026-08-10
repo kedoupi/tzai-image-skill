@@ -9,7 +9,7 @@ argument-hint: "kind prompt…  e.g. ui <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.4.0"
+  version: "0.5.0"
   short-description: "产品设计分类 · product"
   tzai-category: "product"
   tzai-slash: "plan-c-hub"

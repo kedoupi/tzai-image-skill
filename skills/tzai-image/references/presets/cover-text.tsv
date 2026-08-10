@@ -1,0 +1,4 @@
+# id	label_zh	direction
+none	无字纯视觉	No title text in image; pure visual with generous title-safe empty region for later overlay.
+title-only	仅标题区	Leave a clear primary title-safe zone; at most a very short wordmark if essential; avoid long sentences.
+title-subtitle	标题+副题区	Title + subtitle safe zones reserved; minimal on-image lettering; prefer empty bands over fake paragraphs.

@@ -509,6 +509,68 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 
 ---
 
+## P0 矩阵（对齐 baoyu 的 style×layout / 封面五维）
+
+先看有哪些选项：
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image presets xhs
+bash ~/.agents/skills/tzai-image/scripts/tzai-image presets infographic
+bash ~/.agents/skills/tzai-image/scripts/tzai-image presets cover
+```
+
+### 小红书 `style × layout × palette`
+
+| 参数 | 示例 | 作用 |
+| --- | --- | --- |
+| `--style` | `cute` `notion` `bold` `study-notes` … | 视觉气质 |
+| `--layout` | `sparse` `dense` `list` `comparison` `flow` | 信息密度/结构 |
+| `--palette` | `macaron` `warm` `neon` | 可选调色板覆盖 |
+| `--preset` | `knowledge-card` `checklist` `tutorial` … | style+layout 捷径 |
+
+```bash
+# 知识干货卡
+bash $E xhs --preset knowledge-card --prompt "三步写好周报" --image xhs.png
+# 等价
+bash $E xhs --style notion --layout dense --prompt "三步写好周报" --image xhs.png
+```
+
+多卡系列流程：`skills/tzai-image/references/workflows/xhs-series.md`
+
+### 信息图 `layout × style`
+
+```bash
+bash $E infographic --layout funnel --style tech-schematic \
+  --prompt "注册漏斗四阶段" --image funnel.png
+bash $E infographic --layout metrics --style clean-corporate \
+  --prompt "Q1 四北极星指标" --image kpi.png
+```
+
+| layout | 适合 | style | 适合 |
+| --- | --- | --- | --- |
+| `steps` | 教程时间线 | `clean-corporate` | 商务 |
+| `compare` | A vs B | `tech-schematic` | 技术文档 |
+| `funnel` | 转化 | `notion-line` | 知性线稿 |
+| `metrics` | KPI 墙 | `bold-poster` | 强冲击 |
+| `bento` | 多要点总览 | `soft-pastel` / `craft` | 柔和/纸艺 |
+
+### 封面五维
+
+```bash
+bash $E cover --type hero --palette dark --rendering digital \
+  --text none --mood bold --prompt "分布式可观测性" --image cover.png
+```
+
+| 维 | 参数 | 常用值 |
+| --- | --- | --- |
+| Type | `--type` | hero / conceptual / minimal / scene |
+| Palette | `--palette` | cool / dark / warm / pastel |
+| Rendering | `--rendering` | digital / flat-vector / painterly |
+| Text | `--text` | **none** / title-only（少写死长标题） |
+| Mood | `--mood` | subtle / balanced / bold |
+
+---
+
 ## 配置
 
 | 变量 | 含义 | 默认 |

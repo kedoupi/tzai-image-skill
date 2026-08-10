@@ -12,7 +12,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.4.0"
+  version: "0.5.0"
   short-description: "TaoziAPI 生图（引擎 + 场景 kind，默认 gpt-image-2）"
 ---
 
@@ -178,12 +178,19 @@ bash <skill-dir>/scripts/tzai-image generate \
 bash <skill-dir>/scripts/tzai-image flowchart \
   --prompt "注册 → 激活 → 付费" --image ./flow.png
 
-bash <skill-dir>/scripts/tzai-image xhs \
+# P0 matrices (baoyu-aligned knobs)
+bash <skill-dir>/scripts/tzai-image presets xhs
+bash <skill-dir>/scripts/tzai-image xhs --style notion --layout dense \
   --prompt "三步写好周报" --image ./xhs-card.png
-
-bash <skill-dir>/scripts/tzai-image infographic \
-  --prompt "Q1 增长四要素" --image ./info.png
+bash <skill-dir>/scripts/tzai-image xhs --preset knowledge-card \
+  --prompt "三步写好周报" --image ./xhs-card.png
+bash <skill-dir>/scripts/tzai-image infographic --layout funnel --style tech-schematic \
+  --prompt "注册转化漏斗" --image ./info.png
+bash <skill-dir>/scripts/tzai-image cover --type hero --palette dark --mood bold --text none \
+  --prompt "分布式可观测性" --image ./cover.png
 ```
+
+Multi-card XHS / cover dims / infographic tips: `references/workflows/`.
 
 Raw generate without kind still works for free-form prompts.
 
@@ -204,16 +211,20 @@ bash <skill-dir>/scripts/tzai-image architecture \
 
 ```text
 kinds [id]
+presets xhs|infographic|cover
 init --api-key <sk> [...]
 doctor [--strict-auth]
 which-config | config-path
 models
-generate --kind <id> --prompt <text> --image <path> [--ar] [--model] [--dry-run] [--json]
+generate --kind <id> --prompt <text> --image <path>
+         [--style] [--layout] [--palette] [--preset]
+         [--type] [--rendering] [--text] [--mood]
+         [--ar] [--model] [--dry-run] [--json]
 <kind> --prompt <text> --image <path>   # alias, e.g. icon|flowchart|xhs|infographic
 --version
 ```
 
-Catalog file: `references/kinds.tsv` (edit to add kinds without rewriting the script).
+Catalog: `references/kinds.tsv` · matrices: `references/presets/` · workflows: `references/workflows/`.
 
 ## Troubleshooting
 

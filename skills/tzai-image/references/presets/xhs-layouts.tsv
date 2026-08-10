@@ -1,0 +1,7 @@
+# id	label_zh	direction
+sparse	稀疏封面向	Sparse layout: 1–2 big points only, large hero title zone, cover/quote friendly, generous margins.
+balanced	均衡正文	Balanced layout: 3–4 content points with clear hierarchy, regular knowledge-card density.
+dense	高密度知识卡	Dense layout: 5–8 short points, cheatsheet / knowledge-card packing, still readable hierarchy.
+list	清单列表	List layout: 4–7 numbered or bulleted items stacked, checklist/ranking friendly.
+comparison	左右对比	Comparison layout: two clear sides (before/after or A vs B), split composition.
+flow	步骤流程	Flow layout: 3–6 sequential steps with arrows or numbered path, process/tutorial friendly.

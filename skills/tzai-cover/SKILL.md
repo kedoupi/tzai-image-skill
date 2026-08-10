@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.4.0"
+  version: "0.5.0"
   short-description: "文章封面 · 市场内容"
   tzai-kind: "cover"
   tzai-category: "marketing"
@@ -49,6 +49,13 @@ Slash arguments / remaining user text = **subject only** (art direction is injec
 bash "$ENGINE" cover \
   --prompt "<user subject>" \
   --image "./tzai-cover-$(date +%Y%m%d-%H%M%S).png"
+```
+
+### P0 dimensions (type × palette × rendering × text × mood)
+
+```bash
+bash "$ENGINE" presets cover
+bash "$ENGINE" cover --type hero --palette dark --mood bold --text none --prompt "<subject>" --image out.png
 ```
 
 ## Kind direction

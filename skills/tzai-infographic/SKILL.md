@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.4.0"
+  version: "0.5.0"
   short-description: "信息图 · 结构图示"
   tzai-kind: "infographic"
   tzai-category: "diagram"
@@ -49,6 +49,13 @@ Slash arguments / remaining user text = **subject only** (art direction is injec
 bash "$ENGINE" infographic \
   --prompt "<user subject>" \
   --image "./tzai-infographic-$(date +%Y%m%d-%H%M%S).png"
+```
+
+### P0 matrix (layout × style)
+
+```bash
+bash "$ENGINE" presets infographic
+bash "$ENGINE" infographic --layout funnel --style tech-schematic --prompt "<subject>" --image out.png
 ```
 
 ## Kind direction

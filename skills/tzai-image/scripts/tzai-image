@@ -15,6 +15,8 @@ XDG_CONFIG_FILE="${HOME}/.config/${SKILL_NAME}/config.env"
 EXAMPLE_CONFIG_FILE="${SKILL_ROOT}/config.example.env"
 SKILL_MD_FILE="${SKILL_ROOT}/SKILL.md"
 KINDS_FILE="${SKILL_ROOT}/references/kinds.tsv"
+PRESETS_DIR="${SKILL_ROOT}/references/presets"
+WORKFLOWS_DIR="${SKILL_ROOT}/references/workflows"
 
 DEFAULT_BASE_URL="https://tzai.kdp.cool"
 # Best image model currently available on TaoziAPI (override via env/CLI if needed).
@@ -238,12 +240,269 @@ kind_field() {
   printf '%s\n' "$line" | awk -F'\t' -v i="$idx" '{print $i}'
 }
 
+# TSV helpers: id is column 1; field is 1-based
+preset_field() {
+  local file="$1" id="$2" idx="$3"
+  [[ -f "$file" ]] || return 1
+  awk -F'\t' -v id="$id" -v i="$idx" '
+    $0 ~ /^#/ || NF < 2 { next }
+    $1 == id {
+      print $i
+      found=1
+      exit
+    }
+    END { exit found ? 0 : 1 }
+  ' "$file"
+}
+
+preset_exists() {
+  local file="$1" id="$2"
+  preset_field "$file" "$id" 1 >/dev/null 2>&1
+}
+
+list_preset_ids() {
+  local file="$1"
+  [[ -f "$file" ]] || return 0
+  awk -F'\t' '
+    $0 ~ /^#/ || NF < 2 { next }
+    { printf "%s\t%s\n", $1, $2 }
+  ' "$file"
+}
+
+# Resolve named combo for xhs: id → style layout palette
+apply_xhs_named_preset() {
+  # sets: style layout palette (by name reference via globals STYLE LAYOUT PALETTE)
+  local pid="$1"
+  local line st la pa
+  line="$(awk -F'\t' -v id="$pid" '
+    $0 ~ /^#/ || NF < 4 { next }
+    $1 == id { print; found=1; exit }
+    END { exit found ? 0 : 1 }
+  ' "${PRESETS_DIR}/xhs-presets.tsv")" || {
+    echo "Unknown --preset: $pid (try: tzai-image presets xhs)" >&2
+    return 2
+  }
+  st="$(printf '%s\n' "$line" | awk -F'\t' '{print $2}')"
+  la="$(printf '%s\n' "$line" | awk -F'\t' '{print $3}')"
+  pa="$(printf '%s\n' "$line" | awk -F'\t' '{print $4}')"
+  [[ -n "$st" && -z "${STYLE:-}" ]] && STYLE="$st"
+  [[ -n "$la" && -z "${LAYOUT:-}" ]] && LAYOUT="$la"
+  [[ -n "$pa" && -z "${PALETTE:-}" ]] && PALETTE="$pa"
+  return 0
+}
+
+direction_or_fail() {
+  local file="$1" id="$2" what="$3"
+  local d
+  d="$(preset_field "$file" "$id" 3)" || {
+    echo "Unknown ${what}: $id (try: tzai-image presets)" >&2
+    return 2
+  }
+  printf '%s' "$d"
+}
+
+# Resolve matrix knobs in the CURRENT shell (must not run under $()).
+# Mutates: STYLE LAYOUT PALETTE CTYPE RENDERING TEXTLEVEL MOOD
+resolve_matrix_knobs() {
+  case "${KIND:-}" in
+    xhs|xhs-cover)
+      if [[ -n "${PRESET:-}" ]]; then
+        apply_xhs_named_preset "$PRESET" || return 2
+      fi
+      if [[ -n "${STYLE:-}${LAYOUT:-}${PALETTE:-}${PRESET:-}" ]]; then
+        STYLE="${STYLE:-cute}"
+        LAYOUT="${LAYOUT:-balanced}"
+      fi
+      # validate if set
+      if [[ -n "${STYLE:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/xhs-styles.tsv" "$STYLE" "style" >/dev/null || return 2
+      fi
+      if [[ -n "${LAYOUT:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/xhs-layouts.tsv" "$LAYOUT" "layout" >/dev/null || return 2
+      fi
+      if [[ -n "${PALETTE:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/xhs-palettes.tsv" "$PALETTE" "palette" >/dev/null || return 2
+      fi
+      ;;
+    infographic)
+      if [[ -n "${STYLE:-}${LAYOUT:-}" ]]; then
+        STYLE="${STYLE:-clean-corporate}"
+        LAYOUT="${LAYOUT:-bento}"
+      fi
+      if [[ -n "${STYLE:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/infographic-styles.tsv" "$STYLE" "style" >/dev/null || return 2
+      fi
+      if [[ -n "${LAYOUT:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/infographic-layouts.tsv" "$LAYOUT" "layout" >/dev/null || return 2
+      fi
+      ;;
+    cover)
+      if [[ -n "${CTYPE:-}${PALETTE:-}${RENDERING:-}${TEXTLEVEL:-}${MOOD:-}" ]]; then
+        CTYPE="${CTYPE:-hero}"
+        PALETTE="${PALETTE:-cool}"
+        RENDERING="${RENDERING:-digital}"
+        TEXTLEVEL="${TEXTLEVEL:-title-only}"
+        MOOD="${MOOD:-balanced}"
+      fi
+      if [[ -n "${CTYPE:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/cover-types.tsv" "$CTYPE" "type" >/dev/null || return 2
+      fi
+      if [[ -n "${PALETTE:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/cover-palettes.tsv" "$PALETTE" "palette" >/dev/null || return 2
+      fi
+      if [[ -n "${RENDERING:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/cover-renderings.tsv" "$RENDERING" "rendering" >/dev/null || return 2
+      fi
+      if [[ -n "${TEXTLEVEL:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/cover-text.tsv" "$TEXTLEVEL" "text" >/dev/null || return 2
+      fi
+      if [[ -n "${MOOD:-}" ]]; then
+        direction_or_fail "${PRESETS_DIR}/cover-moods.tsv" "$MOOD" "mood" >/dev/null || return 2
+      fi
+      ;;
+  esac
+  return 0
+}
+
+# Pure: read resolved knobs → extra direction text (safe under $())
+build_matrix_extra() {
+  local extra="" d
+  case "${KIND:-}" in
+    xhs|xhs-cover)
+      if [[ -n "${STYLE:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/xhs-styles.tsv" "$STYLE" "style")" || return 2
+        extra+=" Visual style (${STYLE}): ${d}"
+      fi
+      if [[ -n "${LAYOUT:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/xhs-layouts.tsv" "$LAYOUT" "layout")" || return 2
+        extra+=" Information layout (${LAYOUT}): ${d}"
+      fi
+      if [[ -n "${PALETTE:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/xhs-palettes.tsv" "$PALETTE" "palette")" || return 2
+        extra+=" Color palette override (${PALETTE}): ${d}"
+      fi
+      ;;
+    infographic)
+      if [[ -n "${STYLE:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/infographic-styles.tsv" "$STYLE" "style")" || return 2
+        extra+=" Infographic visual style (${STYLE}): ${d}"
+      fi
+      if [[ -n "${LAYOUT:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/infographic-layouts.tsv" "$LAYOUT" "layout")" || return 2
+        extra+=" Infographic layout (${LAYOUT}): ${d}"
+      fi
+      ;;
+    cover)
+      if [[ -n "${CTYPE:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/cover-types.tsv" "$CTYPE" "type")" || return 2
+        extra+=" Cover type (${CTYPE}): ${d}"
+      fi
+      if [[ -n "${PALETTE:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/cover-palettes.tsv" "$PALETTE" "palette")" || return 2
+        extra+=" Cover palette (${PALETTE}): ${d}"
+      fi
+      if [[ -n "${RENDERING:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/cover-renderings.tsv" "$RENDERING" "rendering")" || return 2
+        extra+=" Rendering (${RENDERING}): ${d}"
+      fi
+      if [[ -n "${TEXTLEVEL:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/cover-text.tsv" "$TEXTLEVEL" "text")" || return 2
+        extra+=" Text treatment (${TEXTLEVEL}): ${d}"
+      fi
+      if [[ -n "${MOOD:-}" ]]; then
+        d="$(direction_or_fail "${PRESETS_DIR}/cover-moods.tsv" "$MOOD" "mood")" || return 2
+        extra+=" Mood (${MOOD}): ${d}"
+      fi
+      ;;
+  esac
+  printf '%s' "$extra"
+}
+
 compose_kind_prompt() {
   local kind="$1" user_prompt="$2"
-  local line prefix
+  local line prefix matrix
   line="$(kind_line "$kind")" || return 1
   prefix="$(kind_field "$line" 7)"
-  printf '%s Subject/content from user: %s. High quality, coherent composition, no watermark.' "$prefix" "$user_prompt"
+  matrix="$(build_matrix_extra)" || return 2
+  if [[ -n "$matrix" ]]; then
+    printf '%s%s Subject/content from user: %s. High quality, coherent composition, no watermark. Do not invent dense unreadable paragraph text.' \
+      "$prefix" "$matrix" "$user_prompt"
+  else
+    printf '%s Subject/content from user: %s. High quality, coherent composition, no watermark.' \
+      "$prefix" "$user_prompt"
+  fi
+}
+
+cmd_presets() {
+  local domain="${1-}"
+  if [[ -z "$domain" || "$domain" == "-h" || "$domain" == "--help" ]]; then
+    cat <<EOF
+List P0 style/layout matrices (baoyu-aligned knobs).
+
+Usage:
+  tzai-image presets xhs
+  tzai-image presets infographic
+  tzai-image presets cover
+
+Then:
+  tzai-image xhs --style notion --layout dense --prompt "..." --image out.png
+  tzai-image xhs --preset knowledge-card --prompt "..." --image out.png
+  tzai-image infographic --layout funnel --style tech-schematic --prompt "..." --image out.png
+  tzai-image cover --type hero --palette dark --mood bold --text none --prompt "..." --image out.png
+EOF
+    return 0
+  fi
+  case "$domain" in
+    xhs|xhs-cover|social)
+      echo "== xhs styles =="
+      list_preset_ids "${PRESETS_DIR}/xhs-styles.tsv"
+      echo
+      echo "== xhs layouts =="
+      list_preset_ids "${PRESETS_DIR}/xhs-layouts.tsv"
+      echo
+      echo "== xhs palettes (optional) =="
+      list_preset_ids "${PRESETS_DIR}/xhs-palettes.tsv"
+      echo
+      echo "== xhs named presets (--preset) =="
+      awk -F'\t' '
+        $0 ~ /^#/ || NF < 5 { next }
+        { printf "%-18s style=%-12s layout=%-12s palette=%-8s %s\n", $1, $2, $3, ($4==""?"(style)":$4), $5 }
+      ' "${PRESETS_DIR}/xhs-presets.tsv"
+      echo
+      echo "Workflow: ${WORKFLOWS_DIR}/xhs-series.md"
+      ;;
+    infographic|info)
+      echo "== infographic styles =="
+      list_preset_ids "${PRESETS_DIR}/infographic-styles.tsv"
+      echo
+      echo "== infographic layouts =="
+      list_preset_ids "${PRESETS_DIR}/infographic-layouts.tsv"
+      echo
+      echo "Workflow: ${WORKFLOWS_DIR}/infographic-matrix.md"
+      ;;
+    cover)
+      echo "== cover type =="
+      list_preset_ids "${PRESETS_DIR}/cover-types.tsv"
+      echo
+      echo "== cover palette =="
+      list_preset_ids "${PRESETS_DIR}/cover-palettes.tsv"
+      echo
+      echo "== cover rendering =="
+      list_preset_ids "${PRESETS_DIR}/cover-renderings.tsv"
+      echo
+      echo "== cover text =="
+      list_preset_ids "${PRESETS_DIR}/cover-text.tsv"
+      echo
+      echo "== cover mood =="
+      list_preset_ids "${PRESETS_DIR}/cover-moods.tsv"
+      echo
+      echo "Workflow: ${WORKFLOWS_DIR}/cover-dimensions.md"
+      ;;
+    *)
+      echo "Unknown presets domain: $domain (xhs|infographic|cover)" >&2
+      return 2
+      ;;
+  esac
 }
 
 cmd_kinds() {
@@ -265,6 +524,35 @@ category:    $(kind_field "$line" 2) / $(kind_field "$line" 3)
 default_ar:  $(kind_field "$line" 4)
 label:       $(kind_field "$line" 5) / $(kind_field "$line" 6)
 direction:   $(kind_field "$line" 7)
+EOF
+    case "$filter" in
+      xhs|xhs-cover)
+        cat <<EOF
+
+Matrix knobs (P0):
+  --style <id>    --layout <id>    --palette <id>    --preset <name>
+  List: tzai-image presets xhs
+  Series workflow: references/workflows/xhs-series.md
+EOF
+        ;;
+      infographic)
+        cat <<EOF
+
+Matrix knobs (P0):
+  --style <id>    --layout <id>
+  List: tzai-image presets infographic
+EOF
+        ;;
+      cover)
+        cat <<EOF
+
+Dimensions (P0, baoyu-like):
+  --type --palette --rendering --text --mood
+  List: tzai-image presets cover
+EOF
+        ;;
+    esac
+    cat <<EOF
 
 Example:
   tzai-image generate --kind ${filter} --prompt \"your subject\" --image out.png
@@ -291,11 +579,14 @@ Categories (功能分类):
   social     社交种草 — xhs xhs-cover wechat
   photo      影像插画 — product photo landscape illustration storybook food
 
+P0 matrices:
+  tzai-image presets xhs | infographic | cover
+
 Usage:
   tzai-image kinds                 # list all
   tzai-image kinds flowchart       # detail one kind
   tzai-image generate --kind icon --prompt "spark for AI app" --image icon.png
-  tzai-image xhs --prompt "三步学会 Prompt" --image card.png
+  tzai-image xhs --style notion --layout dense --prompt "三步学会 Prompt" --image card.png
 EOF
 }
 
@@ -549,6 +840,10 @@ PY
 cmd_generate() {
   local prompt="" image="" model="" size="" ar="" api_key="" base_url="" kind="" dry_run=0 json_out=0 n=1
   local user_prompt="" final_prompt="" kind_ar="" kind_label=""
+  # Matrix knobs: NOT local — shared with build_matrix_extra / apply_xhs_named_preset
+  STYLE=""; LAYOUT=""; PALETTE=""; PRESET=""
+  CTYPE=""; RENDERING=""; TEXTLEVEL=""; MOOD=""
+  KIND=""
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -558,6 +853,14 @@ cmd_generate() {
       --size) require_val "$1" "${2-}"; size="$2"; shift 2 ;;
       --ar) require_val "$1" "${2-}"; ar="$2"; shift 2 ;;
       --kind|-k) require_val "$1" "${2-}"; kind="$2"; shift 2 ;;
+      --style) require_val "$1" "${2-}"; STYLE="$2"; shift 2 ;;
+      --layout) require_val "$1" "${2-}"; LAYOUT="$2"; shift 2 ;;
+      --palette) require_val "$1" "${2-}"; PALETTE="$2"; shift 2 ;;
+      --preset) require_val "$1" "${2-}"; PRESET="$2"; shift 2 ;;
+      --type) require_val "$1" "${2-}"; CTYPE="$2"; shift 2 ;;
+      --rendering) require_val "$1" "${2-}"; RENDERING="$2"; shift 2 ;;
+      --text) require_val "$1" "${2-}"; TEXTLEVEL="$2"; shift 2 ;;
+      --mood) require_val "$1" "${2-}"; MOOD="$2"; shift 2 ;;
       --api-key) require_val "$1" "${2-}"; api_key="$2"; shift 2 ;;
       --base-url) require_val "$1" "${2-}"; base_url="$2"; shift 2 ;;
       --n) require_val "$1" "${2-}"; n="$2"; shift 2 ;;
@@ -570,6 +873,7 @@ Usage: tzai-image generate [options]
 
 Scenario kinds (功能分类，类似 baoyu-xhs / infographic / diagram):
   tzai-image kinds
+  tzai-image presets xhs|infographic|cover
 
 Options:
   --kind, -k <id>       Scenario preset (icon|logo|flowchart|xhs|infographic|...)
@@ -578,6 +882,14 @@ Options:
   --model, -m <id>      Model id (default: ${DEFAULT_IMAGE_MODEL})
   --size <WxH>          e.g. 1024x1024
   --ar <ratio>          Override kind default aspect ratio
+  --style <id>          P0 matrix: xhs / infographic visual style
+  --layout <id>         P0 matrix: xhs / infographic layout
+  --palette <id>        P0 matrix: xhs color override OR cover palette
+  --preset <name>       P0 named combo (xhs presets)
+  --type <id>           P0 cover type (hero|minimal|...)
+  --rendering <id>      P0 cover rendering
+  --text <id>           P0 cover text level (none|title-only|...)
+  --mood <id>           P0 cover mood
   --api-key <sk-...>    Override key for this call
   --base-url <url>      Override gateway
   --n <count>           Number of images (default 1; only first saved if >1)
@@ -587,7 +899,10 @@ Options:
 Examples:
   tzai-image generate --kind icon --prompt "spark for AI coding app" --image icon.png
   tzai-image flowchart --prompt "signup to activation funnel" --image flow.png
-  tzai-image xhs --prompt "三步写好周报" --image card.png
+  tzai-image xhs --style notion --layout dense --prompt "三步写好周报" --image card.png
+  tzai-image xhs --preset knowledge-card --prompt "三步写好周报" --image card.png
+  tzai-image infographic --layout funnel --style tech-schematic --prompt "转化漏斗" --image f.png
+  tzai-image cover --type hero --palette dark --mood bold --text none --prompt "可观测性" --image c.png
 
 Config:
   export TZAI_API_KEY='sk-...'
@@ -626,10 +941,16 @@ EOF
     }
     kind_ar="$(kind_field "$kline" 4)"
     kind_label="$(kind_field "$kline" 5)"
+    KIND="$kind"
+    # Resolve presets/defaults in this shell before any $(...) subshell
+    resolve_matrix_knobs || return 2
     final_prompt="$(compose_kind_prompt "$kind" "$user_prompt")" || return 2
     if [[ -z "$ar" && -n "$kind_ar" ]]; then
       ar="$kind_ar"
     fi
+  elif [[ -n "${STYLE}${LAYOUT}${PALETTE}${PRESET}${CTYPE}${RENDERING}${TEXTLEVEL}${MOOD}" ]]; then
+    echo "Matrix flags require --kind (or kind subcommand like: xhs --style notion ...)" >&2
+    return 2
   fi
 
   if [[ -n "$ar" ]]; then
@@ -658,11 +979,22 @@ EOF
   local model_eff="${TZAI_IMAGE_MODEL:-"(unset)"}"
   prompt="$final_prompt"
 
+  local matrix_summary=""
+  [[ -n "${STYLE:-}" ]] && matrix_summary+=" style=${STYLE}"
+  [[ -n "${LAYOUT:-}" ]] && matrix_summary+=" layout=${LAYOUT}"
+  [[ -n "${PALETTE:-}" ]] && matrix_summary+=" palette=${PALETTE}"
+  [[ -n "${PRESET:-}" ]] && matrix_summary+=" preset=${PRESET}"
+  [[ -n "${CTYPE:-}" ]] && matrix_summary+=" type=${CTYPE}"
+  [[ -n "${RENDERING:-}" ]] && matrix_summary+=" rendering=${RENDERING}"
+  [[ -n "${TEXTLEVEL:-}" ]] && matrix_summary+=" text=${TEXTLEVEL}"
+  [[ -n "${MOOD:-}" ]] && matrix_summary+=" mood=${MOOD}"
+
   if [[ "$dry_run" -eq 1 ]]; then
     cat <<EOF >&2
 [dry-run] tzai-image v$(skill_version)
 [dry-run] POST ${url}
 [dry-run] kind=${kind:-"(none)"}${kind_label:+ ($kind_label)}
+[dry-run] matrix:${matrix_summary:-" (none)"}
 [dry-run] model=${model_eff}  (source: ${MODEL_SOURCE})
 [dry-run] size=${size}  ar=${TZAI_DEFAULT_AR:-$DEFAULT_AR}
 [dry-run] n=${n}
@@ -679,6 +1011,14 @@ print(json.dumps({
   "dry_run": True,
   "url": "${url}",
   "kind": """${kind}""",
+  "style": """${STYLE}""",
+  "layout": """${LAYOUT}""",
+  "palette": """${PALETTE}""",
+  "preset": """${PRESET}""",
+  "type": """${CTYPE}""",
+  "rendering": """${RENDERING}""",
+  "text": """${TEXTLEVEL}""",
+  "mood": """${MOOD}""",
   "model": "${model_eff}",
   "size": "${size}",
   "ar": """${TZAI_DEFAULT_AR:-$DEFAULT_AR}""",
@@ -803,8 +1143,11 @@ Modules (分类功能，对齐 baoyu 场景 skill 思路，集于一个 CLI):
 Usage:
   tzai-image kinds
   tzai-image kinds xhs
+  tzai-image presets xhs|infographic|cover
   tzai-image generate --kind flowchart --prompt "注册到激活" --image flow.png
-  tzai-image xhs --prompt "三步写周报" --image card.png
+  tzai-image xhs --style notion --layout dense --prompt "三步写周报" --image card.png
+  tzai-image infographic --layout funnel --style tech-schematic --prompt "转化" --image f.png
+  tzai-image cover --type hero --palette dark --text none --prompt "主题" --image c.png
   tzai-image icon --prompt "AI coding spark" --image icon.png
   tzai-image init --api-key sk-...
   tzai-image doctor [--strict-auth]
@@ -859,6 +1202,11 @@ case "$cmd" in
   kinds|kind)
     shift
     cmd_kinds "$@"
+    exit $?
+    ;;
+  presets|preset|styles)
+    shift
+    cmd_presets "$@"
     exit $?
     ;;
   generate|gen)

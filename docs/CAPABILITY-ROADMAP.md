@@ -334,13 +334,25 @@ tzai-image series xhs --count 5 --prompt "..."   # 或由 Agent 编排
 
 ## 5. 实施路线图
 
-### Phase A — P0 做深（建议下一迭代）
+### Phase A — P0 做深
 
-1. **xhs**：style×layout×palette 子集（style≥6，layout≥5）+ 多卡 Agent 流程  
-2. **infographic**：8 layout × 6 style 矩阵 + 推荐话术  
-3. **cover**：五维精简版（type/palette/rendering/text/mood）  
-4. **diagram 族**：加强 SKILL「先列节点再出图」+ 更新 prefix 少字规则  
-5. 文档：本文件 + SCENES 交叉链接；README 中文「大众场景」一节  
+1. **xhs**：style×layout×palette + `--preset` + 多卡 workflow — **Done (v0.5)**  
+2. **infographic**：8 layout × 6 style — **Done (v0.5)**  
+3. **cover**：五维 type/palette/rendering/text/mood — **Done (v0.5)**  
+4. **diagram 族**：加强 SKILL「先列节点再出图」— 部分（prefix 已有）；可再补 workflow  
+5. 文档：README 矩阵教学 + `presets` CLI + workflows — **Done (v0.5)**  
+
+CLI:
+
+```bash
+tzai-image presets xhs|infographic|cover
+tzai-image xhs --style notion --layout dense --prompt "..."
+tzai-image xhs --preset knowledge-card --prompt "..."
+tzai-image infographic --layout funnel --style tech-schematic --prompt "..."
+tzai-image cover --type hero --palette dark --text none --mood bold --prompt "..."
+```
+
+数据：`skills/tzai-image/references/presets/` · 流程：`references/workflows/`
 
 ### Phase B — P1
 
@@ -407,5 +419,6 @@ tzai-image series xhs --count 5 --prompt "..."   # 或由 Agent 编排
 | --- | --- |
 | 2026-08-10 | 初版：大众优先、baoyu 对照、业界补齐、P0–P2 路线 |
 | 2026-08-10 | Plan C 斜杠收敛 + README 对照教学画廊 |
+| 2026-08-10 | v0.5 P0 矩阵：xhs style×layout、infographic、cover 五维 |
 
 维护：改 kinds 或矩阵时同步更新本文件 §1–§2 与 [SCENES.md](./SCENES.md)。

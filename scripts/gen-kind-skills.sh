@@ -16,7 +16,7 @@ skills_out = root / "skills"
 cmd_out = root / "commands"
 cmd_out.mkdir(parents=True, exist_ok=True)
 
-VERSION = "0.4.0"
+VERSION = "0.5.0"
 
 # Remove previously generated thin skills (keep engine)
 for p in skills_out.iterdir():
@@ -133,7 +133,39 @@ bash "$ENGINE" {kid} \\
   --prompt "<user subject>" \\
   --image "./tzai-{kid}-$(date +%Y%m%d-%H%M%S).png"
 ```
+'''
+    # P0 matrix hints for selected kinds
+    if kid in ("xhs", "xhs-cover"):
+        body += f'''
+### P0 matrix (style × layout)
 
+```bash
+bash "$ENGINE" presets xhs
+bash "$ENGINE" {kid} --style notion --layout dense --prompt "<subject>" --image out.png
+bash "$ENGINE" {kid} --preset knowledge-card --prompt "<subject>" --image out.png
+```
+
+Series workflow: engine `references/workflows/xhs-series.md`.
+'''
+    elif kid == "infographic":
+        body += '''
+### P0 matrix (layout × style)
+
+```bash
+bash "$ENGINE" presets infographic
+bash "$ENGINE" infographic --layout funnel --style tech-schematic --prompt "<subject>" --image out.png
+```
+'''
+    elif kid == "cover":
+        body += '''
+### P0 dimensions (type × palette × rendering × text × mood)
+
+```bash
+bash "$ENGINE" presets cover
+bash "$ENGINE" cover --type hero --palette dark --mood bold --text none --prompt "<subject>" --image out.png
+```
+'''
+    body += f'''
 ## Kind direction
 
 {r["prefix"]}
@@ -142,7 +174,7 @@ bash "$ENGINE" {kid} \\
 
 - Put **what to draw** in the prompt, not style essays — kind already sets professional direction.
 - Override aspect only when needed: `--ar 1:1|16:9|9:16|3:4`.
-- Long-tail scenes in the same category: open `/{ "tzai-" + r["category"] }` or `/tzai-image <kind>`.
+- Long-tail scenes in the same category: open `/tzai-{r["category"]}` or `/tzai-image <kind>`.
 
 ## See also
 

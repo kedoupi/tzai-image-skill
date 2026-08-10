@@ -513,6 +513,56 @@ Avoid long style essays in the prompt unless you intentionally override the kind
 
 ---
 
+## P0 matrices (baoyu-aligned knobs)
+
+```bash
+bash ~/.agents/skills/tzai-image/scripts/tzai-image presets xhs
+bash ~/.agents/skills/tzai-image/scripts/tzai-image presets infographic
+bash ~/.agents/skills/tzai-image/scripts/tzai-image presets cover
+```
+
+### Xiaohongshu — style × layout × palette
+
+```bash
+bash $E xhs --preset knowledge-card --prompt "三步写好周报" --image xhs.png
+bash $E xhs --style notion --layout dense --prompt "三步写好周报" --image xhs.png
+```
+
+| Flag | Examples |
+| --- | --- |
+| `--style` | cute, notion, bold, study-notes, chalkboard, … |
+| `--layout` | sparse, balanced, dense, list, comparison, flow |
+| `--palette` | macaron, warm, neon |
+| `--preset` | knowledge-card, checklist, tutorial, cover-stop, … |
+
+Series workflow: `skills/tzai-image/references/workflows/xhs-series.md`.
+
+### Infographic — layout × style
+
+```bash
+bash $E infographic --layout funnel --style tech-schematic --prompt "signup funnel" --image f.png
+bash $E infographic --layout metrics --style clean-corporate --prompt "Q1 KPIs" --image k.png
+```
+
+### Cover — 5 dimensions
+
+```bash
+bash $E cover --type hero --palette dark --mood bold --text none \
+  --prompt "distributed observability" --image cover.png
+```
+
+| Dim | Flag | Values |
+| --- | --- | --- |
+| Type | `--type` | hero, conceptual, minimal, scene, … |
+| Palette | `--palette` | cool, dark, warm, pastel, … |
+| Rendering | `--rendering` | digital, flat-vector, painterly, … |
+| Text | `--text` | **none**, title-only, title-subtitle |
+| Mood | `--mood` | subtle, balanced, bold |
+
+Prefer `--text none` / title-safe empty areas over long baked-in titles.
+
+---
+
 ## Configuration
 
 | Variable | Meaning | Default |

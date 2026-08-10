@@ -9,7 +9,7 @@ argument-hint: "kind prompt…  e.g. xhs <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.4.0"
+  version: "0.5.0"
   short-description: "社交种草分类 · social"
   tzai-category: "social"
   tzai-slash: "plan-c-hub"

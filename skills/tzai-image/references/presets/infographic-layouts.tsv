@@ -1,0 +1,9 @@
+# id	label_zh	direction
+steps	步骤时间线	Linear progression layout: ordered steps/timeline left-to-right or top-down, numbered stages.
+compare	双边对比	Binary comparison: A vs B / before-after side panels with clear dividing axis.
+bento	Bento宫格	Bento-grid overview: multiple topic cards in a tidy grid, default multi-point overview.
+list	清单排列	Feature/list stack: vertical or grid list of short points with icons.
+funnel	漏斗转化	Funnel layout: wide-to-narrow conversion/filtering stages.
+pyramid	金字塔层级	Pyramid hierarchy: priority levels stacked large-to-small or base-to-tip.
+mind	中心辐射	Hub-and-spoke / mind-map-like: center concept with radiating branches.
+metrics	指标墙	Dashboard metrics wall: KPI cards, bars, big numbers, analytics board.
