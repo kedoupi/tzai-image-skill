@@ -375,25 +375,89 @@ Always state **style + lighting + background + what to avoid** (watermark, garbl
 npx skills add kedoupi/tzai-image-skill -g --all
 ```
 
-### Slash command in agent apps
+### Slash commands in agent apps (classified)
 
-After install, open your agent and type **`/`** — you should see **`tzai-image`** (skill name = slash command).
+Install all skills from this repo (engine + every scene slash):
 
-| You type | What happens |
-| --- | --- |
-| `/tzai-image` | Load this skill; agent follows SKILL.md |
-| `/tzai-image 画个流程图：注册到付费` | Skill + natural language → should run `flowchart` kind |
-| `/tzai-image xhs 三步写周报` | Same with **小红书** kind |
-| `帮我生成 App 图标…` (no slash) | Auto-invoke via `description` triggers |
-
-**Kinds are not separate global slashes by default** (`/icon`, `/xhs` only appear if you add client `commands/*.md` wrappers). The product surface is:
-
-```text
-/tzai-image          →  skill entry
-  └─ kinds           →  icon | flowchart | xhs | infographic | …
+```bash
+npx skills add kedoupi/tzai-image-skill -g --all
+# Also link client command wrappers (Grok/Claude / menu):
+bash /path/to/tzai-image-skill/scripts/install-slash-commands.sh
+# or after clone:
+bash scripts/install-slash-commands.sh
 ```
 
-Grok also lists skills under `/skills`. Ensure Key is set (`export TZAI_API_KEY=…` or `tzai-image init`) in the environment the agent uses.
+Then type **`/`** and search `tzai-`.
+
+#### Engine
+
+| Slash | Role |
+| --- | --- |
+| `/tzai-image` | Full engine (kinds, doctor, free-form generate) |
+
+#### Category hubs
+
+| Slash | 分类 |
+| --- | --- |
+| `/tzai-brand` | 品牌识别 |
+| `/tzai-diagram` | 结构图示 |
+| `/tzai-product` | 产品设计 |
+| `/tzai-marketing` | 市场内容 |
+| `/tzai-social` | 社交种草 |
+| `/tzai-photo` | 影像插画 |
+
+#### Scene slashes (one per gallery kind)
+
+| Slash | Kind | Typical use |
+| --- | --- | --- |
+| `/tzai-icon` | icon | App 图标 |
+| `/tzai-logo` | logo | Logo |
+| `/tzai-moodboard` | moodboard | 情绪板 |
+| `/tzai-mascot` | mascot | 吉祥物 |
+| `/tzai-badge` | badge | 徽章 |
+| `/tzai-avatar` | avatar | 职业头像 |
+| `/tzai-flowchart` | flowchart | 流程图 |
+| `/tzai-architecture` | architecture | 架构图 |
+| `/tzai-mindmap` | mindmap | 思维导图 |
+| `/tzai-diagram` | diagram | 技术示意图 |
+| `/tzai-infographic` | infographic | 信息图 |
+| `/tzai-dataviz` | dataviz | 数据可视化 |
+| `/tzai-ui` | ui | UI 仪表盘 |
+| `/tzai-wireframe` | wireframe | 线框图 |
+| `/tzai-empty-state` | empty-state | 空状态 |
+| `/tzai-onboarding` | onboarding | 引导主视觉 |
+| `/tzai-slide` | slide | PPT 封面 |
+| `/tzai-banner` | banner | 投放 Banner |
+| `/tzai-email-header` | email-header | 邮件头图 |
+| `/tzai-cover` | cover | 文章封面 |
+| `/tzai-poster` | poster | 竖版海报 |
+| `/tzai-xhs` | xhs | 小红书图卡 |
+| `/tzai-xhs-cover` | xhs-cover | 小红书封面 |
+| `/tzai-wechat` | wechat | 微信配图 |
+| `/tzai-product` | product | 商品摄影 |
+| `/tzai-photo` | photo | 通用摄影 |
+| `/tzai-landscape` | landscape | 风光头图 |
+| `/tzai-illustration` | illustration | 通用插画 |
+| `/tzai-storybook` | storybook | 绘本 |
+| `/tzai-food` | food | 美食生活 |
+
+Examples:
+
+```text
+/tzai-icon AI 编程火花
+/tzai-flowchart 注册 → 激活 → 付费
+/tzai-xhs 三步写好周报
+/tzai-architecture 客户端 网关 微服务 DB
+```
+
+Regenerate wrappers after editing `kinds.tsv`:
+
+```bash
+bash scripts/gen-kind-skills.sh
+bash scripts/install-slash-commands.sh
+```
+
+Ensure Key is set (`export TZAI_API_KEY=…` or `tzai-image init`) for the agent process.
 
 ## Get an API key
 

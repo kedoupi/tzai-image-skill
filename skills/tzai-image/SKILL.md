@@ -11,7 +11,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.2.1"
+  version: "0.3.0"
   short-description: "TaoziAPI 生图（kind 场景：图标/流程图/小红书…）"
 ---
 

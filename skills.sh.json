@@ -2,9 +2,83 @@
   "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
   "groupings": [
     {
-      "title": "General",
-      "description": "Describe the skill category.",
-      "skills": ["tzai-image"]
+      "title": "TaoziAPI Image Engine",
+      "description": "Core engine + doctor/init/kinds (gpt-image-2)",
+      "skills": [
+        "tzai-image"
+      ]
+    },
+    {
+      "title": "Brand / 品牌识别",
+      "description": "Icons, logos, mascots, badges, avatars",
+      "skills": [
+        "tzai-brand",
+        "tzai-icon",
+        "tzai-logo",
+        "tzai-moodboard",
+        "tzai-mascot",
+        "tzai-badge",
+        "tzai-avatar"
+      ]
+    },
+    {
+      "title": "Diagram / 结构图示",
+      "description": "Flowcharts, architecture, mind maps, infographics",
+      "skills": [
+        "tzai-diagram",
+        "tzai-flowchart",
+        "tzai-architecture",
+        "tzai-mindmap",
+        "tzai-diagram",
+        "tzai-infographic",
+        "tzai-dataviz"
+      ]
+    },
+    {
+      "title": "Product / 产品设计",
+      "description": "UI mocks, wireframes, empty states, onboarding",
+      "skills": [
+        "tzai-product",
+        "tzai-ui",
+        "tzai-wireframe",
+        "tzai-empty-state",
+        "tzai-onboarding"
+      ]
+    },
+    {
+      "title": "Marketing / 市场内容",
+      "description": "Slides, banners, covers, posters, email headers",
+      "skills": [
+        "tzai-marketing",
+        "tzai-slide",
+        "tzai-banner",
+        "tzai-email-header",
+        "tzai-cover",
+        "tzai-poster"
+      ]
+    },
+    {
+      "title": "Social / 社交种草",
+      "description": "Xiaohongshu (小红书), WeChat visuals",
+      "skills": [
+        "tzai-social",
+        "tzai-xhs",
+        "tzai-xhs-cover",
+        "tzai-wechat"
+      ]
+    },
+    {
+      "title": "Photo & illustration / 影像插画",
+      "description": "Product, photo, landscape, storybook, food",
+      "skills": [
+        "tzai-photo",
+        "tzai-product",
+        "tzai-photo",
+        "tzai-landscape",
+        "tzai-illustration",
+        "tzai-storybook",
+        "tzai-food"
+      ]
     }
   ]
 }
