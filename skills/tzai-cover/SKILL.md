@@ -60,7 +60,7 @@ bash "$ENGINE" cover --type hero --palette dark --mood bold --text none --prompt
 
 ## Kind direction
 
-Editorial article cover image, cinematic or clean graphic, strong focal subject, space for title, blog/WeChat header ready.
+Cinematic editorial article cover, strong atmosphere, refined light trails or focal subject, large title-safe empty region, Stripe/Vercel-blog hero quality, minimal or no on-image text, no watermark.
 
 ## Teaching tip
 

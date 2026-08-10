@@ -16,6 +16,6 @@ infographic	kind	/tzai-infographic	infographic	16:9	infographic-stats.png	年度
 cover	kind	/tzai-cover	cover	16:9	cover-article.png	深度技术封面：暗夜紫黑渐变、精密光轨与半透明玻璃层，下三分之一纯净标题安全区，电影感	封面情绪+叠字留白
 slide	kind	/tzai-slide	slide	16:9	slide-cover.png	全球战略峰会 title slide：深海军蓝切面、细金线网格、中央巨大留白给标题，无正文垃圾字	咨询 deck 开场
 xhs	kind	/tzai-xhs	xhs	3:4	xhs-card.png	小红书高质感知识卡《三步写好周报》：杂志排版、编号步骤、精致线图标、高级灰底+一点珊瑚，像专业设计工作室出品	社交信息设计
-xhs-cover	kind	/tzai-xhs-cover	xhs-cover	3:4	xhs-cover.png	信息流停滑封面：职场周报模板，超大标题安全区、单一强主体（打开的笔记本+光感火花）、珊瑚奶油配色、影棚级光	停滑封面
+xhs-cover	kind	/tzai-xhs-cover	xhs-cover	3:4	xhs-cover.png	小红书信息流封面（非商品图）：大标题「周报模板」+副标题「职场干货」，杂志封面式色块排版	信息流封面排版
 wechat	kind	/tzai-wechat	wechat	16:9	wechat-visual.png	公众号头图：远程协作与灵感碰撞，柔和青蓝插画、半透明界面隐喻、出版级留白与光感，无杂乱假字	微信内容气质
 ui	kind	/tzai-ui	ui	16:9	ui-dashboard.png	企业级 Revenue OS 仪表盘：KPI 条、多序列图表、侧栏导航、浅色精密 UI、接近 Linear/Stripe 质感	SaaS 产品演示

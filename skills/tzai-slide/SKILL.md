@@ -53,7 +53,7 @@ bash "$ENGINE" slide \
 
 ## Kind direction
 
-Presentation title-slide background, premium consulting deck aesthetic, abstract geometry, leave space for title, no body text.
+Premium consulting title-slide background, deep navy geometric planes, subtle gold hairline accents, vast empty center for title overlay, McKinsey deck aesthetic, no body text, no watermark.
 
 ## Teaching tip
 

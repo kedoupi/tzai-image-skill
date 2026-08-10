@@ -63,7 +63,7 @@ Series workflow: engine `references/workflows/xhs-series.md`.
 
 ## Kind direction
 
-Xiaohongshu cover thumbnail, eye-catching subject, high contrast, scroll-stopping, 3:4 feed ratio, minimal clutter.
+Xiaohongshu FEED COVER card (not product catalog photo): 3:4 social thumbnail designed to stop scrolling, bold graphic cover layout with large primary title zone (short Chinese title ok, max ~8 chars if any) plus optional subtitle band, strong visual hierarchy like a magazine cover or knowledge poster, high-contrast color blocks or refined lifestyle scene as BACKGROUND support only (not a white-studio e-commerce product shot), punchy composition for mobile feed, design-agency social creative, minimal clutter, no watermark, no long paragraphs.
 
 ## Teaching tip
 

@@ -412,15 +412,16 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
 
 ### `/tzai-xhs-cover` · 小红书封面
 
-**突出：** 停滑封面、强对比、短标题区。
+**突出：** 信息流**封面排版**（大标题 + 副标题带），不是商品主图/棚拍。
 
 ```text
-/tzai-xhs-cover 职场干货 · 周报模板
+/tzai-xhs-cover 周报模板 职场干货封面
 ```
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs-cover \
-  --prompt "停滑封面：职场干货×清单复盘，皮质笔记本+火花，影棚级珊瑚奶油光" \
+  --style bold --layout sparse \
+  --prompt "信息流封面（非商品图）：大标题「周报模板」+ 副标题「职场干货·效率翻倍」，杂志封面式色块" \
   --image ./xhs-cover.png
 ```
 

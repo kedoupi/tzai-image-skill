@@ -53,7 +53,7 @@ bash "$ENGINE" flowchart \
 
 ## Kind direction
 
-Professional process flowchart, left-to-right or top-down steps, clean arrows, rounded nodes, consulting-slide clarity, corporate palette, white background, minimal readable labels only if essential.
+World-class consulting process flowchart on pure white, left-to-right or top-down, elegant rounded nodes, precise thin arrows, optional micro icons, McKinsey/BCG slide clarity, muted navy-teal corporate palette, hairline grid optional, only short essential labels, no dense paragraphs, no watermark.
 
 ## Teaching tip
 

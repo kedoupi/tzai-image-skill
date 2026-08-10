@@ -60,7 +60,7 @@ bash "$ENGINE" infographic --layout funnel --style tech-schematic --prompt "<sub
 
 ## Kind direction
 
-Publication-ready infographic, strong layout hierarchy, icon headers, metric-friendly cards or steps, clean corporate or editorial style, white background, avoid dense fake paragraphs.
+Publication-ready infographic, modular grid, strong hierarchy, icon headers, metric cards or steps, Stripe/Linear editorial polish, slate-teal corporate palette, white background, avoid dense fake paragraphs, no watermark.
 
 ## Teaching tip
 

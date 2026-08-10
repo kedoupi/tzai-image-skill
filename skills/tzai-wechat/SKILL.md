@@ -53,7 +53,7 @@ bash "$ENGINE" wechat \
 
 ## Kind direction
 
-WeChat Official Account article illustration or header, clean Chinese content-platform aesthetic, readable composition, soft professional colors.
+Premium WeChat Official Account header/illustration, soft professional teal-blue editorial style, refined composition, high-end Chinese tech-media aesthetic, no dense fake text, no watermark.
 
 ## Teaching tip
 

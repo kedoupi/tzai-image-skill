@@ -53,7 +53,7 @@ bash "$ENGINE" logo \
 
 ## Kind direction
 
-Brand logo / monogram design, geometric, memorable, flat vector or clean mark, ample negative space, professional identity system, no slogan text unless user asks.
+Premium brand logo / monogram board on pure white, geometric memorable mark, razor-sharp vector edges, ample negative space, Swiss identity-system discipline, subtle soft shadow only under the mark, no slogan unless user asks, no watermark, corporate identity final-art quality.
 
 ## Teaching tip
 

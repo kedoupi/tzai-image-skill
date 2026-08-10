@@ -53,7 +53,7 @@ bash "$ENGINE" ui \
 
 ## Kind direction
 
-SaaS product UI mock dashboard, polished light or dark mode, cards charts KPIs, Figma-like quality, browser chrome subtle, no real PII or confidential metrics text.
+Ultra-premium SaaS dashboard UI mock, Linear/Stripe design language, polished light or dark mode, 8pt spacing, cards charts KPIs, soft shadows, subtle browser chrome optional, Figma-final quality, no real PII, no watermark.
 
 ## Teaching tip
 

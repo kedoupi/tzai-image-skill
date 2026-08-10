@@ -53,7 +53,7 @@ bash "$ENGINE" architecture \
 
 ## Kind direction
 
-Isometric or clean technical architecture diagram: clients, gateway, services, databases, queues, cloud boundary, muted tech blues/grays, white background, no unreadable garble text.
+Cinematic isometric or layered technical architecture: clients, gateway, services, databases, queues, cloud boundary, glass-cube microservices, muted tech blues/grays, soft studio lighting, consulting-grade product illustration, no unreadable garble text, no watermark.
 
 ## Teaching tip
 

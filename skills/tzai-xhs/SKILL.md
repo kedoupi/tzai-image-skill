@@ -63,7 +63,7 @@ Series workflow: engine `references/workflows/xhs-series.md`.
 
 ## Kind direction
 
-Xiaohongshu (小红书) style image card: high engagement social infographic, bold title area, clean hierarchy, lifestyle or knowledge-share aesthetic, Chinese social feed friendly, punchy colors, avoid messy watermarks.
+Ultra-premium Xiaohongshu knowledge card, magazine-grade hierarchy, refined title zone, clean steps or points with delicate icons, sophisticated palette (not childish clipart), design-agency social content quality, Chinese feed-friendly, avoid messy watermarks and dense fake paragraphs.
 
 ## Teaching tip
 

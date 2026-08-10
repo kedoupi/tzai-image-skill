@@ -53,7 +53,7 @@ bash "$ENGINE" icon \
 
 ## Kind direction
 
-App icon design, rounded square, flat vector, single clear metaphor, iOS/Android store ready, crisp edges, no text, no watermark, no fake UI chrome.
+Ultra-premium App Store icon, rounded continuous-corner square, single clear metaphor, refined flat-vector with subtle glass specular and soft ambient occlusion, iOS/Android store-ready finish, crisp edges, centered, pure simple background, no text, no letters, no watermark, no fake UI chrome, design-agency final deliverable.
 
 ## Teaching tip
 
