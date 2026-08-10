@@ -139,6 +139,13 @@ assert_exit "bad ar fails" 2 "$BIN" generate --dry-run --kind icon --ar 99:99 --
 err="$("$BIN" generate --dry-run --kind icon --ar 99:99 --prompt "x" --image /tmp/t.png 2>&1 >/dev/null)" || true
 assert_contains "bad ar message" "Supported:" "$err"
 
+echo "== kind alias product → product-photo =="
+err="$("$BIN" product --dry-run --prompt "speaker" --image /tmp/p.png 2>&1 >/dev/null)"
+assert_contains "alias note" "product-photo" "$err"
+assert_contains "alias kind in dry-run" "kind=product-photo" "$err"
+kinds_out="$("$BIN" kinds 2>&1)"
+assert_contains "kinds lists product-photo" "product-photo" "$kinds_out"
+
 echo "== --json escapes special prompt chars =="
 json="$("$BIN" generate --dry-run --json --kind icon --prompt 'hello """ break' --image /tmp/t.png 2>/dev/null)"
 python3 -c "import json,sys; d=json.loads(sys.argv[1]); assert '\"\"\"' in d['final_prompt'] or d['final_prompt'].count('\"')>=3; print('ok')" "$json" >/dev/null

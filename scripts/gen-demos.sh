@@ -72,7 +72,7 @@ while IFS=$'\t' read -r id layer slash kind ar image prompt_zh highlight_zh; do
       product) gen_kind=ui ;;
       marketing) gen_kind=slide ;;
       social) gen_kind=xhs ;;
-      photo) gen_kind=product ;;
+      photo) gen_kind=product-photo ;;
       engine) gen_kind=icon ;;
       *) gen_kind="" ;;
     esac

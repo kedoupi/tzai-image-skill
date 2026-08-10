@@ -279,9 +279,20 @@ ar_to_size() {
   esac
 }
 
+# Kind aliases (backward-compat). Canonical id lives in kinds.tsv.
+# product → product-photo (hub /tzai-product is 产品设计; photo kind is 商品摄影)
+resolve_kind_id() {
+  local id="$1"
+  case "$id" in
+    product) printf '%s' "product-photo" ;;
+    *) printf '%s' "$id" ;;
+  esac
+}
+
 # kinds.tsv: id category category_zh ar label_en label_zh prefix
 kind_line() {
-  local id="$1"
+  local id
+  id="$(resolve_kind_id "$1")"
   [[ -f "$KINDS_FILE" ]] || return 1
   # shellcheck disable=SC2016
   awk -F'\t' -v id="$id" '
@@ -638,7 +649,7 @@ Categories (功能分类):
   product    产品设计 — ui wireframe empty-state onboarding
   marketing  市场内容 — slide banner email-header cover poster
   social     社交种草 — xhs xhs-cover wechat
-  photo      影像插画 — product photo landscape illustration storybook food
+  photo      影像插画 — product-photo photo landscape illustration storybook food
 
 P0 matrices:
   tzai-image presets xhs | infographic | cover
@@ -1006,11 +1017,16 @@ EOF
   final_prompt="$prompt"
 
   if [[ -n "$kind" ]]; then
-    local kline
+    local kline canonical_kind
+    canonical_kind="$(resolve_kind_id "$kind")"
     kline="$(kind_line "$kind")" || {
       echo "Unknown --kind: $kind (try: tzai-image kinds)" >&2
       return 2
     }
+    if [[ "$kind" != "$canonical_kind" ]]; then
+      echo "Note: kind alias '${kind}' → '${canonical_kind}'" >&2
+    fi
+    kind="$canonical_kind"
     kind_ar="$(kind_field "$kline" 4)"
     kind_label="$(kind_field "$kline" 5)"
     KIND="$kind"
@@ -1130,7 +1146,7 @@ print(json.dumps({
 
   mkdir -p "$(dirname -- "$image")"
 
-  local req_json resp_file code
+  local req_json resp_file code attempt max_attempts sleep_s
   req_json="$(mktemp)"
   resp_file="$(mktemp)"
   python3 - "$req_json" "$prompt" "$TZAI_IMAGE_MODEL" "$size" "$n" <<'PY'
@@ -1147,21 +1163,40 @@ with open(path, "w", encoding="utf-8") as f:
     json.dump(body, f, ensure_ascii=False)
 PY
 
-  code="$(curl -sS -o "$resp_file" -w "%{http_code}" \
-    --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
-    -X POST "$url" \
-    -H "Authorization: Bearer ${TZAI_API_KEY}" \
-    -H "Content-Type: application/json" \
-    --data-binary @"$req_json" || echo "000")"
+  # Retry transient gateway errors (429 / 502 / 503 / 504)
+  max_attempts=4
+  code="000"
+  for attempt in $(seq 1 "$max_attempts"); do
+    code="$(curl -sS -o "$resp_file" -w "%{http_code}" \
+      --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
+      -X POST "$url" \
+      -H "Authorization: Bearer ${TZAI_API_KEY}" \
+      -H "Content-Type: application/json" \
+      --data-binary @"$req_json" || echo "000")"
+    case "$code" in
+      200) break ;;
+      429|502|503|504|000)
+        if [[ "$attempt" -lt "$max_attempts" ]]; then
+          sleep_s=$(( attempt * 2 ))
+          echo "HTTP ${code}; retry ${attempt}/${max_attempts} in ${sleep_s}s..." >&2
+          sleep "$sleep_s"
+          continue
+        fi
+        ;;
+      *) break ;;
+    esac
+  done
 
   rm -f "$req_json"
 
   if [[ "$code" != "200" ]]; then
     echo "Image generation failed: HTTP ${code}" >&2
-    head -c 800 "$resp_file" >&2 || true
+    head -c 400 "$resp_file" >&2 || true
     echo >&2
     if [[ "$code" == "401" || "$code" == "403" ]]; then
       echo "Check API key at ${CONSOLE_URL}" >&2
+    elif [[ "$code" == "429" ]]; then
+      echo "Rate limited; wait and retry, or lower concurrency." >&2
     fi
     rm -f "$resp_file"
     return 1
@@ -1233,7 +1268,7 @@ Modules (分类功能，集于一个 CLI):
   product    ui wireframe empty-state onboarding
   marketing  slide banner email-header cover poster
   social     xhs xhs-cover wechat          # 小红书 / 微信
-  photo      product photo landscape illustration storybook food
+  photo      product-photo photo landscape illustration storybook food
 
 Usage:
   tzai-image kinds

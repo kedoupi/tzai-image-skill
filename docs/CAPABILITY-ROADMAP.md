@@ -37,7 +37,7 @@
 | **P1** | Icon/Logo 变体 | icon / logo | kinds ✅，变体可选 |
 | **P1** | UI / 线框 | ui / wireframe | kinds ✅ |
 | **P2** | 绘本/漫画分镜 | storybook | kinds ✅ |
-| **P2** | 商品/美食/风光 | product / food / landscape | kinds ✅ |
+| **P2** | 商品/美食/风光 | product-photo / food / landscape | kinds ✅ |
 | **Out** | 发布/压图/采集 | — | 不做 |
 
 ---
@@ -128,3 +128,4 @@ tzai-image cover --type hero --palette dark --text none --mood bold --prompt "..
 | 2026-08-10 | Plan C + P0 矩阵 + 教学画廊 |
 | 2026-08-10 | 对外文档改为自有产品叙事 |
 | 2026-08-10 | v0.5.1 P0 hardening: safe config parse, AR validate, safe --json |
+| 2026-08-10 | v0.5.2 product-photo rename+alias, HTTP retry, CI, CHANGELOG |

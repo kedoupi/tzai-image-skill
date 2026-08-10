@@ -331,7 +331,7 @@ for cat in white_cats:
     skills = [f"tzai-{cat}"] + [
         f"tzai-{r['id']}" for r in by_cat[cat] if r["id"] in white_kinds
     ]
-    # de-dupe while preserving order (product hub vs product kind conflict avoided: kind product not whitelisted)
+    # de-dupe while preserving order (hub product-design ≠ kind product-photo)
     seen = set()
     uniq = []
     for s in skills:

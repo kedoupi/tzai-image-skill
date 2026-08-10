@@ -115,12 +115,12 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 
 | Slash | Kind | Use |
 | --- | --- | --- |
-| `/tzai-product` | product | 商品目录摄影 |
-| `/tzai-photo` | photo | 通用摄影 |
-| `/tzai-landscape` | landscape | 风光 / 头图 |
-| `/tzai-illustration` | illustration | 通用插画 |
-| `/tzai-storybook` | storybook | 绘本 / 叙事画 |
-| `/tzai-food` | food | 美食 / 生活方式 |
+| — | product-photo | 商品目录摄影（`/tzai-image product-photo`；别名 `product`） |
+| — | photo | 通用摄影 |
+| — | landscape | 风光 / 头图 |
+| — | illustration | 通用插画 |
+| — | storybook | 绘本 / 叙事画 |
+| — | food | 美食 / 生活方式 |
 
 ### 引擎
 

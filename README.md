@@ -9,6 +9,7 @@ Generate production-ready visuals from coding agents via **TaoziAPI** ([tzai.kdp
 Works with Claude Code, Codex, Cursor, Grok Build, and [70+ agents](https://github.com/vercel-labs/skills#supported-agents) via [skills CLI](https://skills.sh/).
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![CI](https://github.com/kedoupi/tzai-image-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/kedoupi/tzai-image-skill/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/badge/GitHub-kedoupi%2Ftzai--image--skill-181717?logo=github&logoColor=white)](https://github.com/kedoupi/tzai-image-skill)
 
 ---
@@ -93,7 +94,7 @@ bash $E mindmap --prompt "产品战略拆解" --image ./mm.png   # long-tail
 | `/tzai-product` | Product UX | ui | wireframe, empty-state, onboarding |
 | `/tzai-marketing` | Marketing | cover, slide | banner, email-header, poster |
 | `/tzai-social` | Social | xhs, xhs-cover, wechat | — |
-| `/tzai-photo` | Photo / art | — | product, photo, landscape, illustration, storybook, food |
+| `/tzai-photo` | Photo / art | — | product-photo, photo, landscape, illustration, storybook, food |
 
 ### High-frequency kinds (11)
 
@@ -203,7 +204,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image ui \
 
 ![Product hub](docs/screenshots/ui-dashboard.png)
 
-> **Note:** kind `product` under **photo** is *catalog photography*, not this hub. Use `/tzai-image product` or `/tzai-photo`.
+> **Note:** catalog photography is kind **`product-photo`** (alias `product`), not this hub. Use `/tzai-image product-photo` or hub `/tzai-photo`.
 
 ---
 
@@ -249,12 +250,12 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
 **Highlights:** no high-freq kind slashes here — always hub or engine.
 
 ```text
-/tzai-photo product 哑光几何产品棚拍
+/tzai-photo product-photo 哑光几何产品棚拍
 /tzai-image food 拉花拿铁浅景深
 ```
 
 ```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image product \
+bash ~/.agents/skills/tzai-image/scripts/tzai-image product-photo \
   --prompt "哑光几何体商品，柔光棚拍，目录级质感" --image ./product.png
 ```
 

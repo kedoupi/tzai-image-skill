@@ -9,6 +9,7 @@
 支持 Claude Code、Codex、Cursor、Grok Build 及 [skills CLI](https://skills.sh/) 下 [70+ Agent](https://github.com/vercel-labs/skills#supported-agents)。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![CI](https://github.com/kedoupi/tzai-image-skill/actions/workflows/ci.yml/badge.svg)](https://github.com/kedoupi/tzai-image-skill/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/badge/GitHub-kedoupi%2Ftzai--image--skill-181717?logo=github&logoColor=white)](https://github.com/kedoupi/tzai-image-skill)
 
 ---
@@ -91,7 +92,7 @@ bash $E mindmap --prompt "产品战略拆解" --image ./mm.png   # 长尾
 | `/tzai-product` | 产品设计 | ui | wireframe, empty-state, onboarding |
 | `/tzai-marketing` | 市场 | cover, slide | banner, email-header, poster |
 | `/tzai-social` | 社交 | xhs, xhs-cover, wechat | — |
-| `/tzai-photo` | 影像 | — | product, photo, landscape, illustration, storybook, food |
+| `/tzai-photo` | 影像 | — | product-photo, photo, landscape, illustration, storybook, food |
 
 ### 高频 kind（11）
 
@@ -202,7 +203,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image ui \
 
 ![产品 hub](docs/screenshots/ui-dashboard.png)
 
-> **注意：** photo 下的 kind `product` 是**商品摄影**，走 `/tzai-image product` 或 `/tzai-photo`。
+> **注意：** 商品摄影 kind 是 **`product-photo`**（别名 `product`），不是本 hub。走 `/tzai-image product-photo` 或 hub `/tzai-photo`。
 
 ---
 
@@ -248,12 +249,12 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
 **突出：** 本类无高频 kind 斜杠，一律 hub 或引擎。
 
 ```text
-/tzai-photo product 哑光几何产品棚拍
+/tzai-photo product-photo 哑光几何产品棚拍
 /tzai-image food 拉花拿铁浅景深
 ```
 
 ```bash
-bash ~/.agents/skills/tzai-image/scripts/tzai-image product \
+bash ~/.agents/skills/tzai-image/scripts/tzai-image product-photo \
   --prompt "哑光几何体商品，柔光棚拍，目录级质感" --image ./product.png
 ```
 

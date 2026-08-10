@@ -2,10 +2,10 @@
 name: tzai-photo
 description: >
   Category hub for 影像插画 (photo) image generation via TaoziAPI.
-  Use when the user runs /tzai-photo or wants any photo visual: product, photo, landscape, illustration, storybook, food.
+  Use when the user runs /tzai-photo or wants any photo visual: product-photo, photo, landscape, illustration, storybook, food.
   Pick a concrete kind then call the tzai-image engine. Requires TZAI_API_KEY.
   Plan C: hub routes; high-frequency kinds also have direct slashes.
-argument-hint: "kind prompt…  e.g. product <主题>"
+argument-hint: "kind prompt…  e.g. product-photo <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
@@ -44,7 +44,7 @@ fi
 
 | Kind | 中文 | AR | How to invoke |
 | --- | --- | --- | --- |
-| `product` | 商品摄影 | 1:1 | `/tzai-image product` |
+| `product-photo` | 商品摄影 | 1:1 | `/tzai-image product-photo` |
 | `photo` | 通用摄影 | 1:1 | `/tzai-image photo` |
 | `landscape` | 风光头图 | 16:9 | `/tzai-image landscape` |
 | `illustration` | 通用插画 | 1:1 | `/tzai-image illustration` |
@@ -52,7 +52,7 @@ fi
 | `food` | 美食生活 | 1:1 | `/tzai-image food` |
 
 - **Direct slash (high-freq):** (none)
-- **Long-tail (via hub / engine):** `product`, `photo`, `landscape`, `illustration`, `storybook`, `food`
+- **Long-tail (via hub / engine):** `product-photo`, `photo`, `landscape`, `illustration`, `storybook`, `food`
 
 ## Agent flow
 

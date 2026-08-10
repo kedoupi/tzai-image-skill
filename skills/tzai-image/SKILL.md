@@ -12,7 +12,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.1"
+  version: "0.5.2"
   short-description: "TaoziAPI 生图（引擎 + 场景 kind，默认 gpt-image-2）"
 ---
 
@@ -161,7 +161,7 @@ bash <skill-dir>/scripts/tzai-image kinds flowchart
 | **product** 产品 | `ui` `wireframe` `empty-state` `onboarding` | 仪表盘、线框、空状态、引导页 |
 | **marketing** 市场 | `slide` `banner` `email-header` `cover` `poster` | PPT 封面、投放、邮件头图、文章封面 |
 | **social** 社交 | `xhs` `xhs-cover` `wechat` | **小红书图卡/封面**、微信配图 |
-| **photo** 影像 | `product` `photo` `landscape` `illustration` `storybook` `food` | 商品图、风光、插画、绘本、美食 |
+| **photo** 影像 | `product-photo` `photo` `landscape` `illustration` `storybook` `food` | 商品图、风光、插画、绘本、美食 |
 
 Agent routing:
 

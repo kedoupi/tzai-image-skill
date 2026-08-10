@@ -89,4 +89,4 @@ bash skills/tzai-image/scripts/tzai-image doctor
 ## Naming note
 
 - Hub `/tzai-product` = **产品设计** (ui / wireframe / …).
-- Kind `product` under photo = **商品摄影** → use `/tzai-image product` or hub `/tzai-photo`.
+- Kind `product-photo` under photo = **商品摄影** (alias `product`) → `/tzai-image product-photo` or hub `/tzai-photo`.
