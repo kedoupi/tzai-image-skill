@@ -16,6 +16,8 @@ EXAMPLE_CONFIG_FILE="${SKILL_ROOT}/config.example.env"
 SKILL_MD_FILE="${SKILL_ROOT}/SKILL.md"
 
 DEFAULT_BASE_URL="https://tzai.kdp.cool"
+# Best image model currently available on TaoziAPI (override via env/CLI if needed).
+DEFAULT_IMAGE_MODEL="gpt-image-2"
 DEFAULT_AR="1:1"
 DEFAULT_TIMEOUT=120
 CONSOLE_URL="https://tzai.kdp.cool/console"
@@ -116,11 +118,12 @@ load_env_file() {
 # Then optional TZAI_IMAGE_CONFIG (explicit path, overrides env).
 load_all_configs() {
   TZAI_BASE_URL="${DEFAULT_BASE_URL}"
+  TZAI_IMAGE_MODEL="${DEFAULT_IMAGE_MODEL}"
   TZAI_DEFAULT_AR="${DEFAULT_AR}"
   TZAI_TIMEOUT_SEC="${DEFAULT_TIMEOUT}"
   KEY_SOURCE="unset"
   BASE_SOURCE="default"
-  MODEL_SOURCE="unset"
+  MODEL_SOURCE="default"
 
   load_env_file "$XDG_CONFIG_FILE"
   load_env_file "$GLOBAL_SHARED_CONFIG_FILE"
@@ -135,7 +138,7 @@ load_all_configs() {
   if [[ "${TZAI_BASE_URL}" != "${DEFAULT_BASE_URL}" ]]; then
     BASE_SOURCE="file"
   fi
-  if [[ -n "${TZAI_IMAGE_MODEL-}" ]]; then
+  if [[ -n "${TZAI_IMAGE_MODEL-}" && "${TZAI_IMAGE_MODEL}" != "${DEFAULT_IMAGE_MODEL}" ]]; then
     MODEL_SOURCE="file"
   fi
 
@@ -171,6 +174,12 @@ load_all_configs() {
     if [[ -n "${TZAI_IMAGE_MODEL-}" ]]; then
       MODEL_SOURCE="explicit-file"
     fi
+  fi
+
+  # Built-in best default if still empty after all layers
+  if [[ -z "${TZAI_IMAGE_MODEL-}" ]]; then
+    TZAI_IMAGE_MODEL="${DEFAULT_IMAGE_MODEL}"
+    MODEL_SOURCE="default"
   fi
 
   # Normalize base URL (strip trailing slash)
@@ -228,12 +237,13 @@ Get a key first: ${CONSOLE_URL}
 Options:
   --api-key <sk-...>   TaoziAPI key (required)
   --base-url <url>     Default: ${DEFAULT_BASE_URL}
-  --model <id>         Default image model id
+  --model <id>         Default image model (default if omitted: ${DEFAULT_IMAGE_MODEL})
   --target <where>     durable | global | local (default: durable)
   --force              Overwrite existing config
 
 Alternatively, skip init and use a global env var:
   export TZAI_API_KEY='sk-...'
+  # model defaults to ${DEFAULT_IMAGE_MODEL} unless you set TZAI_IMAGE_MODEL
 EOF
         return 0
         ;;
@@ -244,6 +254,9 @@ EOF
   if [[ -z "$api_key" ]]; then
     echo "Missing --api-key. Get one at ${CONSOLE_URL}" >&2
     return 2
+  fi
+  if [[ -z "$model" ]]; then
+    model="${DEFAULT_IMAGE_MODEL}"
   fi
 
   local out_file
@@ -268,9 +281,7 @@ EOF
     echo "# Get / rotate keys: ${CONSOLE_URL}"
     echo "TZAI_BASE_URL=$(printf '%q' "${base_url%/}")"
     echo "TZAI_API_KEY=$(printf '%q' "$api_key")"
-    if [[ -n "$model" ]]; then
-      echo "TZAI_IMAGE_MODEL=$(printf '%q' "$model")"
-    fi
+    echo "TZAI_IMAGE_MODEL=$(printf '%q' "$model")"
     echo "TZAI_DEFAULT_AR=$(printf '%q' "$DEFAULT_AR")"
     echo "TZAI_TIMEOUT_SEC=$(printf '%q' "$DEFAULT_TIMEOUT")"
   } >"$out_file"
@@ -344,11 +355,7 @@ cmd_doctor() {
     print_key_howto
   fi
 
-  if [[ -z "${TZAI_IMAGE_MODEL-}" ]]; then
-    wrn "TZAI_IMAGE_MODEL unset — pass --model or set after: tzai-image models"
-  else
-    ok "default model: ${TZAI_IMAGE_MODEL}"
-  fi
+  ok "image model: ${TZAI_IMAGE_MODEL}  (source: ${MODEL_SOURCE}; built-in best default: ${DEFAULT_IMAGE_MODEL})"
 
   if [[ "$strict" -eq 1 ]]; then
     echo
@@ -474,7 +481,7 @@ Usage: tzai-image generate [options]
 Options:
   --prompt, -p <text>   Image prompt (required)
   --image, -o <path>    Output file path (required unless --dry-run)
-  --model, -m <id>      Model id (or TZAI_IMAGE_MODEL)
+  --model, -m <id>      Model id (default: ${DEFAULT_IMAGE_MODEL})
   --size <WxH>          e.g. 1024x1024
   --ar <ratio>          1:1 | 16:9 | 9:16 | 4:3 | 3:4 … (maps to size if --size omitted)
   --api-key <sk-...>    Override key for this call
@@ -486,6 +493,7 @@ Options:
 Config:
   export TZAI_API_KEY='sk-...'
   or: tzai-image init --api-key sk-...
+  Default model: ${DEFAULT_IMAGE_MODEL} (override with TZAI_IMAGE_MODEL or --model)
   Key console: ${CONSOLE_URL}
 EOF
         return 0
@@ -527,10 +535,8 @@ EOF
     print_key_howto
     return 2
   fi
-  if [[ -z "${TZAI_IMAGE_MODEL-}" && "$dry_run" -ne 1 ]]; then
-    echo "Missing model. Pass --model <id> or set TZAI_IMAGE_MODEL (see: tzai-image models)" >&2
-    return 2
-  fi
+  # Model always resolves (built-in best default at minimum)
+  TZAI_IMAGE_MODEL="${TZAI_IMAGE_MODEL:-$DEFAULT_IMAGE_MODEL}"
 
   local url="${TZAI_BASE_URL}/v1/images/generations"
   local model_eff="${TZAI_IMAGE_MODEL:-"(unset)"}"

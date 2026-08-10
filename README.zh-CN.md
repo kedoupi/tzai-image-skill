@@ -37,13 +37,14 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
 
+# 可选：列出模型。默认已用最强图片模型 gpt-image-2
 bash ~/.agents/skills/tzai-image/scripts/tzai-image models
 
 bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --dry-run --prompt "红色方块" --image /tmp/cube.png --model 你的模型ID
+  --dry-run --prompt "红色方块" --image /tmp/cube.png
 
 bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --prompt "红色方块" --image ./cube.png --ar 1:1 --model 你的模型ID
+  --prompt "红色方块" --image ./cube.png --ar 1:1
 ```
 
 ## 配置说明
@@ -52,7 +53,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
 | --- | --- | --- |
 | `TZAI_API_KEY` | API Key | 真调用必填 |
 | `TZAI_BASE_URL` | 网关 | `https://tzai.kdp.cool` |
-| `TZAI_IMAGE_MODEL` | 默认模型 | `models` 后自行设置 |
+| `TZAI_IMAGE_MODEL` | 图片模型 | **`gpt-image-2`**（内置最强默认） |
 | `TZAI_IMAGE_CONFIG` | 显式 env 文件 | 无 |
 | `TZAI_DEFAULT_AR` | 画幅 | `1:1` |
 | `TZAI_TIMEOUT_SEC` | 超时秒数 | `120` |

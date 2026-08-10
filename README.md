@@ -37,16 +37,16 @@ Never commit the key. Do not store it only inside the skill package directory.
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
 
-# List models (needs key)
+# List models (needs key) — optional; default is already gpt-image-2
 bash ~/.agents/skills/tzai-image/scripts/tzai-image models
 
-# Dry-run (no network)
+# Dry-run (no network) — uses default model gpt-image-2
 bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --dry-run --prompt "a red cube" --image /tmp/cube.png --model YOUR_MODEL
+  --dry-run --prompt "a red cube" --image /tmp/cube.png
 
-# Generate
+# Generate (best model by default)
 bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --prompt "a red cube" --image ./cube.png --ar 1:1 --model YOUR_MODEL
+  --prompt "a red cube" --image ./cube.png --ar 1:1
 ```
 
 ## Configuration
@@ -55,7 +55,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
 | --- | --- | --- |
 | `TZAI_API_KEY` | API key | _(required for real calls)_ |
 | `TZAI_BASE_URL` | Gateway | `https://tzai.kdp.cool` |
-| `TZAI_IMAGE_MODEL` | Default model id | _(set after `models`)_ |
+| `TZAI_IMAGE_MODEL` | Image model id | **`gpt-image-2`** (built-in best default) |
 | `TZAI_IMAGE_CONFIG` | Explicit env file | unset |
 | `TZAI_DEFAULT_AR` | Aspect ratio | `1:1` |
 | `TZAI_TIMEOUT_SEC` | HTTP timeout | `120` |

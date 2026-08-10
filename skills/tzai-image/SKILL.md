@@ -7,7 +7,7 @@ description: >
   /tzai-image. Not for Feishu push (lark-push) or generic host-native image tools only.
 metadata:
   author: kedoupi
-  version: "0.1.0"
+  version: "0.1.1"
 ---
 
 # tzai-image
@@ -28,7 +28,7 @@ bash <skill-dir>/scripts/tzai-image doctor
 | **API key** | Gateway auth | User creates token at https://tzai.kdp.cool/console |
 | **python3** | JSON + save image | `brew install python3` |
 | **curl** | HTTP | macOS usually has it |
-| **Default model** | Required for generate | `tzai-image models` then `init --model` or `export TZAI_IMAGE_MODEL=...` |
+| **Default model** | Built-in **`gpt-image-2`** (best on this gateway) | Override with `--model` / `TZAI_IMAGE_MODEL` if needed |
 
 ### How users get and set the key
 

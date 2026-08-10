@@ -68,9 +68,13 @@ ver="$("$BIN" --version)"
 assert_contains "version string" "tzai-image v" "$ver"
 
 echo "== dry-run without key =="
-err="$("$BIN" generate --dry-run --prompt "a cat" --image /tmp/t.png --model demo-model 2>&1 >/dev/null)"
+err="$("$BIN" generate --dry-run --prompt "a cat" --image /tmp/t.png 2>&1 >/dev/null)"
 assert_contains "dry-run meta" "[dry-run] not calling network" "$err"
-assert_contains "dry-run model" "demo-model" "$err"
+assert_contains "dry-run default best model" "gpt-image-2" "$err"
+
+echo "== dry-run model override =="
+err="$("$BIN" generate --dry-run --prompt "a cat" --image /tmp/t.png --model demo-model 2>&1 >/dev/null)"
+assert_contains "dry-run override model" "demo-model" "$err"
 
 echo "== missing prompt =="
 assert_exit "empty prompt fails" 2 "$BIN" generate --dry-run --prompt "" --image /tmp/t.png --model m
