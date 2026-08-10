@@ -402,15 +402,17 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
 
 ### `/tzai-xhs-cover` · XHS cover
 
-**Highlights:** stop-scroll cover, max contrast, short title zone.
+**Highlights:** **feed cover layout** (big title + subtitle band) — not an e-commerce product shot.
 
 ```text
-/tzai-xhs-cover 职场干货 · 周报模板
+/tzai-xhs-cover 周报模板 职场干货封面
 ```
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs-cover \
-  --prompt "封面：职场干货 · 周报模板，大标题区强对比" --image ./xhs-cover.png
+  --style bold --layout sparse \
+  --prompt "Feed cover (not product photo): big title 周报模板 + subtitle 职场干货, magazine cover blocks" \
+  --image ./xhs-cover.png
 ```
 
 ![xhs-cover](docs/screenshots/xhs-cover.png)

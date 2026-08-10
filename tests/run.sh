@@ -165,8 +165,13 @@ assert_contains "which-config shows model" "file-model" "$wc"
 rm -f "$tmp_local"
 
 echo "== doctor without key =="
+# Isolate from durable/global/local env files so CI/dev machines with real keys still pass.
 set +e
-doc="$(env -u TZAI_API_KEY "$BIN" doctor 2>&1)"
+doc="$(
+  env -u TZAI_API_KEY -u TZAI_IMAGE_CONFIG \
+    HOME="${TMPDIR:-/tmp}/tzai-test-home-$$" \
+    "$BIN" doctor 2>&1
+)"
 dc=$?
 set -e
 assert_contains "doctor fail key" "[FAIL]" "$doc"
