@@ -1,6 +1,7 @@
 ---
 description: 流程图 / Flowchart / process via TaoziAPI (kind=flowchart)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-flowchart

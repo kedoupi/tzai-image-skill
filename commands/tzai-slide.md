@@ -1,6 +1,7 @@
 ---
 description: PPT封面 / Slide / deck cover via TaoziAPI (kind=slide)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-slide

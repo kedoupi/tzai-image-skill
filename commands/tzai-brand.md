@@ -1,6 +1,7 @@
 ---
 description: 品牌识别生图分类 hub (brand) · Plan C
 argument-hint: "kind prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-brand

@@ -1,6 +1,7 @@
 ---
 description: 架构图 / System architecture via TaoziAPI (kind=architecture)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-architecture

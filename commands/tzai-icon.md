@@ -1,6 +1,7 @@
 ---
 description: App图标 / App icon via TaoziAPI (kind=icon)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-icon

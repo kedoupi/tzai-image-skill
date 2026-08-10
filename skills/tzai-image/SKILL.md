@@ -12,7 +12,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.3"
+  version: "0.5.4"
   short-description: "TaoziAPI 生图（引擎 + 场景 kind，默认 gpt-image-2）"
 ---
 
@@ -137,6 +137,11 @@ bash <skill-dir>/scripts/tzai-image doctor
 - Prefer `--dry-run` for request preview (no network)  
 - User running the helper counts as approval for that invocation  
 - Never commit API keys  
+- A paid `generate`/`edits` request is sent once only: the CLI never retries timeouts, `429`, or `5xx` responses automatically
+- `--n` accepts only the positive integer `1`; multiple paid results are rejected rather than silently discarded
+- Existing output files are refused by default. Pass `--force` explicitly to replace one; successful images are written via a same-directory temporary file and atomic rename
+- The CLI requests `b64_json` and refuses URL-only responses instead of fetching a server-provided secondary URL
+- Config files may contain keys and must be owner-only (`0600` or stricter); `$TZAI_IMAGE_CONFIG` must point to an existing regular file
 
 ## Host-native image tools
 
@@ -238,7 +243,7 @@ generate --kind <id> --prompt <text> --image <path>
          [--ref <file>]...
          [--style] [--layout] [--palette] [--preset]
          [--type] [--rendering] [--text] [--mood]
-         [--ar] [--model] [--dry-run] [--json]
+         [--ar] [--model] [--n 1] [--force] [--dry-run] [--json]
 <kind> --prompt <text> --image <path>   # alias, e.g. icon|flowchart|xhs|infographic
 --version
 ```

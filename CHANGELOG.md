@@ -2,6 +2,19 @@
 
 All notable changes to **tzai-image-skill** are documented here.
 
+## [0.5.4] — 2026-08-10
+
+### Fixed
+- Paid image `POST` requests are single-attempt: no automatic retry after timeout, `429`, or `5xx` responses.
+- `--n` now strictly accepts positive integers and rejects values other than `1`, preventing paid results from being silently discarded.
+- Generation refuses an existing output unless `--force` is explicit, writes through a same-directory temporary file, and atomically renames on success.
+- URL-only API responses fail safely; the CLI only accepts the requested `b64_json` payload and does not fetch a server-provided URL.
+- Config files with any group/other permissions are rejected; `$TZAI_IMAGE_CONFIG` must be an existing regular file.
+- Temporary response, request, and output files are cleaned up on all exit paths.
+- Generated skills and commands carry ownership markers; regeneration preserves handwritten files and rejects symlink output paths.
+- Slash command installation preserves existing files by default; `--prune` removes only stale symlinks owned by this repository.
+- Offline tests run in a disposable skill/config tree and cover paid-request, output, config, generator, and installer safety contracts.
+
 ## [0.5.3] — 2026-08-10
 
 ### Added

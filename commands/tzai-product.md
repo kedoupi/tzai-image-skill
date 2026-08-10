@@ -1,6 +1,7 @@
 ---
 description: 产品设计生图分类 hub (product) · Plan C
 argument-hint: "kind prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-product

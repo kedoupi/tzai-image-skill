@@ -1,6 +1,7 @@
 ---
 description: 小红书图卡 / Xiaohongshu / 小红书 card via TaoziAPI (kind=xhs)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-xhs

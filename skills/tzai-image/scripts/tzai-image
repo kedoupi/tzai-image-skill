@@ -49,6 +49,18 @@ _ENV_HAD_TIMEOUT=0
 KEY_SOURCE="unset"
 BASE_SOURCE="default"
 MODEL_SOURCE="unset"
+TEMP_FILES=()
+
+cleanup_temp_files() {
+  local file
+  for file in "${TEMP_FILES[@]+"${TEMP_FILES[@]}"}"; do
+    rm -f -- "$file" 2>/dev/null || true
+  done
+}
+trap cleanup_temp_files EXIT
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -64,6 +76,14 @@ require_val() {
     echo "Empty value for $opt" >&2
     exit 2
   fi
+}
+
+make_temp_file() {
+  local var_name="$1" tmp
+  shift
+  tmp="$(mktemp "$@")" || return 1
+  TEMP_FILES+=("$tmp")
+  printf -v "$var_name" '%s' "$tmp"
 }
 
 skill_version() {
@@ -114,20 +134,20 @@ load_env_file() {
   local file="$1"
   [[ -f "$file" ]] || return 0
 
-  # Refuse world-writable configs
-  if [[ "$(uname -s 2>/dev/null)" != "Darwin" ]]; then
-    if [[ -n "$(find "$file" -perm -002 2>/dev/null)" ]]; then
-      echo "Refuse world-writable config: $file" >&2
-      return 1
-    fi
-  else
-    # macOS: check other-write bit via stat
-    local mode
+  # Configs may contain API keys: permit owner-only permissions (0600 or stricter).
+  local mode
+  if [[ "$(uname -s 2>/dev/null)" == "Darwin" ]]; then
     mode="$(stat -f '%Lp' "$file" 2>/dev/null || true)"
-    if [[ -n "$mode" && $((8#$mode & 0002)) -ne 0 ]]; then
-      echo "Refuse world-writable config: $file" >&2
-      return 1
-    fi
+  else
+    mode="$(stat -c '%a' "$file" 2>/dev/null || true)"
+  fi
+  if [[ -z "$mode" || ! "$mode" =~ ^[0-7]+$ ]]; then
+    echo "Cannot determine config permissions: $file" >&2
+    return 1
+  fi
+  if (( (8#$mode & 0077) != 0 )); then
+    echo "Refuse config with group/other permissions (must be 0600 or stricter): $file" >&2
+    return 1
   fi
 
   local line key val
@@ -212,8 +232,12 @@ load_all_configs() {
     TZAI_TIMEOUT_SEC="$_ENV_TIMEOUT"
   fi
 
-  # Explicit config file path overrides env
-  if [[ -n "${TZAI_IMAGE_CONFIG-}" && -f "${TZAI_IMAGE_CONFIG}" ]]; then
+  # Explicit config file path overrides env.
+  if [[ -n "${TZAI_IMAGE_CONFIG-}" ]]; then
+    if [[ -L "${TZAI_IMAGE_CONFIG}" || ! -f "${TZAI_IMAGE_CONFIG}" ]]; then
+      echo "TZAI_IMAGE_CONFIG must name an existing regular file: ${TZAI_IMAGE_CONFIG}" >&2
+      return 1
+    fi
     load_env_file "$TZAI_IMAGE_CONFIG"
     if [[ -n "${TZAI_API_KEY-}" ]]; then
       KEY_SOURCE="explicit-file"
@@ -827,7 +851,7 @@ cmd_doctor() {
       bad "curl required for --strict-auth"
     else
       local code body_tmp
-      body_tmp="$(mktemp)"
+      make_temp_file body_tmp
       code="$(curl -sS -o "$body_tmp" -w "%{http_code}" \
         --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
         -H "Authorization: Bearer ${TZAI_API_KEY}" \
@@ -839,7 +863,6 @@ cmd_doctor() {
         head -c 300 "$body_tmp" 2>/dev/null >&2 || true
         echo >&2
       fi
-      rm -f "$body_tmp" 2>/dev/null || true
     fi
   fi
 
@@ -876,7 +899,7 @@ cmd_models() {
     return 1
   fi
   local tmp
-  tmp="$(mktemp)"
+  make_temp_file tmp
   local code
   code="$(curl -sS -o "$tmp" -w "%{http_code}" \
     --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
@@ -886,7 +909,6 @@ cmd_models() {
     echo "GET /v1/models failed: HTTP ${code}" >&2
     head -c 500 "$tmp" >&2 || true
     echo >&2
-    rm -f "$tmp"
     return 1
   fi
   if command -v python3 >/dev/null 2>&1; then
@@ -913,7 +935,6 @@ PY
   else
     cat "$tmp"
   fi
-  rm -f "$tmp"
 }
 
 # ---------------------------------------------------------------------------
@@ -921,7 +942,7 @@ PY
 # ---------------------------------------------------------------------------
 
 cmd_generate() {
-  local prompt="" image="" model="" size="" ar="" api_key="" base_url="" kind="" dry_run=0 json_out=0 n=1
+  local prompt="" image="" model="" size="" ar="" api_key="" base_url="" kind="" dry_run=0 json_out=0 n=1 force=0
   local user_prompt="" final_prompt="" kind_ar="" kind_label=""
   local -a REFS=()
   # Matrix knobs: NOT local — shared with build_matrix_extra / apply_xhs_named_preset
@@ -953,6 +974,7 @@ cmd_generate() {
       --api-key) require_val "$1" "${2-}"; api_key="$2"; shift 2 ;;
       --base-url) require_val "$1" "${2-}"; base_url="$2"; shift 2 ;;
       --n) require_val "$1" "${2-}"; n="$2"; shift 2 ;;
+      --force) force=1; shift ;;
       --dry-run) dry_run=1; shift ;;
       --json) json_out=1; shift ;;
       -h|--help)
@@ -982,7 +1004,8 @@ Options:
   --mood <id>           Cover mood
   --api-key <sk-...>    Override key for this call
   --base-url <url>      Override gateway
-  --n <count>           Number of images (default 1; only first saved if >1)
+  --n <count>           Must be 1 (this CLI writes exactly one output file)
+  --force               Overwrite an existing output file
   --dry-run             Print plan only (no network)
   --json                Print JSON metadata on stdout after success
 
@@ -1005,6 +1028,15 @@ EOF
       *) echo "Unknown generate option: $1" >&2; return 2 ;;
     esac
   done
+
+  if [[ ! "$n" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Invalid --n '${n}': expected a positive integer" >&2
+    return 2
+  fi
+  if [[ "$n" != "1" ]]; then
+    echo "Unsupported --n=${n}: this CLI writes exactly one output file; use --n 1" >&2
+    return 2
+  fi
 
   load_all_configs
 
@@ -1066,6 +1098,11 @@ EOF
   if [[ "$dry_run" -ne 1 && -z "$image" ]]; then
     echo "Missing --image output path" >&2
     return 2
+  fi
+  if [[ "$dry_run" -ne 1 && ( -e "$image" || -L "$image" ) && "$force" -ne 1 ]]; then
+    echo "Output already exists: $image" >&2
+    echo "Re-run with --force to overwrite." >&2
+    return 1
   fi
   if [[ "$dry_run" -ne 1 && -z "${TZAI_API_KEY-}" ]]; then
     print_key_howto
@@ -1180,9 +1217,9 @@ print(json.dumps({
 
   mkdir -p "$(dirname -- "$image")"
 
-  local resp_file code attempt max_attempts sleep_s
-  resp_file="$(mktemp)"
-  max_attempts=4
+  local resp_file output_tmp code
+  make_temp_file resp_file
+  make_temp_file output_tmp "$(dirname -- "$image")/.${image##*/}.tmp.XXXXXX"
   code="000"
 
   if [[ "$use_edits" -eq 1 ]]; then
@@ -1206,24 +1243,12 @@ print(json.dumps({
         curl_args+=(-F "image[]=@${ref_path}")
       done
     fi
-    for attempt in $(seq 1 "$max_attempts"); do
-      code="$(curl "${curl_args[@]}" || echo "000")"
-      case "$code" in
-        200) break ;;
-        429|502|503|504|000)
-          if [[ "$attempt" -lt "$max_attempts" ]]; then
-            sleep_s=$(( attempt * 2 ))
-            echo "HTTP ${code}; retry ${attempt}/${max_attempts} in ${sleep_s}s..." >&2
-            sleep "$sleep_s"
-            continue
-          fi
-          ;;
-        *) break ;;
-      esac
-    done
+    if ! code="$(curl "${curl_args[@]}")"; then
+      code="000"
+    fi
   else
     local req_json
-    req_json="$(mktemp)"
+    make_temp_file req_json
     python3 - "$req_json" "$prompt" "$TZAI_IMAGE_MODEL" "$size" "$n" <<'PY'
 import json, sys
 path, prompt, model, size, n = sys.argv[1:6]
@@ -1237,27 +1262,14 @@ body = {
 with open(path, "w", encoding="utf-8") as f:
     json.dump(body, f, ensure_ascii=False)
 PY
-    for attempt in $(seq 1 "$max_attempts"); do
-      code="$(curl -sS -o "$resp_file" -w "%{http_code}" \
+    if ! code="$(curl -sS -o "$resp_file" -w "%{http_code}" \
         --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
         -X POST "$url" \
         -H "Authorization: Bearer ${TZAI_API_KEY}" \
         -H "Content-Type: application/json" \
-        --data-binary @"$req_json" || echo "000")"
-      case "$code" in
-        200) break ;;
-        429|502|503|504|000)
-          if [[ "$attempt" -lt "$max_attempts" ]]; then
-            sleep_s=$(( attempt * 2 ))
-            echo "HTTP ${code}; retry ${attempt}/${max_attempts} in ${sleep_s}s..." >&2
-            sleep "$sleep_s"
-            continue
-          fi
-          ;;
-        *) break ;;
-      esac
-    done
-    rm -f "$req_json"
+        --data-binary @"$req_json")"; then
+      code="000"
+    fi
   fi
 
   if [[ "$code" != "200" ]]; then
@@ -1269,12 +1281,11 @@ PY
     elif [[ "$code" == "429" ]]; then
       echo "Rate limited; wait and retry, or lower concurrency." >&2
     fi
-    rm -f "$resp_file"
     return 1
   fi
 
-  python3 - "$resp_file" "$image" <<'PY'
-import base64, json, sys, urllib.request
+  python3 - "$resp_file" "$output_tmp" <<'PY'
+import base64, json, sys
 resp_path, out_path = sys.argv[1], sys.argv[2]
 data = json.load(open(resp_path, encoding="utf-8"))
 items = data.get("data") or []
@@ -1286,16 +1297,21 @@ if not items:
         raise SystemExit("No data[] in API response: " + json.dumps(data)[:500])
 first = items[0]
 if first.get("b64_json"):
-    raw = base64.b64decode(first["b64_json"])
+    try:
+        raw = base64.b64decode(first["b64_json"], validate=True)
+    except (ValueError, TypeError) as exc:
+        raise SystemExit(f"Invalid b64_json in API response: {exc}")
+    if not raw:
+        raise SystemExit("Empty b64_json in API response")
     open(out_path, "wb").write(raw)
 elif first.get("url"):
-    urllib.request.urlretrieve(first["url"], out_path)
+    raise SystemExit("Response returned url but no b64_json; refusing a secondary URL request")
 else:
-    raise SystemExit("No b64_json or url in response item: " + json.dumps(first)[:500])
-print(out_path)
+    raise SystemExit("No b64_json in response item: " + json.dumps(first)[:500])
 PY
 
-  rm -f "$resp_file"
+  # The temporary file shares the output directory, so rename is atomic.
+  mv -f -- "$output_tmp" "$image"
 
   echo "Wrote ${image}" >&2
   if [[ "$use_edits" -eq 1 ]]; then
@@ -1303,10 +1319,6 @@ PY
   else
     echo "Using ${TZAI_BASE_URL} / ${TZAI_IMAGE_MODEL}${kind:+ / kind=${kind}} / ${endpoint_label}" >&2
   fi
-  if [[ "${n}" -gt 1 ]]; then
-    echo "Note: --n=${n} requested; only the first image was saved to ${image}" >&2
-  fi
-
   if [[ "$json_out" -eq 1 ]]; then
     python3 -c 'import json,sys
 print(json.dumps({

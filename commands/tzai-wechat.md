@@ -1,6 +1,7 @@
 ---
 description: 微信配图 / WeChat article visual via TaoziAPI (kind=wechat)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-wechat

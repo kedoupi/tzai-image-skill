@@ -1,6 +1,7 @@
 ---
 description: 社交种草生图分类 hub (social) · Plan C
 argument-hint: "kind prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-social

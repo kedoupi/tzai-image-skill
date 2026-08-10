@@ -8,7 +8,10 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -18,4 +21,4 @@ jobs:
       - name: CLI help / version
         run: |
           bash skills/tzai-image/scripts/tzai-image --version
-          bash skills/tzai-image/scripts/tzai-image kinds | head -20
+          bash skills/tzai-image/scripts/tzai-image kinds >/dev/null

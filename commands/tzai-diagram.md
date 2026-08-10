@@ -1,6 +1,7 @@
 ---
 description: 结构图示生图分类 hub (diagram) · Plan C
 argument-hint: "kind prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-diagram

@@ -2,8 +2,40 @@
 # Offline self-test for tzai-image (no network required).
 set -euo pipefail
 
-ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+SOURCE_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
+SOURCE_LOCAL_CONFIG="${SOURCE_ROOT}/skills/tzai-image/config.local.env"
+SOURCE_LOCAL_SNAPSHOT=""
+if [[ -f "$SOURCE_LOCAL_CONFIG" ]]; then
+  SOURCE_LOCAL_SNAPSHOT="$(mktemp)"
+  cp "$SOURCE_LOCAL_CONFIG" "$SOURCE_LOCAL_SNAPSHOT"
+fi
+
+TEST_ROOT="$(mktemp -d)/tzai-image-skill"
+TEST_HOME="${TEST_ROOT}/home"
+cleanup() {
+  local status=$?
+  local source_changed=0
+  if [[ -n "$SOURCE_LOCAL_SNAPSHOT" && ! -f "$SOURCE_LOCAL_CONFIG" ]]; then
+    echo "Source config.local.env was deleted" >&2
+    source_changed=1
+  fi
+  if [[ -n "$SOURCE_LOCAL_SNAPSHOT" ]] && ! cmp -s "$SOURCE_LOCAL_SNAPSHOT" "$SOURCE_LOCAL_CONFIG"; then
+    echo "Source config.local.env was changed" >&2
+    source_changed=1
+  fi
+  rm -f "$SOURCE_LOCAL_SNAPSHOT"
+  rm -rf "$(dirname -- "$TEST_ROOT")"
+  [[ "$source_changed" -eq 0 ]] || return 1
+  return "$status"
+}
+trap cleanup EXIT
+mkdir -p "$TEST_ROOT" "$TEST_HOME"
+cp -R "$SOURCE_ROOT/." "$TEST_ROOT"
+
+# Exercise only a disposable skill package and config tree. Never touch a real local config.
+ROOT="$TEST_ROOT"
 BIN="${ROOT}/skills/tzai-image/scripts/tzai-image"
+export HOME="$TEST_HOME"
 PASS=0
 FAIL=0
 
@@ -57,6 +89,58 @@ assert_exit() {
   fi
 }
 
+assert_fails() {
+  local name="$1"
+  shift
+  set +e
+  "$@" >/dev/null 2>&1
+  local code=$?
+  set -e
+  if [[ "$code" -ne 0 ]]; then
+    echo "  PASS  $name (exit $code)"
+    PASS=$((PASS + 1))
+  else
+    echo "  FAIL  $name (unexpected success)"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
+make_mock_curl() {
+  MOCK_BIN="${ROOT}/mock-bin"
+  MOCK_COUNT="${ROOT}/curl-count"
+  mkdir -p "$MOCK_BIN"
+  cat >"${MOCK_BIN}/curl" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf x >>"${MOCK_CURL_COUNT}"
+out=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -o) out="$2"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+if [[ -n "$out" ]]; then
+  case "${MOCK_CURL_RESPONSE:-b64}" in
+    b64) printf '%s' '{"data":[{"b64_json":"iVBORw0KGgo="}]}' >"$out" ;;
+    invalid-b64) printf '%s' '{"data":[{"b64_json":"!!!!"}]}' >"$out" ;;
+    url) printf '%s' '{"data":[{"url":"https://example.invalid/image.png"}]}' >"$out" ;;
+    *) printf '%s' '{"error":"unavailable"}' >"$out" ;;
+  esac
+fi
+printf '%s' "${MOCK_CURL_CODE:-200}"
+EOF
+  cat >"${MOCK_BIN}/sleep" <<'EOF'
+#!/usr/bin/env bash
+exit 0
+EOF
+  chmod +x "${MOCK_BIN}/curl" "${MOCK_BIN}/sleep"
+}
+
+mock_curl_calls() {
+  [[ -f "$MOCK_COUNT" ]] && wc -c <"$MOCK_COUNT" | tr -d ' ' || printf '0'
+}
+
 echo "== syntax =="
 bash -n "$BIN"
 echo "  PASS  bash -n"
@@ -99,6 +183,61 @@ assert_exit "no thin skill for long-tail food" 1 test -f "${ROOT}/skills/tzai-fo
 n_slash="$(find "${ROOT}/skills" -mindepth 1 -maxdepth 1 -type d ! -name tzai-image | wc -l | tr -d ' ')"
 # 6 hubs + 11 kinds = 17
 assert_eq "plan-c slash skill count" "17" "$n_slash"
+
+echo "== generated surface consistency =="
+bash "${ROOT}/scripts/gen-kind-skills.sh" >/dev/null
+engine_version="$(awk -F'"' '/^[[:space:]]*version:/{print $2; exit}' "${ROOT}/skills/tzai-image/SKILL.md")"
+while IFS= read -r skill; do
+  version="$(awk -F'"' '/^[[:space:]]*version:/{print $2; exit}' "$skill")"
+  assert_eq "thin version matches engine ($(basename "$(dirname "$skill")"))" "$engine_version" "$version"
+  marker="$(awk '/tzai-generated-by: tzai-image-skill/{print; exit}' "$skill")"
+  assert_contains "thin generated marker ($(basename "$(dirname "$skill")"))" "tzai-generated-by: tzai-image-skill" "$marker"
+done < <(find "${ROOT}/skills" -mindepth 2 -maxdepth 2 -name SKILL.md ! -path "*/tzai-image/*" | sort)
+while IFS= read -r command; do
+  marker="$(awk '/tzai-generated-by: tzai-image-skill/{print; exit}' "$command")"
+  assert_contains "command generated marker ($(basename "$command"))" "tzai-generated-by: tzai-image-skill" "$marker"
+done < <(find "${ROOT}/commands" -maxdepth 1 -name 'tzai-*.md' | sort)
+
+echo "== generated/install ownership boundaries =="
+mkdir -p "${ROOT}/skills/tzai-handwritten"
+printf '%s\n' 'handwritten skill' >"${ROOT}/skills/tzai-handwritten/SKILL.md"
+printf '%s\n' 'handwritten command' >"${ROOT}/commands/tzai-handwritten.md"
+mkdir -p "${ROOT}/skills/tzai-stale"
+printf '%s\n' 'tzai-generated-by: tzai-image-skill' >"${ROOT}/skills/tzai-stale/SKILL.md"
+printf '%s\n' 'tzai-generated-by: tzai-image-skill' >"${ROOT}/commands/tzai-stale.md"
+bash "${ROOT}/scripts/gen-kind-skills.sh" >/dev/null
+assert_ok "generator preserves handwritten skill" test -f "${ROOT}/skills/tzai-handwritten/SKILL.md"
+assert_ok "generator preserves handwritten command" test -f "${ROOT}/commands/tzai-handwritten.md"
+assert_exit "generator removes owned stale skill" 1 test -e "${ROOT}/skills/tzai-stale/SKILL.md"
+assert_exit "generator removes owned stale command" 1 test -e "${ROOT}/commands/tzai-stale.md"
+
+external_command="$(dirname -- "$ROOT")/external-command.md"
+printf '%s\n' 'external sentinel' >"$external_command"
+rm -f "${ROOT}/commands/tzai-icon.md"
+ln -s "$external_command" "${ROOT}/commands/tzai-icon.md"
+assert_fails "generator rejects symlink output" bash "${ROOT}/scripts/gen-kind-skills.sh"
+assert_contains "generator leaves symlink target unchanged" "external sentinel" "$(<"$external_command")"
+rm -f "${ROOT}/commands/tzai-icon.md"
+bash "${ROOT}/scripts/gen-kind-skills.sh" >/dev/null
+
+INSTALL_HOME="${ROOT}/install-home"
+INSTALL_COMMANDS="${INSTALL_HOME}/.agents/commands"
+mkdir -p "$INSTALL_COMMANDS"
+printf '%s\n' 'keep same-name regular file' >"${INSTALL_COMMANDS}/tzai-icon.md"
+printf '%s\n' 'keep custom regular file' >"${INSTALL_COMMANDS}/tzai-custom.md"
+ln -s "${ROOT}/commands/tzai-stale.md" "${INSTALL_COMMANDS}/tzai-stale.md"
+(
+  cd "$ROOT"
+  HOME="$INSTALL_HOME" bash scripts/install-slash-commands.sh >/dev/null
+)
+assert_contains "installer preserves same-name regular file" "keep same-name" "$(<"${INSTALL_COMMANDS}/tzai-icon.md")"
+assert_ok "installer keeps stale managed link by default" test -L "${INSTALL_COMMANDS}/tzai-stale.md"
+(
+  cd "$ROOT"
+  HOME="$INSTALL_HOME" bash scripts/install-slash-commands.sh --prune >/dev/null
+)
+assert_exit "installer prunes only managed stale link" 1 test -L "${INSTALL_COMMANDS}/tzai-stale.md"
+assert_ok "installer preserves custom regular file" test -f "${INSTALL_COMMANDS}/tzai-custom.md"
 
 echo "== kind enriches prompt (dry-run) =="
 err="$("$BIN" generate --dry-run --kind icon --prompt "spark AI" --image /tmp/i.png 2>&1 >/dev/null)"
@@ -171,6 +310,16 @@ err2="$(env -u TZAI_API_KEY -u TZAI_IMAGE_MODEL TZAI_IMAGE_CONFIG="$tmp_cfg" \
 assert_contains "safe config model" "safe-model" "$err2"
 rm -f "$tmp_cfg"
 
+echo "== config path and permissions =="
+assert_fails "missing explicit config fails" env TZAI_IMAGE_CONFIG="${ROOT}/no-such-config.env" "$BIN" which-config
+for mode in 0644 0660; do
+  tmp_cfg="$(mktemp)"
+  printf '%s\n' 'TZAI_API_KEY=sk-insecure-config' >"$tmp_cfg"
+  chmod "$mode" "$tmp_cfg"
+  assert_fails "key config mode ${mode} rejected" env TZAI_IMAGE_CONFIG="$tmp_cfg" "$BIN" which-config
+  rm -f "$tmp_cfg"
+done
+
 echo "== missing prompt =="
 assert_exit "empty prompt fails" 2 "$BIN" generate --dry-run --prompt "" --image /tmp/t.png --model m
 
@@ -192,7 +341,6 @@ assert_contains "key masked" "sk-e" "$err"
 
 echo "== init local + which-config =="
 tmp_local="${ROOT}/skills/tzai-image/config.local.env"
-rm -f "$tmp_local"
 "$BIN" init --target local --api-key 'sk-filekey-abcdef' --model 'file-model' --force >/dev/null
 assert_ok "local config exists" test -f "$tmp_local"
 # env should win over file
@@ -203,6 +351,11 @@ assert_contains "env overrides file key" "source: env" "$err"
 wc="$("$BIN" which-config 2>/dev/null || true)"
 assert_contains "which-config shows model" "file-model" "$wc"
 rm -f "$tmp_local"
+
+echo "== --n validation =="
+for n in nope 0 -1 2; do
+  assert_exit "--n ${n} fails" 2 "$BIN" generate --dry-run --prompt "x" --image /tmp/t.png --n "$n"
+done
 
 echo "== doctor without key =="
 # Isolate from durable/global/local env files so CI/dev machines with real keys still pass.
@@ -237,6 +390,36 @@ assert_exit "missing ref fails" 2 "$BIN" illustration --dry-run --ref /tmp/no-su
 assert_ok "workflows article" test -f "${ROOT}/skills/tzai-image/references/workflows/article-illustrate.md"
 assert_ok "workflows slide-deck" test -f "${ROOT}/skills/tzai-image/references/workflows/slide-deck.md"
 rm -f "$ref_png"
+
+echo "== offline generation response contracts =="
+make_mock_curl
+mock_env=(env -u TZAI_IMAGE_CONFIG TZAI_API_KEY=sk-mock-key PATH="${MOCK_BIN}:$PATH" MOCK_CURL_COUNT="$MOCK_COUNT")
+out_image="${ROOT}/generated.png"
+printf '%s' 'existing-output' >"$out_image"
+rm -f "$MOCK_COUNT"
+assert_fails "existing output rejected without --force" "${mock_env[@]}" "$BIN" generate --prompt "x" --image "$out_image"
+assert_eq "rejected output makes no curl" "0" "$(mock_curl_calls)"
+rm -f "$MOCK_COUNT"
+assert_ok "--force overwrites existing output" "${mock_env[@]}" "$BIN" generate --force --prompt "x" --image "$out_image"
+assert_eq "successful CLI call makes one curl" "1" "$(mock_curl_calls)"
+assert_ok "forced output replaced" test "$(wc -c <"$out_image" | tr -d ' ')" -ne 15
+
+url_image="${ROOT}/url-only.png"
+rm -f "$MOCK_COUNT"
+assert_fails "URL-only response rejected" "${mock_env[@]}" MOCK_CURL_RESPONSE=url "$BIN" generate --prompt "x" --image "$url_image"
+assert_eq "URL-only response makes one curl" "1" "$(mock_curl_calls)"
+
+printf '%s' 'preserve-on-invalid-response' >"$out_image"
+rm -f "$MOCK_COUNT"
+assert_fails "invalid base64 rejected" "${mock_env[@]}" MOCK_CURL_RESPONSE=invalid-b64 "$BIN" generate --force --prompt "x" --image "$out_image"
+assert_eq "invalid base64 makes one curl" "1" "$(mock_curl_calls)"
+assert_eq "invalid base64 preserves existing output" "preserve-on-invalid-response" "$(<"$out_image")"
+
+for code in 503 000; do
+  rm -f "$MOCK_COUNT"
+  assert_fails "HTTP ${code} fails without retry" "${mock_env[@]}" MOCK_CURL_CODE="$code" "$BIN" generate --prompt "x" --image "${ROOT}/http-${code}.png"
+  assert_eq "HTTP ${code} makes one curl" "1" "$(mock_curl_calls)"
+done
 
 echo "== live smoke (optional TZAI_LIVE=1) =="
 if [[ "${TZAI_LIVE:-}" == "1" ]]; then

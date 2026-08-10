@@ -4,31 +4,82 @@ set -euo pipefail
 
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 SRC="${ROOT}/commands"
+PRUNE=false
+
+usage() {
+  cat <<'EOF'
+Usage: bash scripts/install-slash-commands.sh [--prune]
+
+Install /tzai-* command wrappers as symlinks for supported agent clients.
+
+Options:
+  --prune  Remove only stale symlinks that point into this repository's
+            commands directory. Regular files and external symlinks are kept.
+  -h, --help  Show this help message.
+EOF
+}
+
+while (($#)); do
+  case "$1" in
+    --prune) PRUNE=true ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
+  esac
+  shift
+done
+
 if [[ ! -d "$SRC" ]] || ! compgen -G "${SRC}/tzai-*.md" >/dev/null; then
   echo "Missing command files. Run: bash scripts/gen-kind-skills.sh" >&2
   exit 1
 fi
 
+link_points_into_source() {
+  local link="$1" resolved
+  resolved="$(python3 - "$link" <<'PY'
+import os
+import sys
+print(os.path.realpath(sys.argv[1]))
+PY
+)"
+  [[ "$resolved" == "$SRC/"* ]]
+}
+
 link_commands() {
   local dest="$1"
   mkdir -p "$dest"
-  local n=0
-  local f base
-  # Prune stale long-tail wrappers not in Plan C source set
-  for f in "$dest"/tzai-*.md; do
-    [[ -e "$f" || -L "$f" ]] || continue
-    base="$(basename "$f")"
-    if [[ ! -f "${SRC}/${base}" ]]; then
-      rm -f "$f"
-    fi
-  done
+  local n=0 skipped=0 pruned=0
+  local f target base
+  if [[ "$PRUNE" == true ]]; then
+    for target in "$dest"/tzai-*.md; do
+      [[ -L "$target" ]] || continue
+      base="$(basename "$target")"
+      if [[ ! -e "${SRC}/${base}" ]] && link_points_into_source "$target"; then
+        rm -- "$target"
+        pruned=$((pruned + 1))
+      fi
+    done
+  fi
   for f in "$SRC"/tzai-*.md; do
     [[ -f "$f" ]] || continue
     base="$(basename "$f")"
-    ln -sfn "$f" "${dest}/${base}"
+    target="${dest}/${base}"
+    if [[ -e "$target" || -L "$target" ]]; then
+      if [[ -L "$target" ]] && link_points_into_source "$target"; then
+        ln -sfn "$f" "$target"
+      else
+        echo "  warning: keeping existing ${target}" >&2
+        skipped=$((skipped + 1))
+        continue
+      fi
+    else
+      ln -s "$f" "$target"
+    fi
     n=$((n + 1))
   done
-  echo "  commands: ${n} → ${dest}"
+  echo "  commands: ${n} linked, ${skipped} kept → ${dest}"
+  if [[ "$PRUNE" == true ]]; then
+    echo "  pruned: ${pruned} stale repository symlinks"
+  fi
 }
 
 echo "== Slash command wrappers (commands/*.md) =="

@@ -1,6 +1,7 @@
 ---
 description: Logo标志 / Logo / monogram via TaoziAPI (kind=logo)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-logo

@@ -5,33 +5,70 @@
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 exec python3 - "$ROOT" <<'PY'
-import json, shutil
+import json
+import re
+import sys
 from pathlib import Path
 from collections import defaultdict
 
-root = Path(__import__("sys").argv[1])
+root = Path(sys.argv[1])
 kinds_path = root / "skills" / "tzai-image" / "references" / "kinds.tsv"
 white_path = root / "skills" / "tzai-image" / "references" / "slash-whitelist.txt"
+engine_skill_path = root / "skills" / "tzai-image" / "SKILL.md"
 skills_out = root / "skills"
 cmd_out = root / "commands"
-cmd_out.mkdir(parents=True, exist_ok=True)
+OWNERSHIP_MARKER = "tzai-generated-by: tzai-image-skill"
+SEMVER_RE = re.compile(
+    r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)"
+    r"(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?"
+    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
+)
 
-VERSION = "0.5.0"
+def read_engine_version():
+    """Read the authoritative engine version without depending on a YAML parser."""
+    try:
+        text = engine_skill_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise SystemExit(f"Cannot read engine SKILL.md: {exc}")
+    match = re.search(r"(?m)^  version:\s*[\"']?([^\"'\s]+)[\"']?\s*$", text)
+    if not match:
+        raise SystemExit("Missing metadata.version in skills/tzai-image/SKILL.md")
+    version = match.group(1)
+    if not SEMVER_RE.fullmatch(version):
+        raise SystemExit(f"Invalid metadata.version (expected SemVer): {version}")
+    return version
 
-# Remove previously generated thin skills (keep engine)
-for p in skills_out.iterdir():
-    if p.is_dir() and p.name != "tzai-image":
-        shutil.rmtree(p)
-for f in cmd_out.glob("tzai-*.md"):
-    f.unlink()
+VERSION = read_engine_version()
+
+def is_owned(path):
+    try:
+        return OWNERSHIP_MARKER in path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+
+def assert_safe_output(path, output_root):
+    """Refuse output paths that escape the repository through symlinks."""
+    try:
+        path.relative_to(output_root)
+    except ValueError:
+        raise SystemExit(f"Generated output escapes {output_root}: {path}")
+    current = path
+    while current != output_root:
+        if current.is_symlink():
+            raise SystemExit(f"Refuse generated output through symlink: {current}")
+        current = current.parent
+    if output_root.is_symlink():
+        raise SystemExit(f"Refuse symlink output root: {output_root}")
 
 rows = []
-for line in kinds_path.read_text(encoding="utf-8").splitlines():
+for line_no, line in enumerate(kinds_path.read_text(encoding="utf-8").splitlines(), start=1):
     if not line.strip() or line.startswith("#"):
         continue
     parts = line.split("\t")
     if len(parts) < 7:
-        continue
+        raise SystemExit(f"Invalid kinds.tsv row {line_no}: expected at least 7 tab-separated fields")
+    if any(not value.strip() for value in parts[:7]):
+        raise SystemExit(f"Invalid kinds.tsv row {line_no}: required fields may not be empty")
     rows.append({
         "id": parts[0],
         "category": parts[1],
@@ -42,6 +79,8 @@ for line in kinds_path.read_text(encoding="utf-8").splitlines():
         "prefix": parts[6],
     })
 by_id = {r["id"]: r for r in rows}
+if len(by_id) != len(rows):
+    raise SystemExit("Duplicate kind id in kinds.tsv")
 by_cat = defaultdict(list)
 for r in rows:
     by_cat[r["category"]].append(r)
@@ -49,7 +88,7 @@ for r in rows:
 # Parse whitelist
 white_cats = []
 white_kinds = []
-for line in white_path.read_text(encoding="utf-8").splitlines():
+for line_no, line in enumerate(white_path.read_text(encoding="utf-8").splitlines(), start=1):
     line = line.strip()
     if not line or line.startswith("#"):
         continue
@@ -57,12 +96,14 @@ for line in white_path.read_text(encoding="utf-8").splitlines():
     if len(parts) < 2:
         parts = line.split()
     if len(parts) < 2:
-        continue
+        raise SystemExit(f"Invalid slash-whitelist.txt row {line_no}: expected type and identifier")
     typ, ident = parts[0].strip(), parts[1].strip()
     if typ == "category":
         white_cats.append(ident)
     elif typ == "kind":
         white_kinds.append(ident)
+    else:
+        raise SystemExit(f"Invalid whitelist entry type on row {line_no}: {typ}")
 
 cat_labels = {
     "brand": ("品牌识别", "Brand identity", "Icons, logos, mascots, badges, avatars, mood boards"),
@@ -93,10 +134,11 @@ if [ -z "$ENGINE" ]; then
 fi
 ```'''
 
+skill_outputs = {}
+command_outputs = {}
+
 def write_kind_skill(r):
     skill_name = f"tzai-{r['id']}"
-    skill_dir = skills_out / skill_name
-    skill_dir.mkdir(parents=True, exist_ok=True)
     kid = r["id"]
     body = f'''---
 name: {skill_name}
@@ -110,6 +152,7 @@ user-invocable: true
 metadata:
   author: kedoupi
   version: "{VERSION}"
+  {OWNERSHIP_MARKER}
   short-description: "{r["label_zh"]} · {r["category_zh"]}"
   tzai-kind: "{kid}"
   tzai-category: "{r["category"]}"
@@ -182,11 +225,12 @@ bash "$ENGINE" cover --type hero --palette dark --mood bold --text none --prompt
 - Engine: `/tzai-image` · `bash $ENGINE kinds`
 - Demos: https://github.com/kedoupi/tzai-image-skill#gallery
 '''
-    (skill_dir / "SKILL.md").write_text(body, encoding="utf-8")
+    skill_outputs[skill_name] = body
 
     cmd = f'''---
 description: {r["label_zh"]} / {r["label_en"]} via TaoziAPI (kind={kid})
 argument-hint: "prompt…"
+{OWNERSHIP_MARKER}
 ---
 
 # /{skill_name}
@@ -209,12 +253,10 @@ bash <engine> {kid} --prompt "<subject>" --image "./tzai-{kid}-$(date +%Y%m%d-%H
 
 6. Report output path. Default model: **gpt-image-2**.
 '''
-    (cmd_out / f"{skill_name}.md").write_text(cmd, encoding="utf-8")
+    command_outputs[skill_name] = cmd
 
 def write_cat_skill(cat, items):
     skill_name = f"tzai-{cat}"
-    skill_dir = skills_out / skill_name
-    skill_dir.mkdir(parents=True, exist_ok=True)
     zh, en, desc = cat_labels.get(cat, (cat, cat, cat))
     kinds_ids = [r["id"] for r in items]
     kinds_list = ", ".join(kinds_ids)
@@ -242,6 +284,7 @@ user-invocable: true
 metadata:
   author: kedoupi
   version: "{VERSION}"
+  {OWNERSHIP_MARKER}
   short-description: "{zh}分类 · {cat}"
   tzai-category: "{cat}"
   tzai-slash: "plan-c-hub"
@@ -286,11 +329,12 @@ If they already know the scene (“小红书图卡”“架构图”), prefer th
 - Engine `/tzai-image` · `bash $ENGINE kinds`
 - Demos: https://github.com/kedoupi/tzai-image-skill#gallery
 '''
-    (skill_dir / "SKILL.md").write_text(body, encoding="utf-8")
+    skill_outputs[skill_name] = body
 
     cmd = f'''---
 description: {zh}生图分类 hub ({cat}) · Plan C
 argument-hint: "kind prompt…"
+{OWNERSHIP_MARKER}
 ---
 
 # /{skill_name}
@@ -305,20 +349,58 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image <kind> --prompt "<主题>" -
 
 High-freq direct slashes: {direct_s}
 '''
-    (cmd_out / f"{skill_name}.md").write_text(cmd, encoding="utf-8")
+    command_outputs[skill_name] = cmd
 
 # Validate whitelist
 for c in white_cats:
     if c not in by_cat:
         raise SystemExit(f"Unknown category in whitelist: {c}")
+    if c not in cat_labels:
+        raise SystemExit(f"Missing category labels for whitelist category: {c}")
 for k in white_kinds:
     if k not in by_id:
         raise SystemExit(f"Unknown kind in whitelist: {k}")
+if len(set(white_cats)) != len(white_cats):
+    raise SystemExit("Duplicate category in whitelist")
+if len(set(white_kinds)) != len(white_kinds):
+    raise SystemExit("Duplicate kind in whitelist")
+target_names = [f"tzai-{k}" for k in white_kinds] + [f"tzai-{c}" for c in white_cats]
+if len(set(target_names)) != len(target_names):
+    raise SystemExit("Whitelist produces duplicate generated paths")
 
 for kid in white_kinds:
     write_kind_skill(by_id[kid])
 for cat in white_cats:
     write_cat_skill(cat, by_cat[cat])
+
+# All inputs and generated content have been validated before touching outputs.
+# Only expected paths are overwritten; stale artifacts require our marker.
+for skill_name in skill_outputs:
+    assert_safe_output(skills_out / skill_name / "SKILL.md", skills_out)
+for skill_name in command_outputs:
+    assert_safe_output(cmd_out / f"{skill_name}.md", cmd_out)
+skills_out.mkdir(parents=True, exist_ok=True)
+cmd_out.mkdir(parents=True, exist_ok=True)
+for skill_name, body in skill_outputs.items():
+    skill_path = skills_out / skill_name / "SKILL.md"
+    skill_path.parent.mkdir(parents=True, exist_ok=True)
+    skill_path.write_text(body, encoding="utf-8")
+for skill_name, body in command_outputs.items():
+    (cmd_out / f"{skill_name}.md").write_text(body, encoding="utf-8")
+
+for skill_dir in skills_out.iterdir():
+    if skill_dir.is_symlink() or not skill_dir.is_dir() or skill_dir.name == "tzai-image":
+        continue
+    skill_path = skill_dir / "SKILL.md"
+    if skill_dir.name not in skill_outputs and skill_path.is_file() and is_owned(skill_path):
+        skill_path.unlink()
+        try:
+            skill_dir.rmdir()
+        except OSError:
+            pass  # User files in a formerly generated directory are preserved.
+for command_path in cmd_out.glob("tzai-*.md"):
+    if command_path.stem not in command_outputs and command_path.is_file() and is_owned(command_path):
+        command_path.unlink()
 
 # skills.sh.json — Plan C groupings only
 groupings = [{

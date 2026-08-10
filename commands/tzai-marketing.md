@@ -1,6 +1,7 @@
 ---
 description: 市场内容生图分类 hub (marketing) · Plan C
 argument-hint: "kind prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-marketing

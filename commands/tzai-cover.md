@@ -1,6 +1,7 @@
 ---
 description: 文章封面 / Article cover via TaoziAPI (kind=cover)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-cover

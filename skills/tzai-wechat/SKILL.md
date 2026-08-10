@@ -9,7 +9,8 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.0"
+  version: "0.5.4"
+  tzai-generated-by: tzai-image-skill
   short-description: "微信配图 · 社交种草"
   tzai-kind: "wechat"
   tzai-category: "social"

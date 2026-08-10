@@ -1,6 +1,7 @@
 ---
 description: 小红书封面 / XHS cover via TaoziAPI (kind=xhs-cover)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-xhs-cover

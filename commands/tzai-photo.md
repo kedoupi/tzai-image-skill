@@ -1,6 +1,7 @@
 ---
 description: 影像插画生图分类 hub (photo) · Plan C
 argument-hint: "kind prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-photo

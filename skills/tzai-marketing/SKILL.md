@@ -9,7 +9,8 @@ argument-hint: "kind prompt…  e.g. slide <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.0"
+  version: "0.5.4"
+  tzai-generated-by: tzai-image-skill
   short-description: "市场内容分类 · marketing"
   tzai-category: "marketing"
   tzai-slash: "plan-c-hub"

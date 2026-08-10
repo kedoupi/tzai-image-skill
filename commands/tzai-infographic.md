@@ -1,6 +1,7 @@
 ---
 description: 信息图 / Infographic via TaoziAPI (kind=infographic)
 argument-hint: "prompt…"
+tzai-generated-by: tzai-image-skill
 ---
 
 # /tzai-infographic
