@@ -1,36 +1,51 @@
 #!/usr/bin/env bash
+# tzai-image — generate images via TaoziAPI (https://tzai.kdp.cool)
 set -euo pipefail
 
-# Resolve skill root even when reached via agent symlink.
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 SKILL_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
 SKILL_NAME="$(basename -- "$SKILL_ROOT")"
 SKILLS_PARENT="$(dirname -- "$SKILL_ROOT")"
 
-# Durable config lives next to the skill package, not inside it.
 DURABLE_CONFIG_DIR="${SKILLS_PARENT}/.skill-data/${SKILL_NAME}"
 DURABLE_CONFIG_FILE="${DURABLE_CONFIG_DIR}/config.env"
-
-# Shared fallback for copy-mode multi-agent installs.
 GLOBAL_SHARED_CONFIG_FILE="${HOME}/.agents/skills/.skill-data/${SKILL_NAME}/config.env"
-
-# Optional in-package override (wiped by npx skills update).
 LOCAL_CONFIG_FILE="${SKILL_ROOT}/config.local.env"
-
-# Legacy XDG path.
 XDG_CONFIG_FILE="${HOME}/.config/${SKILL_NAME}/config.env"
-
 EXAMPLE_CONFIG_FILE="${SKILL_ROOT}/config.example.env"
 SKILL_MD_FILE="${SKILL_ROOT}/SKILL.md"
 
-# Env names use SKILL_* in the template; scripts/new-skill.sh rewrites them
-# to <NAME>_CHAT_ID / <NAME>_AS / <NAME>_FOOTER / <NAME>_CONFIG.
+DEFAULT_BASE_URL="https://tzai.kdp.cool"
+DEFAULT_AR="1:1"
+DEFAULT_TIMEOUT=120
+CONSOLE_URL="https://tzai.kdp.cool/console"
+
+# Snapshot process env so files cannot clobber exported globals (plan: env > files).
+_ENV_API_KEY="${TZAI_API_KEY-}"
+_ENV_BASE_URL="${TZAI_BASE_URL-}"
+_ENV_MODEL="${TZAI_IMAGE_MODEL-}"
+_ENV_AR="${TZAI_DEFAULT_AR-}"
+_ENV_TIMEOUT="${TZAI_TIMEOUT_SEC-}"
+_ENV_HAD_API_KEY=0
+_ENV_HAD_BASE_URL=0
+_ENV_HAD_MODEL=0
+_ENV_HAD_AR=0
+_ENV_HAD_TIMEOUT=0
+[[ -n "${TZAI_API_KEY+x}" && -n "${TZAI_API_KEY-}" ]] && _ENV_HAD_API_KEY=1
+[[ -n "${TZAI_BASE_URL+x}" && -n "${TZAI_BASE_URL-}" ]] && _ENV_HAD_BASE_URL=1
+[[ -n "${TZAI_IMAGE_MODEL+x}" && -n "${TZAI_IMAGE_MODEL-}" ]] && _ENV_HAD_MODEL=1
+[[ -n "${TZAI_DEFAULT_AR+x}" && -n "${TZAI_DEFAULT_AR-}" ]] && _ENV_HAD_AR=1
+[[ -n "${TZAI_TIMEOUT_SEC+x}" && -n "${TZAI_TIMEOUT_SEC-}" ]] && _ENV_HAD_TIMEOUT=1
+
+# Effective key source for doctor/which-config: file | env | cli | unset
+KEY_SOURCE="unset"
+BASE_SOURCE="default"
+MODEL_SOURCE="unset"
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-# Require a non-empty option value. Values MAY start with "-" (markdown lists).
 require_val() {
   local opt="$1"
   if [[ $# -lt 2 ]]; then
@@ -48,7 +63,40 @@ skill_version() {
   if [[ -f "$SKILL_MD_FILE" ]]; then
     v="$(sed -nE 's/^[[:space:]]*version:[[:space:]]*"([^"]+)".*/\1/p' "$SKILL_MD_FILE" | head -n1)"
   fi
-  printf '%s' "${v:-0.0.0}"
+  printf '%s' "${v:-0.1.0}"
+}
+
+mask_key() {
+  local k="${1-}"
+  if [[ -z "$k" ]]; then
+    printf '(unset)'
+    return
+  fi
+  if [[ ${#k} -le 8 ]]; then
+    printf '****'
+    return
+  fi
+  printf '%s…%s' "${k:0:4}" "${k: -4}"
+}
+
+print_key_howto() {
+  cat <<EOF >&2
+No API key found.
+
+Get a key:
+  1) Open ${CONSOLE_URL}
+  2) Sign in / register, create an API token
+
+Configure (pick one):
+  A) Global env (recommended for shell users):
+       export TZAI_API_KEY='sk-...'
+  B) Durable file (recommended for agents):
+       bash ${SCRIPT_DIR}/tzai-image init --api-key sk-...
+  C) One-shot CLI:
+       bash ${SCRIPT_DIR}/tzai-image generate --api-key sk-... --prompt "..." --image out.png
+
+Never commit the key or put it only inside the skill package (wiped by npx skills update).
+EOF
 }
 
 load_env_file() {
@@ -64,16 +112,69 @@ load_env_file() {
   fi
 }
 
+# Files first, then re-apply process env (env wins over files).
+# Then optional TZAI_IMAGE_CONFIG (explicit path, overrides env).
 load_all_configs() {
+  TZAI_BASE_URL="${DEFAULT_BASE_URL}"
+  TZAI_DEFAULT_AR="${DEFAULT_AR}"
+  TZAI_TIMEOUT_SEC="${DEFAULT_TIMEOUT}"
+  KEY_SOURCE="unset"
+  BASE_SOURCE="default"
+  MODEL_SOURCE="unset"
+
   load_env_file "$XDG_CONFIG_FILE"
   load_env_file "$GLOBAL_SHARED_CONFIG_FILE"
   if [[ "$DURABLE_CONFIG_FILE" != "$GLOBAL_SHARED_CONFIG_FILE" ]]; then
     load_env_file "$DURABLE_CONFIG_FILE"
   fi
   load_env_file "$LOCAL_CONFIG_FILE"
-  if [[ -n "${TZAI_IMAGE_CONFIG:-}" ]]; then
-    load_env_file "$TZAI_IMAGE_CONFIG"
+
+  if [[ -n "${TZAI_API_KEY-}" ]]; then
+    KEY_SOURCE="file"
   fi
+  if [[ "${TZAI_BASE_URL}" != "${DEFAULT_BASE_URL}" ]]; then
+    BASE_SOURCE="file"
+  fi
+  if [[ -n "${TZAI_IMAGE_MODEL-}" ]]; then
+    MODEL_SOURCE="file"
+  fi
+
+  # Process env overrides files
+  if [[ "$_ENV_HAD_API_KEY" -eq 1 ]]; then
+    TZAI_API_KEY="$_ENV_API_KEY"
+    KEY_SOURCE="env"
+  fi
+  if [[ "$_ENV_HAD_BASE_URL" -eq 1 ]]; then
+    TZAI_BASE_URL="$_ENV_BASE_URL"
+    BASE_SOURCE="env"
+  fi
+  if [[ "$_ENV_HAD_MODEL" -eq 1 ]]; then
+    TZAI_IMAGE_MODEL="$_ENV_MODEL"
+    MODEL_SOURCE="env"
+  fi
+  if [[ "$_ENV_HAD_AR" -eq 1 ]]; then
+    TZAI_DEFAULT_AR="$_ENV_AR"
+  fi
+  if [[ "$_ENV_HAD_TIMEOUT" -eq 1 ]]; then
+    TZAI_TIMEOUT_SEC="$_ENV_TIMEOUT"
+  fi
+
+  # Explicit config file path overrides env
+  if [[ -n "${TZAI_IMAGE_CONFIG-}" && -f "${TZAI_IMAGE_CONFIG}" ]]; then
+    load_env_file "$TZAI_IMAGE_CONFIG"
+    if [[ -n "${TZAI_API_KEY-}" ]]; then
+      KEY_SOURCE="explicit-file"
+    fi
+    if [[ -n "${TZAI_BASE_URL-}" ]]; then
+      BASE_SOURCE="explicit-file"
+    fi
+    if [[ -n "${TZAI_IMAGE_MODEL-}" ]]; then
+      MODEL_SOURCE="explicit-file"
+    fi
+  fi
+
+  # Normalize base URL (strip trailing slash)
+  TZAI_BASE_URL="${TZAI_BASE_URL%/}"
 }
 
 print_config_paths() {
@@ -88,34 +189,51 @@ Explicit override:    ${TZAI_IMAGE_CONFIG:-"(unset)"}
 EOF
 }
 
+ar_to_size() {
+  local ar="${1:-1:1}"
+  case "$ar" in
+    1:1) echo "1024x1024" ;;
+    16:9) echo "1792x1024" ;;
+    9:16) echo "1024x1792" ;;
+    4:3) echo "1536x1152" ;;
+    3:4) echo "1152x1536" ;;
+    3:2) echo "1536x1024" ;;
+    2:3) echo "1024x1536" ;;
+    *) echo "1024x1024" ;;
+  esac
+}
+
 # ---------------------------------------------------------------------------
 # init
 # ---------------------------------------------------------------------------
 
 cmd_init() {
-  local chat_id=""
-  local as_identity="bot"
-  local footer="via ${SKILL_NAME}"
-  local force=0
-  local target="durable"
+  local api_key="" base_url="$DEFAULT_BASE_URL" model="" force=0 target="durable"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --chat-id) require_val "$1" "${2-}"; chat_id="$2"; shift 2 ;;
-      --as) require_val "$1" "${2-}"; as_identity="$2"; shift 2 ;;
-      --footer) require_val "$1" "${2-}"; footer="$2"; shift 2 ;;
+      --api-key) require_val "$1" "${2-}"; api_key="$2"; shift 2 ;;
+      --base-url) require_val "$1" "${2-}"; base_url="$2"; shift 2 ;;
+      --model) require_val "$1" "${2-}"; model="$2"; shift 2 ;;
       --target) require_val "$1" "${2-}"; target="$2"; shift 2 ;;
       --force) force=1; shift ;;
       -h|--help)
         cat <<EOF
-Usage: ${SKILL_NAME} init [options]
+Usage: tzai-image init [options]
+
+Save API credentials to a durable config file (not inside the skill package).
+
+Get a key first: ${CONSOLE_URL}
 
 Options:
-  --chat-id <id>   Target chat id
-  --as <bot|user>  Sending identity (default: bot)
-  --footer <text>  Message footer (may start with '-')
-  --target <where> durable | global | local (default: durable)
-  --force          Overwrite existing config
+  --api-key <sk-...>   TaoziAPI key (required)
+  --base-url <url>     Default: ${DEFAULT_BASE_URL}
+  --model <id>         Default image model id
+  --target <where>     durable | global | local (default: durable)
+  --force              Overwrite existing config
+
+Alternatively, skip init and use a global env var:
+  export TZAI_API_KEY='sk-...'
 EOF
         return 0
         ;;
@@ -123,9 +241,10 @@ EOF
     esac
   done
 
-  case "$as_identity" in bot|user) ;; *)
-    echo "Invalid --as: $as_identity" >&2; return 2 ;;
-  esac
+  if [[ -z "$api_key" ]]; then
+    echo "Missing --api-key. Get one at ${CONSOLE_URL}" >&2
+    return 2
+  fi
 
   local out_file
   case "$target" in
@@ -135,15 +254,6 @@ EOF
     *) echo "Invalid --target: $target" >&2; return 2 ;;
   esac
 
-  if [[ -z "$chat_id" && -t 0 ]]; then
-    printf "Chat id: "
-    read -r chat_id
-  fi
-  if [[ -z "$chat_id" ]]; then
-    echo "Missing chat id. Pass --chat-id <id>" >&2
-    return 2
-  fi
-
   if [[ -f "$out_file" && "$force" -ne 1 ]]; then
     echo "Config already exists: $out_file" >&2
     echo "Re-run with --force to overwrite." >&2
@@ -151,122 +261,481 @@ EOF
   fi
 
   mkdir -p "$(dirname -- "$out_file")"
-  cat >"$out_file" <<EOF
-# Generated by: ${SKILL_NAME} init
-# Skill root: ${SKILL_ROOT}
-# Target: ${target}
-TZAI_IMAGE_CHAT_ID=$(printf '%q' "$chat_id")
-TZAI_IMAGE_AS=$(printf '%q' "$as_identity")
-TZAI_IMAGE_FOOTER=$(printf '%q' "$footer")
-EOF
+  {
+    echo "# Generated by: tzai-image init"
+    echo "# Skill root: ${SKILL_ROOT}"
+    echo "# Target: ${target}"
+    echo "# Get / rotate keys: ${CONSOLE_URL}"
+    echo "TZAI_BASE_URL=$(printf '%q' "${base_url%/}")"
+    echo "TZAI_API_KEY=$(printf '%q' "$api_key")"
+    if [[ -n "$model" ]]; then
+      echo "TZAI_IMAGE_MODEL=$(printf '%q' "$model")"
+    fi
+    echo "TZAI_DEFAULT_AR=$(printf '%q' "$DEFAULT_AR")"
+    echo "TZAI_TIMEOUT_SEC=$(printf '%q' "$DEFAULT_TIMEOUT")"
+  } >"$out_file"
   chmod 600 "$out_file" 2>/dev/null || true
+
   echo "Wrote ${out_file}"
+  echo "API key: $(mask_key "$api_key")  (masked)"
   if [[ "$target" == "local" ]]; then
-    echo "Note: local config is wiped by npx skills update."
+    echo "Note: local config is wiped by npx skills update. Prefer durable or export TZAI_API_KEY."
   else
     echo "This path survives npx skills update."
+  fi
+  echo "Tip: you can also use only:  export TZAI_API_KEY='sk-...'"
+}
+
+# ---------------------------------------------------------------------------
+# doctor / which-config
+# ---------------------------------------------------------------------------
+
+cmd_doctor() {
+  local strict=0
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --strict-auth) strict=1; shift ;;
+      -h|--help)
+        echo "Usage: tzai-image doctor [--strict-auth]"
+        return 0
+        ;;
+      *) echo "Unknown doctor option: $1" >&2; return 2 ;;
+    esac
+  done
+
+  load_all_configs
+  local pass=0 fail=0 warn=0
+  ok() { echo "  [OK]   $*"; pass=$((pass + 1)); }
+  bad() { echo "  [FAIL] $*"; fail=$((fail + 1)); }
+  wrn() { echo "  [WARN] $*"; warn=$((warn + 1)); }
+
+  echo "tzai-image doctor  v$(skill_version)"
+  echo "skill root: ${SKILL_ROOT}"
+  echo
+
+  echo "== tools =="
+  if command -v python3 >/dev/null 2>&1; then
+    ok "python3: $(command -v python3)"
+  else
+    bad "python3 missing (required for generate JSON handling)"
+  fi
+  if command -v curl >/dev/null 2>&1; then
+    ok "curl: $(command -v curl)"
+  else
+    wrn "curl missing (used for strict-auth / models)"
+  fi
+
+  echo
+  echo "== config =="
+  print_config_paths
+  echo
+  echo "Effective (masked):"
+  echo "  TZAI_BASE_URL=${TZAI_BASE_URL:-}  (source: ${BASE_SOURCE})"
+  echo "  TZAI_API_KEY=$(mask_key "${TZAI_API_KEY-}")  (source: ${KEY_SOURCE})"
+  echo "  TZAI_IMAGE_MODEL=${TZAI_IMAGE_MODEL:-"(unset)"}  (source: ${MODEL_SOURCE})"
+  echo "  TZAI_DEFAULT_AR=${TZAI_DEFAULT_AR:-$DEFAULT_AR}"
+  echo "  TZAI_TIMEOUT_SEC=${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}"
+  echo
+
+  if [[ -n "${TZAI_API_KEY-}" ]]; then
+    ok "API key present (source: ${KEY_SOURCE})"
+  else
+    bad "API key missing"
+    print_key_howto
+  fi
+
+  if [[ -z "${TZAI_IMAGE_MODEL-}" ]]; then
+    wrn "TZAI_IMAGE_MODEL unset — pass --model or set after: tzai-image models"
+  else
+    ok "default model: ${TZAI_IMAGE_MODEL}"
+  fi
+
+  if [[ "$strict" -eq 1 ]]; then
+    echo
+    echo "== strict auth (GET /v1/models) =="
+    if [[ -z "${TZAI_API_KEY-}" ]]; then
+      bad "cannot strict-auth without API key"
+    elif ! command -v curl >/dev/null 2>&1; then
+      bad "curl required for --strict-auth"
+    else
+      local code body
+      body="$(curl -sS -o /tmp/tzai-doctor-models.$$ -w "%{http_code}" \
+        --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
+        -H "Authorization: Bearer ${TZAI_API_KEY}" \
+        "${TZAI_BASE_URL}/v1/models" 2>/dev/null || echo "000")"
+      code="$body"
+      if [[ "$code" == "200" ]]; then
+        ok "GET /v1/models → 200"
+      else
+        bad "GET /v1/models → HTTP ${code} (check key at ${CONSOLE_URL})"
+        head -c 300 /tmp/tzai-doctor-models.$$ 2>/dev/null >&2 || true
+        echo >&2
+      fi
+      rm -f /tmp/tzai-doctor-models.$$ 2>/dev/null || true
+    fi
+  fi
+
+  echo
+  echo "Results: ${pass} ok, ${warn} warn, ${fail} fail"
+  [[ "$fail" -eq 0 ]] || return 1
+  return 0
+}
+
+cmd_which_config() {
+  load_all_configs
+  print_config_paths
+  echo
+  echo "Effective:"
+  echo "  key_source=${KEY_SOURCE}  key=$(mask_key "${TZAI_API_KEY-}")"
+  echo "  base_url=${TZAI_BASE_URL}  (source: ${BASE_SOURCE})"
+  echo "  model=${TZAI_IMAGE_MODEL:-"(unset)"}  (source: ${MODEL_SOURCE})"
+  echo "  ar=${TZAI_DEFAULT_AR:-$DEFAULT_AR}"
+  echo "  timeout=${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}"
+}
+
+# ---------------------------------------------------------------------------
+# models
+# ---------------------------------------------------------------------------
+
+cmd_models() {
+  load_all_configs
+  if [[ -z "${TZAI_API_KEY-}" ]]; then
+    print_key_howto
+    return 2
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "curl required for models" >&2
+    return 1
+  fi
+  local tmp
+  tmp="$(mktemp)"
+  local code
+  code="$(curl -sS -o "$tmp" -w "%{http_code}" \
+    --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
+    -H "Authorization: Bearer ${TZAI_API_KEY}" \
+    "${TZAI_BASE_URL}/v1/models" || true)"
+  if [[ "$code" != "200" ]]; then
+    echo "GET /v1/models failed: HTTP ${code}" >&2
+    head -c 500 "$tmp" >&2 || true
+    echo >&2
+    rm -f "$tmp"
+    return 1
+  fi
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "$tmp" <<'PY'
+import json, sys
+path = sys.argv[1]
+data = json.load(open(path))
+items = data.get("data") or data.get("models") or []
+if isinstance(items, dict):
+    items = list(items.values())
+ids = []
+for it in items:
+    if isinstance(it, dict):
+        mid = it.get("id") or it.get("name")
+        if mid:
+            ids.append(str(mid))
+    elif isinstance(it, str):
+        ids.append(it)
+for mid in sorted(set(ids)):
+    print(mid)
+if not ids:
+    print(json.dumps(data, ensure_ascii=False, indent=2)[:4000])
+PY
+  else
+    cat "$tmp"
+  fi
+  rm -f "$tmp"
+}
+
+# ---------------------------------------------------------------------------
+# generate
+# ---------------------------------------------------------------------------
+
+cmd_generate() {
+  local prompt="" image="" model="" size="" ar="" api_key="" base_url="" dry_run=0 json_out=0 n=1
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --prompt|-p) require_val "$1" "${2-}"; prompt="$2"; shift 2 ;;
+      --image|-o) require_val "$1" "${2-}"; image="$2"; shift 2 ;;
+      --model|-m) require_val "$1" "${2-}"; model="$2"; shift 2 ;;
+      --size) require_val "$1" "${2-}"; size="$2"; shift 2 ;;
+      --ar) require_val "$1" "${2-}"; ar="$2"; shift 2 ;;
+      --api-key) require_val "$1" "${2-}"; api_key="$2"; shift 2 ;;
+      --base-url) require_val "$1" "${2-}"; base_url="$2"; shift 2 ;;
+      --n) require_val "$1" "${2-}"; n="$2"; shift 2 ;;
+      --dry-run) dry_run=1; shift ;;
+      --json) json_out=1; shift ;;
+      -h|--help)
+        cat <<EOF
+Usage: tzai-image generate [options]
+
+Options:
+  --prompt, -p <text>   Image prompt (required)
+  --image, -o <path>    Output file path (required unless --dry-run)
+  --model, -m <id>      Model id (or TZAI_IMAGE_MODEL)
+  --size <WxH>          e.g. 1024x1024
+  --ar <ratio>          1:1 | 16:9 | 9:16 | 4:3 | 3:4 … (maps to size if --size omitted)
+  --api-key <sk-...>    Override key for this call
+  --base-url <url>      Override gateway
+  --n <count>           Number of images (default 1; only first saved if >1)
+  --dry-run             Print plan only (no network)
+  --json                Print JSON metadata on stdout after success
+
+Config:
+  export TZAI_API_KEY='sk-...'
+  or: tzai-image init --api-key sk-...
+  Key console: ${CONSOLE_URL}
+EOF
+        return 0
+        ;;
+      *) echo "Unknown generate option: $1" >&2; return 2 ;;
+    esac
+  done
+
+  load_all_configs
+
+  if [[ -n "$api_key" ]]; then
+    TZAI_API_KEY="$api_key"
+    KEY_SOURCE="cli"
+  fi
+  if [[ -n "$base_url" ]]; then
+    TZAI_BASE_URL="${base_url%/}"
+    BASE_SOURCE="cli"
+  fi
+  if [[ -n "$model" ]]; then
+    TZAI_IMAGE_MODEL="$model"
+    MODEL_SOURCE="cli"
+  fi
+  if [[ -n "$ar" ]]; then
+    TZAI_DEFAULT_AR="$ar"
+  fi
+  if [[ -z "$size" ]]; then
+    size="$(ar_to_size "${TZAI_DEFAULT_AR:-$DEFAULT_AR}")"
+  fi
+
+  if [[ -z "$prompt" ]]; then
+    echo "Missing --prompt" >&2
+    return 2
+  fi
+  if [[ "$dry_run" -ne 1 && -z "$image" ]]; then
+    echo "Missing --image output path" >&2
+    return 2
+  fi
+  if [[ "$dry_run" -ne 1 && -z "${TZAI_API_KEY-}" ]]; then
+    print_key_howto
+    return 2
+  fi
+  if [[ -z "${TZAI_IMAGE_MODEL-}" && "$dry_run" -ne 1 ]]; then
+    echo "Missing model. Pass --model <id> or set TZAI_IMAGE_MODEL (see: tzai-image models)" >&2
+    return 2
+  fi
+
+  local url="${TZAI_BASE_URL}/v1/images/generations"
+  local model_eff="${TZAI_IMAGE_MODEL:-"(unset)"}"
+
+  if [[ "$dry_run" -eq 1 ]]; then
+    cat <<EOF >&2
+[dry-run] tzai-image v$(skill_version)
+[dry-run] POST ${url}
+[dry-run] model=${model_eff}  (source: ${MODEL_SOURCE})
+[dry-run] size=${size}  ar=${TZAI_DEFAULT_AR:-$DEFAULT_AR}
+[dry-run] n=${n}
+[dry-run] output=${image:-"(none)"}
+[dry-run] api_key=$(mask_key "${TZAI_API_KEY-}")  (source: ${KEY_SOURCE})
+[dry-run] base_url=${TZAI_BASE_URL}  (source: ${BASE_SOURCE})
+[dry-run] prompt_chars=${#prompt}
+[dry-run] not calling network
+EOF
+    if [[ "$json_out" -eq 1 ]]; then
+      python3 - <<PY
+import json
+print(json.dumps({
+  "dry_run": True,
+  "url": "${url}",
+  "model": "${model_eff}",
+  "size": "${size}",
+  "output": """${image}""",
+}, ensure_ascii=False))
+PY
+    fi
+    return 0
+  fi
+
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "python3 required for generate" >&2
+    return 1
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    echo "curl required for generate" >&2
+    return 1
+  fi
+
+  mkdir -p "$(dirname -- "$image")"
+
+  local req_json resp_file code
+  req_json="$(mktemp)"
+  resp_file="$(mktemp)"
+  python3 - "$req_json" "$prompt" "$TZAI_IMAGE_MODEL" "$size" "$n" <<'PY'
+import json, sys
+path, prompt, model, size, n = sys.argv[1:6]
+body = {
+    "model": model,
+    "prompt": prompt,
+    "n": int(n),
+    "size": size,
+    "response_format": "b64_json",
+}
+with open(path, "w", encoding="utf-8") as f:
+    json.dump(body, f, ensure_ascii=False)
+PY
+
+  code="$(curl -sS -o "$resp_file" -w "%{http_code}" \
+    --max-time "${TZAI_TIMEOUT_SEC:-$DEFAULT_TIMEOUT}" \
+    -X POST "$url" \
+    -H "Authorization: Bearer ${TZAI_API_KEY}" \
+    -H "Content-Type: application/json" \
+    --data-binary @"$req_json" || echo "000")"
+
+  rm -f "$req_json"
+
+  if [[ "$code" != "200" ]]; then
+    echo "Image generation failed: HTTP ${code}" >&2
+    head -c 800 "$resp_file" >&2 || true
+    echo >&2
+    if [[ "$code" == "401" || "$code" == "403" ]]; then
+      echo "Check API key at ${CONSOLE_URL}" >&2
+    fi
+    rm -f "$resp_file"
+    return 1
+  fi
+
+  python3 - "$resp_file" "$image" <<'PY'
+import base64, json, sys, urllib.request
+resp_path, out_path = sys.argv[1], sys.argv[2]
+data = json.load(open(resp_path, encoding="utf-8"))
+items = data.get("data") or []
+if not items:
+    # some gateways nest differently
+    if isinstance(data.get("data"), dict):
+        items = [data["data"]]
+    else:
+        raise SystemExit("No data[] in API response: " + json.dumps(data)[:500])
+first = items[0]
+if first.get("b64_json"):
+    raw = base64.b64decode(first["b64_json"])
+    open(out_path, "wb").write(raw)
+elif first.get("url"):
+    urllib.request.urlretrieve(first["url"], out_path)
+else:
+    raise SystemExit("No b64_json or url in response item: " + json.dumps(first)[:500])
+print(out_path)
+PY
+
+  local written
+  written="$(python3 -c "import json;print(json.load(open('${resp_file}')).get('data',[{}])[0].get('revised_prompt',''))" 2>/dev/null || true)"
+  rm -f "$resp_file"
+
+  echo "Wrote ${image}" >&2
+  echo "Using ${TZAI_BASE_URL} / ${TZAI_IMAGE_MODEL}" >&2
+
+  if [[ "$json_out" -eq 1 ]]; then
+    python3 - <<PY
+import json
+print(json.dumps({
+  "ok": True,
+  "path": """${image}""",
+  "model": """${TZAI_IMAGE_MODEL}""",
+  "base_url": """${TZAI_BASE_URL}""",
+  "size": """${size}""",
+}, ensure_ascii=False))
+PY
+  else
+    printf '%s\n' "$image"
   fi
 }
 
 # ---------------------------------------------------------------------------
-# send (customize this)
+# help
 # ---------------------------------------------------------------------------
 
-cmd_send() {
-  local title="" body="" dry_run=0
+print_help() {
+  cat <<EOF
+tzai-image v$(skill_version) — image generation via TaoziAPI (${DEFAULT_BASE_URL})
 
-  while [[ $# -gt 0 ]]; do
-    case "$1" in
-      --title) require_val "$1" "${2-}"; title="$2"; shift 2 ;;
-      --body) require_val "$1" "${2-}"; body="$2"; shift 2 ;;
-      --dry-run) dry_run=1; shift ;;
-      -h|--help)
-        cat <<EOF
-Usage: ${SKILL_NAME} [options]
+Usage:
+  tzai-image init --api-key sk-... [options]
+  tzai-image doctor [--strict-auth]
+  tzai-image which-config | config-path
+  tzai-image models
+  tzai-image generate --prompt "..." --image out.png [options]
+  tzai-image --version
 
-Options:
-  --title <text>
-  --body <text>     May start with '-' (markdown lists OK)
-  --dry-run         Local preview only (no side effects)
-  --version
+API key (any one is enough):
+  1) export TZAI_API_KEY='sk-...'          # global env
+  2) tzai-image init --api-key sk-...      # durable file
+  3) --api-key on generate                 # one-shot
+
+Get a key: ${CONSOLE_URL}
 EOF
-        return 0
-        ;;
-      --version)
-        echo "${SKILL_NAME} v$(skill_version)"
-        return 0
-        ;;
-      *) echo "Unknown option: $1" >&2; return 2 ;;
-    esac
-  done
-
-  local chat_id="${TZAI_IMAGE_CHAT_ID:-}"
-  local as_identity="${TZAI_IMAGE_AS:-bot}"
-  local footer="${TZAI_IMAGE_FOOTER:-via ${SKILL_NAME}}"
-
-  if [[ -z "$chat_id" ]]; then
-    echo "Missing chat id. Run: bash $0 init --chat-id <id>" >&2
-    print_config_paths >&2
-    return 2
-  fi
-
-  if [[ -z "$title" ]]; then
-    title="Notification"
-  fi
-  if [[ -z "$body" && ! -t 0 ]]; then
-    body="$(cat)"
-  fi
-  if [[ -z "$body" ]]; then
-    echo "Message body is empty. Use --body or stdin." >&2
-    return 2
-  fi
-
-  if [[ "$dry_run" -eq 1 ]]; then
-    cat <<EOF >&2
-[dry-run] ${SKILL_NAME} v$(skill_version)
-[dry-run] chat_id=${chat_id} as=${as_identity}
-[dry-run] title=${title}
-[dry-run] footer=${footer}
-[dry-run] not performing side effects
-EOF
-    printf '%s\n' "$body"
-    return 0
-  fi
-
-  # --- replace with actual send logic ---
-  echo "[SEND] Replace this with real send command." >&2
-  echo "chat_id=${chat_id} title=${title}" >&2
-  printf '%s\n' "$body"
-  : "${EXAMPLE_CONFIG_FILE}"
 }
 
 # ---------------------------------------------------------------------------
 # dispatch
 # ---------------------------------------------------------------------------
 
-if [[ "${1:-}" == "init" ]]; then
-  shift
-  cmd_init "$@"
-  exit $?
-fi
-if [[ "${1:-}" == "config-path" || "${1:-}" == "paths" ]]; then
-  print_config_paths
-  exit 0
-fi
-if [[ "${1:-}" == "which-config" ]]; then
-  load_all_configs
-  print_config_paths
-  echo
-  echo "Effective:"
-  echo "  TZAI_IMAGE_CHAT_ID=${TZAI_IMAGE_CHAT_ID:-"(unset)"}"
-  echo "  TZAI_IMAGE_AS=${TZAI_IMAGE_AS:-bot}"
-  echo "  TZAI_IMAGE_FOOTER=${TZAI_IMAGE_FOOTER:-via ${SKILL_NAME}}"
-  exit 0
-fi
-if [[ "${1:-}" == "version" || "${1:-}" == "--version" ]]; then
-  echo "${SKILL_NAME} v$(skill_version)"
-  exit 0
-fi
-
-load_all_configs
-cmd_send "$@"
+cmd="${1:-}"
+case "$cmd" in
+  -h|--help|help)
+    print_help
+    exit 0
+    ;;
+  --version|version|-V)
+    echo "tzai-image v$(skill_version)"
+    exit 0
+    ;;
+  init)
+    shift
+    cmd_init "$@"
+    exit $?
+    ;;
+  doctor)
+    shift
+    cmd_doctor "$@"
+    exit $?
+    ;;
+  which-config)
+    shift
+    cmd_which_config "$@"
+    exit $?
+    ;;
+  config-path|paths)
+    print_config_paths
+    exit 0
+    ;;
+  models)
+    shift
+    cmd_models "$@"
+    exit $?
+    ;;
+  generate|gen)
+    shift
+    cmd_generate "$@"
+    exit $?
+    ;;
+  "")
+    print_help
+    exit 0
+    ;;
+  *)
+    # allow bare generate flags for convenience
+    if [[ "$cmd" == --* ]]; then
+      cmd_generate "$@"
+      exit $?
+    fi
+    echo "Unknown command: $cmd" >&2
+    print_help >&2
+    exit 2
+    ;;
+esac

@@ -1,48 +1,45 @@
 # AGENTS.md
 
-Guidance for AI coding agents working on the `tzai-image` skill.
+Guidance for AI coding agents working in this repository.
 
-This skill is scaffolded from the incubator template. Cross-skill conventions live in
-the incubator docs (`schema/skill-repo.md`, root `AGENTS.md`) when working inside the
-local Skills workspace; they are **not** published as part of this skill repo.
-
-When **creating or editing skills inside the incubator**, agents should follow the
-project meta skill `.agents/skills/skill-incubator/` (not shipped in this package).
-
-This file is the **source of truth** for agents in this skill repo. If `CLAUDE.md`
-exists, it should only point here.
+This file is the **source of truth**. Optional `CLAUDE.md` only points here.
 
 ## Purpose
 
-[One-line description.]
+Installable skill **`tzai-image`**: text-to-image via TaoziAPI (`https://tzai.kdp.cool`).
+
+```bash
+npx skills add kedoupi/tzai-image-skill
+```
 
 ## Layout
 
 ```text
 skills/
-  tzai-image/        # skill package (discovered by skills CLI)
-    SKILL.md           # required skill definition (version source of truth)
+  tzai-image/
+    SKILL.md
     config.example.env
-    scripts/           # executable helpers
-    templates/         # optional body templates
+    scripts/tzai-image
 tests/
-  run.sh               # offline self-test
+  run.sh
 ```
 
 ## Editing rules
 
-- Keep `SKILL.md` under ~500 lines; put long references in separate files.
-- Do not hardcode private credentials or team-specific identifiers.
-- Scripts must resolve their own directory with `pwd -P` so symlink installs work.
-- Minimize runtime dependencies.
-- Bump `metadata.version` in `SKILL.md` when behavior changes.
-- `--dry-run` must stay offline / side-effect free.
-- CLI values may start with `-` (markdown lists).
+- Keep `SKILL.md` under ~500 lines; strong description triggers.
+- Never hardcode API keys or put secrets only in the package dir.
+- Support **global env** `TZAI_API_KEY` without requiring `init`.
+- Durable config: `<skills-parent>/.skill-data/tzai-image/config.env`.
+- `--dry-run` must stay offline.
+- `doctor` must print console URL + export/init examples when key missing.
+- Bump `metadata.version` when behavior changes.
+- Prefer bash + python3 + curl; no bun required for v0.1.
 
-## Local validation
+## Validation
 
 ```bash
 bash tests/run.sh
-npx skills add ./ --list
-bash skills/tzai-image/scripts/tzai-image --help
+bash skills/tzai-image/scripts/tzai-image doctor
+bash skills/tzai-image/scripts/tzai-image generate \
+  --dry-run --prompt "test" --image /tmp/t.png --model demo
 ```
