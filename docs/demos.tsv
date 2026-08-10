@@ -1,20 +1,21 @@
 # id	layer	slash	kind_or_cat	ar	image	prompt_zh	highlight_zh
-# layer: engine | category | kind
-engine	engine	/tzai-image	(any)	1:1	icon-app.png	火花隐喻，AI 编程 App 图标	总入口：任意 kind / 自由主题，默认 gpt-image-2
-brand	category	/tzai-brand	brand	1:1	icon-app.png	品牌识别：先出 App 图标概念，火花与代码感	分类路由：icon/logo/mascot/badge/avatar/moodboard
-diagram	category	/tzai-diagram	diagram	16:9	architecture-isometric.png	结构图示总览：客户端网关微服务数据流	分类路由：flowchart/architecture/mindmap/infographic…
-product	category	/tzai-product	product	16:9	ui-dashboard.png	产品设计：SaaS 仪表盘主视觉概念	分类路由：ui/wireframe/empty-state/onboarding
-marketing	category	/tzai-marketing	marketing	16:9	slide-cover.png	市场内容：咨询风 PPT 封面底图	分类路由：slide/cover/banner/poster/email-header
-social	category	/tzai-social	social	3:4	xhs-card.png	社交种草：小红书知识卡概念	分类路由：xhs / xhs-cover / wechat
-photo	category	/tzai-photo	photo	1:1	product-cube.png	影像插画：电商商品棚拍概念	分类路由：product/photo/landscape/illustration/storybook/food
-icon	kind	/tzai-icon	icon	1:1	icon-app.png	圆角方 App 图标，发光火花隐喻，扁平矢量，无文字	单一隐喻 + store-ready，禁止杂字
-logo	kind	/tzai-logo	logo	16:9	logo-wordmark.png	几何 N monogram，靛蓝与电青绿，充足负空间	标志概念稿（非最终矢量）
-flowchart	kind	/tzai-flowchart	flowchart	16:9	flowchart-process.png	注册 → 激活 → 付费，五步从左到右带箭头	职场流程一眼读懂
-architecture	kind	/tzai-architecture	architecture	16:9	architecture-isometric.png	客户端 / 网关 / 微服务 / DB / 队列，等距技术风	系统分层与边界清晰
-infographic	kind	/tzai-infographic	infographic	16:9	infographic-stats.png	Q1 增长四要素：获客 激活 留存 变现，四卡片指标墙	信息层级与指标卡
-cover	kind	/tzai-cover	cover	16:9	cover-article.png	技术博客封面：深色渐变与抽象代码光轨，大面积标题留白	文章封面：情绪 + 留白叠字
-slide	kind	/tzai-slide	slide	16:9	slide-cover.png	分享会开场页底图，咨询几何，中部留标题区	PPT 开场视觉，少正文
-xhs	kind	/tzai-xhs	xhs	3:4	xhs-card.png	三步写好周报：列清单 写重点 加复盘，高对比知识卡	小红书图卡：吸睛层级
-xhs-cover	kind	/tzai-xhs-cover	xhs-cover	3:4	xhs-cover.png	封面：职场干货 · 周报模板，大标题区强对比	信息流封面：停滑第一眼
-wechat	kind	/tzai-wechat	wechat	16:9	wechat-visual.png	公众号配图：远程协作与灵感火花，柔和专业	微信头图/文内配图气质
-ui	kind	/tzai-ui	ui	16:9	ui-dashboard.png	SaaS 数据分析仪表盘，卡片 KPI 图表，浅色模式	产品演示用 UI 示意
+# Professional demo subjects — short subject only; kind injects art direction at generate time.
+# For gen-demos.sh: engine appends kind prefix automatically.
+engine	engine	/tzai-image	(any)	1:1	icon-app.png	AI coding IDE product: single electric-blue spark merging with a subtle code-bracket silhouette, premium App Store icon, soft studio gradient, glass depth, zero text	引擎默认 gpt-image-2 出图质感
+brand	category	/tzai-brand	brand	1:1	icon-app.png	同上 · 品牌资产入口样张	分类路由到 icon/logo 等
+diagram	category	/tzai-diagram	diagram	16:9	architecture-isometric.png	生产级云原生平台：边缘客户端 → API 网关 → 鉴权 → 微服务网格 → 事件总线 → 多 AZ 数据库与对象存储，等距分层，咨询级蓝灰白	结构图示专业度
+product	category	/tzai-product	product	16:9	ui-dashboard.png	B2B 收入分析 SaaS：深浅对比卡片、ARR 曲线、漏斗与地域热力，Figma 级成品感，无真实隐私数据	产品演示 UI
+marketing	category	/tzai-marketing	marketing	16:9	slide-cover.png	麦肯锡风战略峰会开场底图：深蓝几何切面、极细金线、中央大标题留白、顶级咨询 deck	市场/汇报视觉
+social	category	/tzai-social	social	3:4	xhs-card.png	高转化小红书知识卡：三步写周报，杂志级排版层级、高级灰+珊瑚点缀、精致图标系统	社交种草专业卡
+photo	category	/tzai-photo	photo	1:1	product-cube.png	奢品哑光钛合金几何音箱，85mm 棚拍，柔光箱，微倒影，电商主图级细节	商业摄影质感
+icon	kind	/tzai-icon	icon	1:1	icon-app.png	AI coding IDE：电蓝火花与抽象代码括号融为一体，圆角方、玻璃高光、iOS 18 级成品图标、无任何文字	store-ready 单隐喻
+logo	kind	/tzai-logo	logo	16:9	logo-wordmark.png	科技品牌 monogram「N」：靛蓝×电青绿双色几何切角，矢量级边缘，超大负空间，白底品牌规范稿	标志系统概念
+flowchart	kind	/tzai-flowchart	flowchart	16:9	flowchart-process.png	B2B 获客漏斗五步：获客→激活→养成→付费→扩张，圆角节点+精确箭头+微图标，McKinsey 幻灯片清晰度，白底	职场流程可读性
+architecture	kind	/tzai-architecture	architecture	16:9	architecture-isometric.png	云原生观测平台等距全景：SDK 探针、Collector、网关、流处理、时序库、告警与仪表盘，分层色带、无糊字	系统架构叙事
+infographic	kind	/tzai-infographic	infographic	16:9	infographic-stats.png	年度增长叙事信息图：获客/激活/留存/变现四象限 KPI 卡+ sparklines，出版级网格，slate+teal	信息层级与指标
+cover	kind	/tzai-cover	cover	16:9	cover-article.png	深度技术封面：暗夜紫黑渐变、精密光轨与半透明玻璃层，下三分之一纯净标题安全区，电影感	封面情绪+叠字留白
+slide	kind	/tzai-slide	slide	16:9	slide-cover.png	全球战略峰会 title slide：深海军蓝切面、细金线网格、中央巨大留白给标题，无正文垃圾字	咨询 deck 开场
+xhs	kind	/tzai-xhs	xhs	3:4	xhs-card.png	小红书高质感知识卡《三步写好周报》：杂志排版、编号步骤、精致线图标、高级灰底+一点珊瑚，像专业设计工作室出品	社交信息设计
+xhs-cover	kind	/tzai-xhs-cover	xhs-cover	3:4	xhs-cover.png	信息流停滑封面：职场周报模板，超大标题安全区、单一强主体（打开的笔记本+光感火花）、珊瑚奶油配色、影棚级光	停滑封面
+wechat	kind	/tzai-wechat	wechat	16:9	wechat-visual.png	公众号头图：远程协作与灵感碰撞，柔和青蓝插画、半透明界面隐喻、出版级留白与光感，无杂乱假字	微信内容气质
+ui	kind	/tzai-ui	ui	16:9	ui-dashboard.png	企业级 Revenue OS 仪表盘：KPI 条、多序列图表、侧栏导航、浅色精密 UI、接近 Linear/Stripe 质感	SaaS 产品演示

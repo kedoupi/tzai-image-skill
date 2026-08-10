@@ -34,9 +34,12 @@ Scene map: [`docs/SCENES.md`](./docs/SCENES.md) · Roadmap: [`docs/CAPABILITY-RO
 
 <p align="center">
   <img src="docs/screenshots/icon-app.png" alt="icon" width="120" />
-  <img src="docs/screenshots/flowchart-process.png" alt="flowchart" width="220" />
+  <img src="docs/screenshots/architecture-isometric.png" alt="architecture" width="260" />
   <img src="docs/screenshots/xhs-card.png" alt="xhs" width="140" />
 </p>
+
+> **Demo bar:** gallery shots should read as design-agency finals / consulting decks / commercial photography — not toy clipart.  
+> Prefer concrete subjects, materials, and lighting. Regenerate with `bash scripts/gen-demos.sh --force` (API key required).
 
 ---
 

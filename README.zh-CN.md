@@ -34,9 +34,12 @@ Demo 索引：[`docs/demos.tsv`](./docs/demos.tsv)
 
 <p align="center">
   <img src="docs/screenshots/icon-app.png" alt="icon" width="120" />
-  <img src="docs/screenshots/flowchart-process.png" alt="flowchart" width="220" />
+  <img src="docs/screenshots/architecture-isometric.png" alt="architecture" width="260" />
   <img src="docs/screenshots/xhs-card.png" alt="xhs" width="140" />
 </p>
+
+> **样张标准**：画廊应对齐「设计工作室终稿 / 咨询幻灯 / 商业摄影」观感，而不是玩具风示意。  
+> 主题尽量具体、有场景与材质；少写废话式「画个好看的图」。重刷：`bash scripts/gen-demos.sh --force`（需 Key）。
 
 ---
 
@@ -135,7 +138,8 @@ bash scripts/gen-demos.sh --only xhs cover wechat
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
-  --prompt "火花隐喻，AI 编程 App 图标" --image ./icon-app.png
+  --prompt "AI coding IDE：电蓝火花与抽象代码括号融为一体，玻璃高光，无文字" \
+  --image ./icon-app.png
 ```
 
 ![引擎示例](docs/screenshots/icon-app.png)
@@ -269,7 +273,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image product \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
-  --prompt "圆角方 App 图标，发光火花隐喻，扁平矢量，无文字" --image ./icon-app.png
+  --prompt "AI coding IDE：电蓝火花与代码括号融合，iOS 级玻璃高光，无任何文字" \
+  --image ./icon-app.png
 ```
 
 ![icon](docs/screenshots/icon-app.png)
@@ -286,7 +291,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image logo \
-  --prompt "几何 N monogram，靛蓝与电青绿，充足负空间" --image ./logo.png
+  --prompt "科技 monogram「N」：靛蓝×电青绿几何切角，超大负空间，白底品牌规范稿" \
+  --image ./logo.png
 ```
 
 ![logo](docs/screenshots/logo-wordmark.png)
@@ -303,7 +309,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image logo \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image flowchart \
-  --prompt "注册 → 激活 → 付费，五步从左到右带箭头" --image ./flow.png
+  --prompt "B2B 漏斗五步：获客→激活→养成→付费→扩张，咨询幻灯片清晰度" \
+  --image ./flow.png
 ```
 
 ![flowchart](docs/screenshots/flowchart-process.png)
@@ -320,7 +327,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image flowchart \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
-  --prompt "客户端 / 网关 / 微服务 / DB / 队列，等距技术风" --image ./arch.png
+  --prompt "云原生观测平台等距全景：探针、Collector、网关、流处理、时序库、告警" \
+  --image ./arch.png
 ```
 
 ![architecture](docs/screenshots/architecture-isometric.png)
@@ -337,7 +345,9 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image infographic \
-  --prompt "Q1 增长四要素：获客 激活 留存 变现，四卡片指标墙" --image ./info.png
+  --layout metrics --style clean-corporate \
+  --prompt "年度增长四象限：获客/激活/留存/变现 KPI + sparklines，出版级网格" \
+  --image ./info.png
 ```
 
 ![infographic](docs/screenshots/infographic-stats.png)
@@ -354,7 +364,9 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image infographic \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image cover \
-  --prompt "技术博客封面：深色渐变与抽象代码光轨，大面积标题留白" --image ./cover.png
+  --type hero --palette dark --mood bold --text none \
+  --prompt "深度技术封面：暗夜紫黑、精密光轨与玻璃层，下三分之一标题安全区" \
+  --image ./cover.png
 ```
 
 ![cover](docs/screenshots/cover-article.png)
@@ -371,7 +383,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image cover \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image slide \
-  --prompt "分享会开场页底图，咨询几何，中部留标题区" --image ./slide.png
+  --prompt "全球战略峰会 title slide：深海军蓝切面、细金线、中央巨大标题留白" \
+  --image ./slide.png
 ```
 
 ![slide](docs/screenshots/slide-cover.png)
@@ -388,7 +401,9 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image slide \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
-  --prompt "三步写好周报：列清单 写重点 加复盘，高对比知识卡" --image ./xhs.png
+  --preset knowledge-card \
+  --prompt "《周报写作三步法》：收集素材 / 提炼亮点 / 结构润色，杂志级排版" \
+  --image ./xhs.png
 ```
 
 ![xhs](docs/screenshots/xhs-card.png)
@@ -405,7 +420,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs-cover \
-  --prompt "封面：职场干货 · 周报模板，大标题区强对比" --image ./xhs-cover.png
+  --prompt "停滑封面：职场干货×清单复盘，皮质笔记本+火花，影棚级珊瑚奶油光" \
+  --image ./xhs-cover.png
 ```
 
 ![xhs-cover](docs/screenshots/xhs-cover.png)
@@ -422,7 +438,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs-cover \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image wechat \
-  --prompt "公众号配图：远程协作与灵感火花，柔和专业" --image ./wechat.png
+  --prompt "公号头图：远程会议浮层 + 灵感灯泡，柔和青蓝出版级插画" \
+  --image ./wechat.png
 ```
 
 ![wechat](docs/screenshots/wechat-visual.png)
@@ -439,7 +456,8 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image wechat \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image ui \
-  --prompt "SaaS 数据分析仪表盘，卡片 KPI 图表，浅色模式" --image ./ui.png
+  --prompt "企业级 Revenue OS：ARR KPI、多序列增长曲线、漏斗与侧栏，Linear/Stripe 质感" \
+  --image ./ui.png
 ```
 
 ![ui](docs/screenshots/ui-dashboard.png)
