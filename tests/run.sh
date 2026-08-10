@@ -134,6 +134,36 @@ assert_contains "cover palette" "palette=dark" "$err"
 assert_contains "cover mood" "mood=bold" "$err"
 assert_exit "bad style fails" 2 "$BIN" xhs --dry-run --style not-a-style --prompt "x" --image /tmp/x.png
 
+echo "== invalid --ar =="
+assert_exit "bad ar fails" 2 "$BIN" generate --dry-run --kind icon --ar 99:99 --prompt "x" --image /tmp/t.png
+err="$("$BIN" generate --dry-run --kind icon --ar 99:99 --prompt "x" --image /tmp/t.png 2>&1 >/dev/null)" || true
+assert_contains "bad ar message" "Supported:" "$err"
+
+echo "== --json escapes special prompt chars =="
+json="$("$BIN" generate --dry-run --json --kind icon --prompt 'hello """ break' --image /tmp/t.png 2>/dev/null)"
+python3 -c "import json,sys; d=json.loads(sys.argv[1]); assert '\"\"\"' in d['final_prompt'] or d['final_prompt'].count('\"')>=3; print('ok')" "$json" >/dev/null
+assert_ok "json parses with triple-quote prompt" true
+assert_contains "json final_prompt has hello" "hello" "$json"
+
+echo "== safe config parse (no shell source) =="
+tmp_cfg="$(mktemp)"
+cat >"$tmp_cfg" <<'EOF'
+# comment
+TZAI_API_KEY=sk-safeparse-abcdef
+TZAI_IMAGE_MODEL=safe-model
+EVIL=$(echo pwned)
+HOME=/tmp/should-not-apply
+EOF
+err="$(env -u TZAI_API_KEY TZAI_IMAGE_CONFIG="$tmp_cfg" \
+  "$BIN" generate --dry-run --prompt "p" --image /tmp/t.png 2>&1 >/dev/null)"
+assert_contains "safe config key loaded" "source: explicit-file" "$err"
+assert_contains "safe config key masked" "sk-s" "$err"
+# EVIL must not execute; model from file should load
+err2="$(env -u TZAI_API_KEY -u TZAI_IMAGE_MODEL TZAI_IMAGE_CONFIG="$tmp_cfg" \
+  "$BIN" which-config 2>&1)"
+assert_contains "safe config model" "safe-model" "$err2"
+rm -f "$tmp_cfg"
+
 echo "== missing prompt =="
 assert_exit "empty prompt fails" 2 "$BIN" generate --dry-run --prompt "" --image /tmp/t.png --model m
 

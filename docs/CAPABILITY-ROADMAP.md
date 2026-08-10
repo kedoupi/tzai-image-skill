@@ -127,3 +127,4 @@ tzai-image cover --type hero --palette dark --text none --mood bold --prompt "..
 | 2026-08-10 | 初版能力规划 |
 | 2026-08-10 | Plan C + P0 矩阵 + 教学画廊 |
 | 2026-08-10 | 对外文档改为自有产品叙事 |
+| 2026-08-10 | v0.5.1 P0 hardening: safe config parse, AR validate, safe --json |

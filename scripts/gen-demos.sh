@@ -30,15 +30,11 @@ if ! command -v "$BIN" >/dev/null 2>&1 && [[ ! -x "$BIN" ]]; then
   exit 1
 fi
 
-# doctor will fail without key — check early
-if [[ -z "${TZAI_API_KEY:-}" ]]; then
-  # allow durable config
-  if ! "$BIN" doctor 2>/dev/null | grep -q 'TZAI_API_KEY=sk-'; then
-    if ! "$BIN" which-config 2>/dev/null | grep -q 'API_KEY'; then
-      # still try: doctor dry
-      :
-    fi
-  fi
+# Hard-fail early if no key (env or durable config)
+if ! "$BIN" doctor >/dev/null 2>&1; then
+  echo "API key missing or doctor failed. Configure TZAI_API_KEY or run: $BIN init --api-key sk-..." >&2
+  "$BIN" doctor 2>&1 | tail -20 >&2 || true
+  exit 1
 fi
 
 should_run() {

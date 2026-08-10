@@ -12,7 +12,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.0"
+  version: "0.5.1"
   short-description: "TaoziAPI 生图（引擎 + 场景 kind，默认 gpt-image-2）"
 ---
 
