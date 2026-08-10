@@ -375,6 +375,27 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
 npx skills add kedoupi/tzai-image-skill -g --all
 ```
 
+### 在 Agent 软件里用斜杠命令
+
+安装后，在 Agent 输入框打 **`/`**，应能看到 **`tzai-image`**（**skill 名 = 斜杠命令名**）。
+
+| 你输入 | 效果 |
+| --- | --- |
+| `/tzai-image` | 加载本 skill，按 SKILL.md 执行 |
+| `/tzai-image 画个流程图：注册到付费` | 技能 + 自然语言 → 应走 `flowchart` kind |
+| `/tzai-image xhs 三步写周报` | 走 **小红书** kind |
+| 不打斜杠：`帮我画 App 图标…` | 靠 `description` 触发词自动调用 |
+
+**默认不会**为每个 kind 注册独立斜杠（没有自带的 `/flowchart`、`/xhs`）。产品入口是：
+
+```text
+/tzai-image           ← 斜杠入口
+  └─ kinds 子功能     ← icon | flowchart | xhs | infographic | …
+```
+
+若要额外的 `/xhs`、`/flowchart`，可在 Grok/Claude 的 `commands/` 目录放薄包装 md（内容写：调用 tzai-image 且 kind=…）。  
+Grok 也可用 `/skills` 浏览。注意 Agent 进程环境里要有 Key（`export TZAI_API_KEY` 或 `init`）。
+
 ## 如何申请并配置 API Key
 
 本 skill **不内置 Key**。

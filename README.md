@@ -375,6 +375,26 @@ Always state **style + lighting + background + what to avoid** (watermark, garbl
 npx skills add kedoupi/tzai-image-skill -g --all
 ```
 
+### Slash command in agent apps
+
+After install, open your agent and type **`/`** — you should see **`tzai-image`** (skill name = slash command).
+
+| You type | What happens |
+| --- | --- |
+| `/tzai-image` | Load this skill; agent follows SKILL.md |
+| `/tzai-image 画个流程图：注册到付费` | Skill + natural language → should run `flowchart` kind |
+| `/tzai-image xhs 三步写周报` | Same with **小红书** kind |
+| `帮我生成 App 图标…` (no slash) | Auto-invoke via `description` triggers |
+
+**Kinds are not separate global slashes by default** (`/icon`, `/xhs` only appear if you add client `commands/*.md` wrappers). The product surface is:
+
+```text
+/tzai-image          →  skill entry
+  └─ kinds           →  icon | flowchart | xhs | infographic | …
+```
+
+Grok also lists skills under `/skills`. Ensure Key is set (`export TZAI_API_KEY=…` or `tzai-image init`) in the environment the agent uses.
+
 ## Get an API key
 
 This skill does **not** ship with a key.

@@ -7,9 +7,12 @@ description: >
   text-to-image job. Triggers: 画图, 生图, 图标, Logo, 流程图, 架构图, 信息图, 小红书,
   配图, diagram, infographic, xhs, icon, logo, draw, image gen, tzai, TaoziAPI, /tzai-image.
   Prefer --kind or kind subcommands (icon|flowchart|xhs|infographic|...). Not for Feishu push.
+argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到付费"
+user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.2.0"
+  version: "0.2.1"
+  short-description: "TaoziAPI 生图（kind 场景：图标/流程图/小红书…）"
 ---
 
 # tzai-image
@@ -53,6 +56,40 @@ bash <skill-dir>/scripts/tzai-image generate --api-key sk-... --prompt "..." --i
 ```
 
 Do **not** put secrets only inside the skill package directory.
+
+## Slash command (in agent UIs)
+
+After install, the skill is invocable as a **slash command named after the skill**:
+
+| Client | Typical slash | Where the skill is installed |
+| --- | --- | --- |
+| **Grok Build** | `/tzai-image` | `~/.agents/skills/tzai-image` or `~/.grok/skills/tzai-image` |
+| **Claude Code** | `/tzai-image` (or skill menu) | `~/.claude/skills/tzai-image` or via `npx skills add -a claude-code` |
+| **Codex / Cursor** | skill panel / natural language | agent skill dirs from `npx skills add` |
+
+Install (recommended global, all agents):
+
+```bash
+npx skills add kedoupi/tzai-image-skill -g --all
+```
+
+Then in the agent:
+
+```text
+/tzai-image
+/tzai-image 画一个 App 图标，火花隐喻
+/tzai-image xhs 三步写好周报
+/tzai-image flowchart 注册 → 激活 → 付费
+```
+
+**Important:**
+
+- Slash = **skill name** (`tzai-image`), **not** every kind as its own slash (`/flowchart` is optional, see below).
+- After `/tzai-image`, say the **kind + subject** in natural language; the agent should call  
+  `bash <skill-dir>/scripts/tzai-image <kind> --prompt "…" --image <path>`.
+- Or just chat without slash: “帮我画小红书图卡：三步写周报” — `description` triggers auto-invoke.
+
+Optional: if you want **extra** slashes like `/xhs` or `/flowchart`, add thin files under the client’s `commands/` dir (Grok/Claude), e.g. `.grok/commands/xhs.md` body: “Invoke tzai-image with kind=xhs …”. Kinds themselves stay in this skill.
 
 ## Locating the helper
 
