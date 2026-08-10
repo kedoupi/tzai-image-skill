@@ -9,7 +9,7 @@
 支持 Claude Code、Codex、Cursor、Grok Build 及 [skills CLI](https://skills.sh/) 下 [70+ Agent](https://github.com/vercel-labs/skills#supported-agents)。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-kedoupi%2Ftzai--image-skill-181717?logo=github)](https://github.com/kedoupi/tzai-image-skill)
+[![GitHub](https://img.shields.io/badge/GitHub-kedoupi%2Ftzai--image--skill-181717?logo=github&logoColor=white)](https://github.com/kedoupi/tzai-image-skill)
 
 ---
 
