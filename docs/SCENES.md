@@ -1,10 +1,9 @@
 # Scene catalog · 场景总表
 
-How **tzai-image** maps workplace / content image jobs — inspired by
-[baoyu-skills](https://github.com/JimLiu/baoyu-skills) scene skills, delivered as
-**one engine + classified kinds + multi-agent slash commands**.
+**tzai-image** 的职场 / 内容生图场景目录：  
+**一个 TaoziAPI 引擎 + 分类 kind + 多 Agent 斜杠（Plan C）**。
 
-**能力规划（大众优先 · 借鉴对照）→ [CAPABILITY-ROADMAP.md](./CAPABILITY-ROADMAP.md)**  
+**能力规划 → [CAPABILITY-ROADMAP.md](./CAPABILITY-ROADMAP.md)**  
 **教学画廊（命令 × 示例图）→ [README](../README.md#gallery--learn-by-example)** · demos: [demos.tsv](./demos.tsv)
 
 Default model: **`gpt-image-2`** · Gateway: **https://tzai.kdp.cool**
@@ -22,22 +21,11 @@ Not every kind gets a slash. **Whitelist:** `skills/tzai-image/references/slash-
 | High-freq kinds | 11 | `/tzai-icon` `/tzai-logo` `/tzai-flowchart` `/tzai-architecture` `/tzai-infographic` `/tzai-cover` `/tzai-slide` `/tzai-xhs` `/tzai-xhs-cover` `/tzai-wechat` `/tzai-ui` |
 | Long-tail | ~19 kinds | Engine only: `/tzai-image mindmap …` etc. |
 
----
-
-## Architecture (vs baoyu)
-
-| Layer | baoyu | tzai-image |
-| --- | --- | --- |
-| Engine | `baoyu-image-gen` (multi-provider) | **`tzai-image`** (TaoziAPI only) |
-| Scenes | Separate skills (`baoyu-xhs-images`, `baoyu-infographic`, …) | **kind + Plan C slash** (hubs + high-freq only) |
-| Install | Many packages | **One repo** `npx skills add kedoupi/tzai-image-skill -g --all` |
-| Slash | One per skill | **~18 slashes** (not 30+ thin skills) |
-
 ```text
 npx skills add → each skills/tzai-*/SKILL.md
                  becomes /tzai-* in Claude / Cursor / Codex / Grok / …
 
-commands/*.md  → optional extra slash wrappers for Grok & Claude commands/
+commands/*.md  → optional extra slash wrappers for client commands/
 ```
 
 ---
@@ -45,12 +33,10 @@ commands/*.md  → optional extra slash wrappers for Grok & Claude commands/
 ## Multi-agent install
 
 ```bash
-# 1) Install ALL scene skills + engine into every supported agent
+# 1) Install engine + Plan C skills into supported agents
 npx skills add kedoupi/tzai-image-skill -g --all
-# equivalent:
-# npx skills add kedoupi/tzai-image-skill -g --agent '*' --skill '*' -y
 
-# 2) Link slash wrappers into client command directories (Grok / Claude / agents)
+# 2) Link slash wrappers into client command directories
 git clone https://github.com/kedoupi/tzai-image-skill.git
 cd tzai-image-skill
 bash scripts/install-slash-commands.sh
@@ -64,33 +50,13 @@ bash scripts/install-slash-commands.sh
 | **Cursor** | `~/.cursor/skills/tzai-*` | skill panel |
 | **Others** | via `npx skills add --agent '*'` | per client |
 
-API key (all agents share durable config or env):
+API key (shared durable config or env):
 
 ```bash
 export TZAI_API_KEY='sk-...'
 # or
 bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 ```
-
----
-
-## Baoyu → tzai scene map
-
-| baoyu skill | What it does | Our slash / kind | Notes |
-| --- | --- | --- | --- |
-| **baoyu-image-gen** | Multi-provider engine | `/tzai-image` | Engine only; we fix provider=TaoziAPI |
-| **baoyu-xhs-images** | 小红书图卡系列 style×layout | `/tzai-xhs` `/tzai-xhs-cover` | Single-card P0; series later |
-| **baoyu-infographic** | layout×style 信息图 | `/tzai-infographic` `/tzai-dataviz` | Kind injects infographic direction |
-| **baoyu-diagram** | 技术示意图 / 图示 | `/tzai-diagram` `/tzai-flowchart` `/tzai-architecture` `/tzai-mindmap` | Split into work diagram kinds |
-| **baoyu-cover-image** | 文章封面 5 维 | `/tzai-cover` `/tzai-poster` | Cover + vertical poster |
-| **baoyu-article-illustrator** | 文章配点 + 多图 | `/tzai-illustration` + agent loop | Agent plans spots → multi generate |
-| **baoyu-slide-deck** | 幻灯片成套 | `/tzai-slide` | Title/cover visual; multi-page later |
-| **baoyu-comic** | 知识漫画 | `/tzai-storybook` / illustration | Panel series P1 |
-| **baoyu-post-to-wechat** | 发公众号 | — | Out of scope (publish, not gen) |
-| **baoyu-post-to-weibo / x** | 发微博/X | — | Out of scope |
-| **baoyu-wechat-summary** | 微信摘要 | `/tzai-wechat` (visual only) | Summary text ≠ image |
-| **baoyu-compress-image** | 压图 | — | Out of scope P0 |
-| **baoyu-translate / url-to-md / …** | 非生图 | — | Not image |
 
 ---
 
@@ -107,7 +73,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 | `/tzai-badge` | badge | 徽章 / 贴纸 |
 | `/tzai-avatar` | avatar | 职业头像 |
 
-### 结构图示 `/tzai-diagram`（≈ baoyu-diagram + infographic）
+### 结构图示 `/tzai-diagram`
 
 | Slash | Kind | Use |
 | --- | --- | --- |
@@ -127,7 +93,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 | `/tzai-empty-state` | empty-state | 空状态插画 |
 | `/tzai-onboarding` | onboarding | 引导主视觉 |
 
-### 市场内容 `/tzai-marketing`（≈ cover + deck 向）
+### 市场内容 `/tzai-marketing`
 
 | Slash | Kind | Use |
 | --- | --- | --- |
@@ -137,7 +103,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 | `/tzai-cover` | cover | 文章封面 |
 | `/tzai-poster` | poster | 竖版海报 |
 
-### 社交种草 `/tzai-social`（≈ baoyu-xhs + 微信配图）
+### 社交种草 `/tzai-social`
 
 | Slash | Kind | Use |
 | --- | --- | --- |
@@ -172,26 +138,28 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 /tzai-architecture 客户端 网关 微服务 DB 队列
 /tzai-infographic Q1 增长四要素
 /tzai-xhs 三步写好周报
+/tzai-xhs-cover 周报模板封面
 /tzai-diagram          ← 分类入口，再选 flowchart / architecture …
 ```
 
-CLI equivalent:
+CLI:
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image icon --prompt "..." --image out.png
 bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
+bash ~/.agents/skills/tzai-image/scripts/tzai-image presets xhs
 ```
 
 ---
 
-## Roadmap (baoyu parity)
+## Roadmap
 
 | Feature | Status |
 | --- | --- |
 | Single-image scene kinds | **Done** |
 | Multi-agent skill install | **Done** (`-g --all`) |
-| Command wrappers for Grok/Claude | **Done** (`install-slash-commands.sh`) |
+| Plan C slash surface | **Done** |
+| XHS / infographic / cover matrices | **Done** (v0.5) |
 | XHS multi-card series (1–10) | P1 |
-| Infographic layout×style matrix | P1 |
 | Article multi-spot illustrator | P1 |
 | Full slide deck batch | P1 |

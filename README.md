@@ -334,7 +334,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
 
 ### `/tzai-infographic` · Infographic
 
-**Highlights:** hierarchy, metric cards, publication layout (baoyu-infographic direction).
+**Highlights:** hierarchy, metric cards, publication-ready layout.
 
 ```text
 /tzai-infographic Q1 增长四要素：获客 激活 留存 变现
@@ -385,7 +385,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image slide \
 
 ### `/tzai-xhs` · Xiaohongshu card
 
-**Highlights:** 3:4 knowledge card, bold hierarchy, social-feed friendly (baoyu-xhs direction).
+**Highlights:** 3:4 knowledge card, bold hierarchy, social-feed friendly.
 
 ```text
 /tzai-xhs 三步写好周报
@@ -518,7 +518,7 @@ Avoid long style essays in the prompt unless you intentionally override the kind
 
 ---
 
-## P0 matrices (baoyu-aligned knobs)
+## Scene matrices (style × layout × cover dimensions)
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image presets xhs
@@ -615,4 +615,4 @@ bash tests/run.sh                    # offline
 
 ---
 
-Inspired by [baoyu-skills](https://github.com/JimLiu/baoyu-skills) scene depth; delivered as **one TaoziAPI engine + Plan C slashes**.
+Built for coding agents: **one TaoziAPI engine**, scenario kinds, and a focused slash surface.

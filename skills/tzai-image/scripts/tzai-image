@@ -25,7 +25,7 @@ DEFAULT_AR="1:1"
 DEFAULT_TIMEOUT=120
 CONSOLE_URL="https://tzai.kdp.cool/console"
 
-# Scenario kinds (like baoyu-xhs / infographic / diagram modules, but one CLI)
+# Scenario kinds — one CLI with classified modules
 KIND_IDS="icon logo moodboard mascot badge avatar flowchart architecture mindmap diagram infographic dataviz ui wireframe empty-state onboarding slide banner email-header cover poster xhs xhs-cover wechat product photo landscape illustration storybook food"
 
 # Snapshot process env so files cannot clobber exported globals (plan: env > files).
@@ -437,7 +437,7 @@ cmd_presets() {
   local domain="${1-}"
   if [[ -z "$domain" || "$domain" == "-h" || "$domain" == "--help" ]]; then
     cat <<EOF
-List P0 style/layout matrices (baoyu-aligned knobs).
+List scene style/layout matrices.
 
 Usage:
   tzai-image presets xhs
@@ -546,7 +546,7 @@ EOF
       cover)
         cat <<EOF
 
-Dimensions (P0, baoyu-like):
+Cover dimensions:
   --type --palette --rendering --text --mood
   List: tzai-image presets cover
 EOF
@@ -871,7 +871,7 @@ cmd_generate() {
 Usage: tzai-image generate [options]
    or: tzai-image <kind> --prompt "..." --image out.png
 
-Scenario kinds (功能分类，类似 baoyu-xhs / infographic / diagram):
+Scenario kinds (功能分类):
   tzai-image kinds
   tzai-image presets xhs|infographic|cover
 
@@ -1132,7 +1132,7 @@ print_help() {
   cat <<EOF
 tzai-image v$(skill_version) — TaoziAPI image engine with scenario kinds
 
-Modules (分类功能，对齐 baoyu 场景 skill 思路，集于一个 CLI):
+Modules (分类功能，集于一个 CLI):
   brand      icon logo moodboard mascot badge avatar
   diagram    flowchart architecture mindmap diagram infographic dataviz
   product    ui wireframe empty-state onboarding

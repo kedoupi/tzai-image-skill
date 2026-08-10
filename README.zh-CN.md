@@ -337,7 +337,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
 
 ### `/tzai-infographic` · 信息图
 
-**突出：** 层级、指标卡、出版级版式（对齐 baoyu-infographic 方向）。
+**突出：** 层级、指标卡、出版级版式。
 
 ```text
 /tzai-infographic Q1 增长四要素：获客 激活 留存 变现
@@ -393,7 +393,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image slide \
 
 ### `/tzai-xhs` · 小红书图卡
 
-**突出：** 3:4 知识卡、强层级、信息流友好（对齐 baoyu-xhs 方向）。
+**突出：** 3:4 知识卡、强层级、信息流友好。
 
 ```text
 /tzai-xhs 三步写好周报
@@ -528,7 +528,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 
 ---
 
-## P0 矩阵（对齐 baoyu 的 style×layout / 封面五维）
+## 场景矩阵（style × layout × 封面维度）
 
 先看有哪些选项：
 
@@ -621,4 +621,4 @@ bash tests/run.sh
 
 ---
 
-场景深度对齐 [baoyu-skills](https://github.com/JimLiu/baoyu-skills)；交付形态是 **TaoziAPI 单引擎 + Plan C 斜杠**。
+面向编码 Agent 的生图 skill：**TaoziAPI 单引擎 + 场景 kind + Plan C 斜杠**。

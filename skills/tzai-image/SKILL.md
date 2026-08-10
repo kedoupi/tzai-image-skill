@@ -19,7 +19,7 @@ metadata:
 # tzai-image
 
 Generate images through **TaoziAPI** (`https://tzai.kdp.cool`) with **scenario kinds**
-— one CLI engine, baoyu-style scenes without installing 20 packages.
+— one CLI engine with scenario kinds, without installing dozens of packages.
 
 Default model: **`gpt-image-2`**.
 
@@ -157,10 +157,10 @@ bash <skill-dir>/scripts/tzai-image kinds flowchart
 | Category | Kinds | Use when |
 | --- | --- | --- |
 | **brand** 品牌 | `icon` `logo` `moodboard` `mascot` `badge` `avatar` | App 图标、Logo、吉祥物、徽章、头像 |
-| **diagram** 结构 | `flowchart` `architecture` `mindmap` `diagram` `infographic` `dataviz` | 流程图、架构图、思维导图、信息图（对齐 baoyu-diagram / infographic） |
+| **diagram** 结构 | `flowchart` `architecture` `mindmap` `diagram` `infographic` `dataviz` | 流程图、架构图、思维导图、信息图 |
 | **product** 产品 | `ui` `wireframe` `empty-state` `onboarding` | 仪表盘、线框、空状态、引导页 |
 | **marketing** 市场 | `slide` `banner` `email-header` `cover` `poster` | PPT 封面、投放、邮件头图、文章封面 |
-| **social** 社交 | `xhs` `xhs-cover` `wechat` | **小红书图卡/封面**、微信配图（对齐 baoyu-xhs-images） |
+| **social** 社交 | `xhs` `xhs-cover` `wechat` | **小红书图卡/封面**、微信配图 |
 | **photo** 影像 | `product` `photo` `landscape` `illustration` `storybook` `food` | 商品图、风光、插画、绘本、美食 |
 
 Agent routing:
@@ -174,11 +174,11 @@ Agent routing:
 bash <skill-dir>/scripts/tzai-image generate \
   --kind icon --prompt "spark for AI coding app" --image ./icon.png
 
-# Kind as subcommand (same as baoyu-style scene entry)
+# Kind as subcommand (scene entry)
 bash <skill-dir>/scripts/tzai-image flowchart \
   --prompt "注册 → 激活 → 付费" --image ./flow.png
 
-# P0 matrices (baoyu-aligned knobs)
+# Scene matrices (style / layout / cover dimensions)
 bash <skill-dir>/scripts/tzai-image presets xhs
 bash <skill-dir>/scripts/tzai-image xhs --style notion --layout dense \
   --prompt "三步写好周报" --image ./xhs-card.png

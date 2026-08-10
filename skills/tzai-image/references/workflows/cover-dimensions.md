@@ -1,6 +1,6 @@
 # Workflow: Article cover (5 dimensions)
 
-Inspired by baoyu-cover-image. Prefer **title-safe empty areas** over long baked-in Chinese titles (AI text is unreliable).
+Prefer **title-safe empty areas** over long baked-in Chinese titles (AI text is unreliable).
 
 ## Dimensions
 
