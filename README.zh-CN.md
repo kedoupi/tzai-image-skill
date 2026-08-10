@@ -22,11 +22,35 @@
   <img src="docs/screenshots/architecture-isometric.png" alt="架构图" width="320" />
 </p>
 
+## 产品模块（分类 × 功能）
+
+对齐 baoyu 的场景 skill（`baoyu-xhs-images` / `baoyu-infographic` / `baoyu-diagram` 等），
+我们做成 **一个引擎 + 内置场景 kind**，不必装一堆 skill。
+
+```bash
+tzai-image kinds                 # 列出全部分类功能
+tzai-image kinds xhs             # 查看某一 kind 详情
+tzai-image icon --prompt "..." --image out.png
+tzai-image flowchart --prompt "..." --image out.png
+tzai-image generate --kind infographic --prompt "..." --image out.png
+```
+
+| 模块 | Kind（功能） | 对标场景 |
+| --- | --- | --- |
+| **brand** 品牌 | `icon` `logo` `moodboard` `mascot` `badge` `avatar` | 图标 / Logo / 吉祥物 / 徽章 / 头像 |
+| **diagram** 结构 | `flowchart` `architecture` `mindmap` `diagram` `infographic` `dataviz` | ≈ baoyu-diagram + infographic |
+| **product** 产品 | `ui` `wireframe` `empty-state` `onboarding` | 仪表盘 / 线框 / 空状态 / 引导 |
+| **marketing** 市场 | `slide` `banner` `email-header` `cover` `poster` | PPT / 投放 / 邮件 / 封面 |
+| **social** 社交 | `xhs` `xhs-cover` `wechat` | ≈ **小红书 / 微信**（baoyu-xhs） |
+| **photo** 影像 | `product` `photo` `landscape` `illustration` `storybook` `food` | 商品 / 风光 / 插画 / 美食 |
+
+每个 kind 自带 **默认画幅** + **专业美术方向**；你只需写内容主题。
+
 ## 为什么一个 skill 就够
 
-团队日常要：**图标、Logo、PPT 底图、流程图、架构图、UI 示意、投放 Banner、空状态插画、头像、吉祥物**……往往在多个网页工具之间来回切。
+团队日常要：**图标、Logo、PPT 底图、流程图、架构图、UI 示意、投放 Banner、空状态插画、头像、吉祥物、小红书图卡**……往往在多个网页工具之间来回切。
 
-`tzai-image` 把它们收成 **Agent 可调用的一条 CLI**：
+`tzai-image` 用 **kind 模块** 收成一条 Agent CLI：
 
 | 以前的痛 | 用 tzai-image |
 | --- | --- |
@@ -377,16 +401,26 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
+bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --dry-run --prompt "蓝色渐变 App 图标" --image /tmp/icon.png
+# 工作：图标 / 流程图 / 架构图
+bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
+  --prompt "AI 编程火花" --image ./icon.png
+bash ~/.agents/skills/tzai-image/scripts/tzai-image flowchart \
+  --prompt "注册 → 激活 → 付费" --image ./flow.png
+bash ~/.agents/skills/tzai-image/scripts/tzai-image architecture \
+  --prompt "客户端 网关 微服务 DB 队列" --image ./arch.png
 
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --prompt "蓝色渐变 App 图标，圆角方，无文字" \
-  --image ./icon.png --ar 1:1
+# 社交：小红书图卡（对标 baoyu-xhs-images）
+bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
+  --prompt "三步写好周报" --image ./xhs.png
+
+# 信息图（对标 baoyu-infographic）
+bash ~/.agents/skills/tzai-image/scripts/tzai-image infographic \
+  --prompt "Q1 增长四要素" --image ./info.png
 ```
 
-默认模型即为 **`gpt-image-2`**，一般无需手选。
+默认模型 **`gpt-image-2`**；场景质量靠 `--kind` / 子命令，不必手搓长 prompt。
 
 ## 配置
 
@@ -409,21 +443,23 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
 ## CLI
 
 ```text
+kinds [id]
 init / doctor / which-config / models
-generate --prompt ... --image out.png [--ar] [--model] [--dry-run] ...
+generate --kind <id> --prompt ... --image out.png [...]
+<kind> --prompt ... --image out.png     # icon|flowchart|xhs|infographic|...
 ```
+
+Kind 目录：`skills/tzai-image/references/kinds.tsv`。
 
 ## Agent 建议
 
-工作中任何生图需求：
-
 1. 缺 Key 先 `doctor`  
-2. 按上表选比例  
-3. Prompt 写清主体与风格  
-4. 默认 `gpt-image-2` 直接 `generate`  
-5. 回报输出路径  
+2. **意图 → kind**（小红书→`xhs`，流程图→`flowchart`，信息图→`infographic`…）  
+3. `--prompt` 只写**内容主题**（美术方向由 kind 注入）  
+4. 默认 `gpt-image-2` 生成  
+5. 回报路径  
 
-宿主随手 doodle 可用原生工具；要 **TaoziAPI 质量与可复现** 用本 skill。
+宿主 doodle 可用原生工具；要 **TaoziAPI + 场景质量** 用本 skill。
 
 ## 开发
 

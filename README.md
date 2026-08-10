@@ -22,11 +22,35 @@ Works with Claude Code, Codex, Cursor, Grok Build, and [70+ agents](https://gith
   <img src="docs/screenshots/architecture-isometric.png" alt="Architecture" width="320" />
 </p>
 
+## Product modules (分类 × 功能)
+
+Inspired by baoyu’s scene skills (`baoyu-xhs-images`, `baoyu-infographic`, `baoyu-diagram`, …),
+we ship **one engine** with **built-in scenario kinds** — not twenty separate installs.
+
+```bash
+tzai-image kinds                 # list all modules
+tzai-image kinds xhs             # detail one kind
+tzai-image icon --prompt "..." --image out.png
+tzai-image flowchart --prompt "..." --image out.png
+tzai-image generate --kind infographic --prompt "..." --image out.png
+```
+
+| Module | Kinds (functions) | Covers baoyu-like scenes |
+| --- | --- | --- |
+| **brand** | `icon` `logo` `moodboard` `mascot` `badge` `avatar` | Brand kit assets |
+| **diagram** | `flowchart` `architecture` `mindmap` `diagram` `infographic` `dataviz` | ≈ diagram + infographic |
+| **product** | `ui` `wireframe` `empty-state` `onboarding` | Product design visuals |
+| **marketing** | `slide` `banner` `email-header` `cover` `poster` | ≈ cover + deck creatives |
+| **social** | `xhs` `xhs-cover` `wechat` | ≈ **小红书 / 微信** image cards |
+| **photo** | `product` `photo` `landscape` `illustration` `storybook` `food` | Photo & illustration |
+
+Each kind sets a **default aspect ratio** and injects **professional art direction**; you only pass the subject in `--prompt`.
+
 ## Why this skill is enough
 
 Most teams juggle **icons, logos, decks, diagrams, UI mocks, ads, empty states, avatars**… and bounce between random web UIs.
 
-`tzai-image` collapses that into one agent-native CLI:
+`tzai-image` collapses that into one agent-native CLI with **kind modules**:
 
 | Pain today | With tzai-image |
 | --- | --- |
@@ -377,16 +401,19 @@ Never commit keys. Do not store them only inside the skill package directory.
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
+bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --dry-run --prompt "app icon, blue gradient" --image /tmp/icon.png
-
-bash ~/.agents/skills/tzai-image/scripts/tzai-image generate \
-  --prompt "app icon, blue gradient, rounded square, no text" \
-  --image ./icon.png --ar 1:1
+bash ~/.agents/skills/tzai-image/scripts/tzai-image icon \
+  --prompt "spark for AI coding app" --image ./icon.png
+bash ~/.agents/skills/tzai-image/scripts/tzai-image flowchart \
+  --prompt "signup → activate → pay" --image ./flow.png
+bash ~/.agents/skills/tzai-image/scripts/tzai-image xhs \
+  --prompt "三步写好周报" --image ./xhs.png
+bash ~/.agents/skills/tzai-image/scripts/tzai-image infographic \
+  --prompt "Q1 growth four pillars" --image ./info.png
 ```
 
-Default model is **`gpt-image-2`**. Override with `--model` or `TZAI_IMAGE_MODEL` only if needed.
+Default model **`gpt-image-2`**. Scene quality comes from **`--kind` / kind subcommands**.
 
 ## Configuration
 
@@ -411,22 +438,26 @@ Default model is **`gpt-image-2`**. Override with `--model` or `TZAI_IMAGE_MODEL
 ## CLI
 
 ```text
-init --api-key sk-... [--base-url] [--model] [--target durable|global|local] [--force]
+kinds [id]
+init --api-key sk-... [...]
 doctor [--strict-auth]
 which-config | config-path
 models
-generate --prompt ... --image out.png [--model] [--size] [--ar] [--api-key] [--dry-run] [--json]
+generate --kind <id> --prompt ... --image out.png [--ar] [--model] [--dry-run] [--json]
+<kind> --prompt ... --image out.png    # icon|logo|flowchart|xhs|infographic|...
 --version
 ```
 
+Kinds catalog: `skills/tzai-image/references/kinds.tsv`.
+
 ## Agent guidance
 
-When the user needs any image at work:
+When the user needs any image:
 
 1. `doctor` if key might be missing  
-2. Pick aspect from the table above  
-3. Write a sharp prompt (subject + style + lighting + background)  
-4. `generate` with default `gpt-image-2`  
+2. **Map intent → kind** (`xhs` / `flowchart` / `icon` / `infographic` / …) via `kinds`  
+3. Put only the **subject** in `--prompt` (kind supplies art direction + default AR)  
+4. Generate with default `gpt-image-2`  
 5. Return the file path  
 
 Use host-native tools only for throwaway doodles; use **tzai-image** for TaoziAPI quality and reproducibility.

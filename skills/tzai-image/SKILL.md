@@ -1,19 +1,23 @@
 ---
 name: tzai-image
 description: >
-  Use when the user wants to generate or draw images via TaoziAPI (tzai.kdp.cool),
-  create AI pictures, text-to-image, or configure TZAI_API_KEY for image generation.
-  Triggers: 画图, 生图, 生成图片, draw, image gen, text-to-image, tzai, TaoziAPI,
-  /tzai-image. Not for Feishu push (lark-push) or generic host-native image tools only.
+  Use when the user wants to generate or draw images via TaoziAPI (tzai.kdp.cool):
+  icons, logos, flowcharts, architecture diagrams, infographics, Xiaohongshu/小红书 cards,
+  WeChat visuals, UI mocks, wireframes, posters, covers, product photos, mascots, or any
+  text-to-image job. Triggers: 画图, 生图, 图标, Logo, 流程图, 架构图, 信息图, 小红书,
+  配图, diagram, infographic, xhs, icon, logo, draw, image gen, tzai, TaoziAPI, /tzai-image.
+  Prefer --kind or kind subcommands (icon|flowchart|xhs|infographic|...). Not for Feishu push.
 metadata:
   author: kedoupi
-  version: "0.1.1"
+  version: "0.2.0"
 ---
 
 # tzai-image
 
-Generate images through **TaoziAPI** (`https://tzai.kdp.cool`) using an OpenAI-compatible
-Images API.
+Generate images through **TaoziAPI** (`https://tzai.kdp.cool`) with **scenario kinds**
+(分类功能) — same idea as baoyu's xhs / infographic / diagram skills, one CLI engine.
+
+Default model: **`gpt-image-2`**.
 
 ## Prerequisites (agents: check these first)
 
@@ -88,40 +92,79 @@ If the host already has native image tools (e.g. Grok `image_gen`, Codex `imageg
 - Casual one-offs **in that host** may use the native tool  
 - Use **tzai-image** when the user wants TaoziAPI, a reproducible CLI, CI, or durable `TZAI_*` config  
 
+## Scenario kinds (分类功能)
+
+List and details:
+
+```bash
+bash <skill-dir>/scripts/tzai-image kinds
+bash <skill-dir>/scripts/tzai-image kinds flowchart
+```
+
+| Category | Kinds | Use when |
+| --- | --- | --- |
+| **brand** 品牌 | `icon` `logo` `moodboard` `mascot` `badge` `avatar` | App 图标、Logo、吉祥物、徽章、头像 |
+| **diagram** 结构 | `flowchart` `architecture` `mindmap` `diagram` `infographic` `dataviz` | 流程图、架构图、思维导图、信息图（对齐 baoyu-diagram / infographic） |
+| **product** 产品 | `ui` `wireframe` `empty-state` `onboarding` | 仪表盘、线框、空状态、引导页 |
+| **marketing** 市场 | `slide` `banner` `email-header` `cover` `poster` | PPT 封面、投放、邮件头图、文章封面 |
+| **social** 社交 | `xhs` `xhs-cover` `wechat` | **小红书图卡/封面**、微信配图（对齐 baoyu-xhs-images） |
+| **photo** 影像 | `product` `photo` `landscape` `illustration` `storybook` `food` | 商品图、风光、插画、绘本、美食 |
+
+Agent routing:
+
+1. Map user intent → **kind** (e.g. 小红书 → `xhs`, 流程图 → `flowchart`)  
+2. Put **subject only** in `--prompt` (kind injects professional art direction + default `--ar`)  
+3. Run generate  
+
+```bash
+# Kind API (recommended)
+bash <skill-dir>/scripts/tzai-image generate \
+  --kind icon --prompt "spark for AI coding app" --image ./icon.png
+
+# Kind as subcommand (same as baoyu-style scene entry)
+bash <skill-dir>/scripts/tzai-image flowchart \
+  --prompt "注册 → 激活 → 付费" --image ./flow.png
+
+bash <skill-dir>/scripts/tzai-image xhs \
+  --prompt "三步写好周报" --image ./xhs-card.png
+
+bash <skill-dir>/scripts/tzai-image infographic \
+  --prompt "Q1 增长四要素" --image ./info.png
+```
+
+Raw generate without kind still works for free-form prompts.
+
 ## Usage
 
 ```bash
-# Environment check
 bash <skill-dir>/scripts/tzai-image doctor
+bash <skill-dir>/scripts/tzai-image kinds
 
-# Preview (local only)
 bash <skill-dir>/scripts/tzai-image generate \
-  --dry-run \
-  --prompt "a red cube on a table" \
-  --image /tmp/cube.png \
-  --model YOUR_MODEL_ID
+  --dry-run --kind logo --prompt "几何 N monogram 靛蓝青绿" --image /tmp/logo.png
 
-# Generate
-bash <skill-dir>/scripts/tzai-image generate \
-  --prompt "a red cube on a table" \
-  --image ./out/cube.png \
-  --ar 1:1
+bash <skill-dir>/scripts/tzai-image architecture \
+  --prompt "客户端 / 网关 / 微服务 / DB / 队列" --image ./arch.png
 ```
 
 ## Key CLI
 
 ```text
-init --api-key <sk> [--base-url] [--model] [--target durable|global|local] [--force]
+kinds [id]
+init --api-key <sk> [...]
 doctor [--strict-auth]
 which-config | config-path
 models
-generate --prompt <text> --image <path> [--model] [--size] [--ar] [--api-key] [--dry-run] [--json]
+generate --kind <id> --prompt <text> --image <path> [--ar] [--model] [--dry-run] [--json]
+<kind> --prompt <text> --image <path>   # alias, e.g. icon|flowchart|xhs|infographic
 --version
 ```
+
+Catalog file: `references/kinds.tsv` (edit to add kinds without rewriting the script).
 
 ## Troubleshooting
 
 1. `doctor` and fix `[FAIL]` lines  
 2. Confirm key at https://tzai.kdp.cool/console  
-3. `models` to pick a valid image model id  
+3. Wrong scene quality → pick a better `--kind` (`kinds` list)  
 4. `which-config` to see whether key comes from `env` vs `file`  

@@ -14,6 +14,7 @@ LOCAL_CONFIG_FILE="${SKILL_ROOT}/config.local.env"
 XDG_CONFIG_FILE="${HOME}/.config/${SKILL_NAME}/config.env"
 EXAMPLE_CONFIG_FILE="${SKILL_ROOT}/config.example.env"
 SKILL_MD_FILE="${SKILL_ROOT}/SKILL.md"
+KINDS_FILE="${SKILL_ROOT}/references/kinds.tsv"
 
 DEFAULT_BASE_URL="https://tzai.kdp.cool"
 # Best image model currently available on TaoziAPI (override via env/CLI if needed).
@@ -21,6 +22,9 @@ DEFAULT_IMAGE_MODEL="gpt-image-2"
 DEFAULT_AR="1:1"
 DEFAULT_TIMEOUT=120
 CONSOLE_URL="https://tzai.kdp.cool/console"
+
+# Scenario kinds (like baoyu-xhs / infographic / diagram modules, but one CLI)
+KIND_IDS="icon logo moodboard mascot badge avatar flowchart architecture mindmap diagram infographic dataviz ui wireframe empty-state onboarding slide banner email-header cover poster xhs xhs-cover wechat product photo landscape illustration storybook food"
 
 # Snapshot process env so files cannot clobber exported globals (plan: env > files).
 _ENV_API_KEY="${TZAI_API_KEY-}"
@@ -210,6 +214,89 @@ ar_to_size() {
     2:3) echo "1024x1536" ;;
     *) echo "1024x1024" ;;
   esac
+}
+
+# kinds.tsv: id category category_zh ar label_en label_zh prefix
+kind_line() {
+  local id="$1"
+  [[ -f "$KINDS_FILE" ]] || return 1
+  # shellcheck disable=SC2016
+  awk -F'\t' -v id="$id" '
+    $0 ~ /^#/ || NF < 7 { next }
+    $1 == id {
+      print $0
+      found=1
+      exit
+    }
+    END { exit found ? 0 : 1 }
+  ' "$KINDS_FILE"
+}
+
+kind_field() {
+  # kind_field <line> <1-based index>
+  local line="$1" idx="$2"
+  printf '%s\n' "$line" | awk -F'\t' -v i="$idx" '{print $i}'
+}
+
+compose_kind_prompt() {
+  local kind="$1" user_prompt="$2"
+  local line prefix
+  line="$(kind_line "$kind")" || return 1
+  prefix="$(kind_field "$line" 7)"
+  printf '%s Subject/content from user: %s. High quality, coherent composition, no watermark.' "$prefix" "$user_prompt"
+}
+
+cmd_kinds() {
+  local filter="${1-}"
+  if [[ ! -f "$KINDS_FILE" ]]; then
+    echo "Missing kinds catalog: $KINDS_FILE" >&2
+    return 1
+  fi
+  if [[ -n "$filter" && "$filter" != "--help" && "$filter" != "-h" ]]; then
+    local line
+    line="$(kind_line "$filter")" || {
+      echo "Unknown kind: $filter" >&2
+      echo "Run: tzai-image kinds" >&2
+      return 2
+    }
+    cat <<EOF
+kind:        $(kind_field "$line" 1)
+category:    $(kind_field "$line" 2) / $(kind_field "$line" 3)
+default_ar:  $(kind_field "$line" 4)
+label:       $(kind_field "$line" 5) / $(kind_field "$line" 6)
+direction:   $(kind_field "$line" 7)
+
+Example:
+  tzai-image generate --kind ${filter} --prompt \"your subject\" --image out.png
+  tzai-image ${filter} --prompt \"your subject\" --image out.png
+EOF
+    return 0
+  fi
+
+  printf '%-14s %-12s %-6s %s\n' "KIND" "CATEGORY" "AR" "LABEL"
+  printf '%-14s %-12s %-6s %s\n' "----" "--------" "--" "-----"
+  awk -F'\t' '
+    $0 ~ /^#/ || NF < 7 { next }
+    {
+      printf "%-14s %-12s %-6s %s / %s\n", $1, $2, $4, $5, $6
+    }
+  ' "$KINDS_FILE"
+  cat <<EOF
+
+Categories (功能分类):
+  brand      品牌识别 — icon logo moodboard mascot badge avatar
+  diagram    结构图示 — flowchart architecture mindmap diagram infographic dataviz
+  product    产品设计 — ui wireframe empty-state onboarding
+  marketing  市场内容 — slide banner email-header cover poster
+  social     社交种草 — xhs xhs-cover wechat
+  photo      影像插画 — product photo landscape illustration storybook food
+
+Usage:
+  tzai-image kinds                 # list all
+  tzai-image kinds flowchart       # detail one kind
+  tzai-image generate --kind icon --prompt "spark for AI app" --image icon.png
+  tzai-image xhs --prompt "三步学会 Prompt" --image card.png
+EOF
 }
 
 # ---------------------------------------------------------------------------
@@ -460,7 +547,8 @@ PY
 # ---------------------------------------------------------------------------
 
 cmd_generate() {
-  local prompt="" image="" model="" size="" ar="" api_key="" base_url="" dry_run=0 json_out=0 n=1
+  local prompt="" image="" model="" size="" ar="" api_key="" base_url="" kind="" dry_run=0 json_out=0 n=1
+  local user_prompt="" final_prompt="" kind_ar="" kind_label=""
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -469,6 +557,7 @@ cmd_generate() {
       --model|-m) require_val "$1" "${2-}"; model="$2"; shift 2 ;;
       --size) require_val "$1" "${2-}"; size="$2"; shift 2 ;;
       --ar) require_val "$1" "${2-}"; ar="$2"; shift 2 ;;
+      --kind|-k) require_val "$1" "${2-}"; kind="$2"; shift 2 ;;
       --api-key) require_val "$1" "${2-}"; api_key="$2"; shift 2 ;;
       --base-url) require_val "$1" "${2-}"; base_url="$2"; shift 2 ;;
       --n) require_val "$1" "${2-}"; n="$2"; shift 2 ;;
@@ -477,23 +566,32 @@ cmd_generate() {
       -h|--help)
         cat <<EOF
 Usage: tzai-image generate [options]
+   or: tzai-image <kind> --prompt "..." --image out.png
+
+Scenario kinds (功能分类，类似 baoyu-xhs / infographic / diagram):
+  tzai-image kinds
 
 Options:
-  --prompt, -p <text>   Image prompt (required)
+  --kind, -k <id>       Scenario preset (icon|logo|flowchart|xhs|infographic|...)
+  --prompt, -p <text>   Subject / content (required). Kind adds professional art direction.
   --image, -o <path>    Output file path (required unless --dry-run)
   --model, -m <id>      Model id (default: ${DEFAULT_IMAGE_MODEL})
   --size <WxH>          e.g. 1024x1024
-  --ar <ratio>          1:1 | 16:9 | 9:16 | 4:3 | 3:4 … (maps to size if --size omitted)
+  --ar <ratio>          Override kind default aspect ratio
   --api-key <sk-...>    Override key for this call
   --base-url <url>      Override gateway
   --n <count>           Number of images (default 1; only first saved if >1)
   --dry-run             Print plan only (no network)
   --json                Print JSON metadata on stdout after success
 
+Examples:
+  tzai-image generate --kind icon --prompt "spark for AI coding app" --image icon.png
+  tzai-image flowchart --prompt "signup to activation funnel" --image flow.png
+  tzai-image xhs --prompt "三步写好周报" --image card.png
+
 Config:
   export TZAI_API_KEY='sk-...'
-  or: tzai-image init --api-key sk-...
-  Default model: ${DEFAULT_IMAGE_MODEL} (override with TZAI_IMAGE_MODEL or --model)
+  Default model: ${DEFAULT_IMAGE_MODEL}
   Key console: ${CONSOLE_URL}
 EOF
         return 0
@@ -516,6 +614,24 @@ EOF
     TZAI_IMAGE_MODEL="$model"
     MODEL_SOURCE="cli"
   fi
+
+  user_prompt="$prompt"
+  final_prompt="$prompt"
+
+  if [[ -n "$kind" ]]; then
+    local kline
+    kline="$(kind_line "$kind")" || {
+      echo "Unknown --kind: $kind (try: tzai-image kinds)" >&2
+      return 2
+    }
+    kind_ar="$(kind_field "$kline" 4)"
+    kind_label="$(kind_field "$kline" 5)"
+    final_prompt="$(compose_kind_prompt "$kind" "$user_prompt")" || return 2
+    if [[ -z "$ar" && -n "$kind_ar" ]]; then
+      ar="$kind_ar"
+    fi
+  fi
+
   if [[ -n "$ar" ]]; then
     TZAI_DEFAULT_AR="$ar"
   fi
@@ -523,8 +639,8 @@ EOF
     size="$(ar_to_size "${TZAI_DEFAULT_AR:-$DEFAULT_AR}")"
   fi
 
-  if [[ -z "$prompt" ]]; then
-    echo "Missing --prompt" >&2
+  if [[ -z "$user_prompt" ]]; then
+    echo "Missing --prompt (subject/content for the image)" >&2
     return 2
   fi
   if [[ "$dry_run" -ne 1 && -z "$image" ]]; then
@@ -540,18 +656,20 @@ EOF
 
   local url="${TZAI_BASE_URL}/v1/images/generations"
   local model_eff="${TZAI_IMAGE_MODEL:-"(unset)"}"
+  prompt="$final_prompt"
 
   if [[ "$dry_run" -eq 1 ]]; then
     cat <<EOF >&2
 [dry-run] tzai-image v$(skill_version)
 [dry-run] POST ${url}
+[dry-run] kind=${kind:-"(none)"}${kind_label:+ ($kind_label)}
 [dry-run] model=${model_eff}  (source: ${MODEL_SOURCE})
 [dry-run] size=${size}  ar=${TZAI_DEFAULT_AR:-$DEFAULT_AR}
 [dry-run] n=${n}
 [dry-run] output=${image:-"(none)"}
 [dry-run] api_key=$(mask_key "${TZAI_API_KEY-}")  (source: ${KEY_SOURCE})
 [dry-run] base_url=${TZAI_BASE_URL}  (source: ${BASE_SOURCE})
-[dry-run] prompt_chars=${#prompt}
+[dry-run] user_prompt_chars=${#user_prompt}  final_prompt_chars=${#final_prompt}
 [dry-run] not calling network
 EOF
     if [[ "$json_out" -eq 1 ]]; then
@@ -560,9 +678,12 @@ import json
 print(json.dumps({
   "dry_run": True,
   "url": "${url}",
+  "kind": """${kind}""",
   "model": "${model_eff}",
   "size": "${size}",
+  "ar": """${TZAI_DEFAULT_AR:-$DEFAULT_AR}""",
   "output": """${image}""",
+  "final_prompt": """${final_prompt}""",
 }, ensure_ascii=False))
 PY
     fi
@@ -644,7 +765,7 @@ PY
   rm -f "$resp_file"
 
   echo "Wrote ${image}" >&2
-  echo "Using ${TZAI_BASE_URL} / ${TZAI_IMAGE_MODEL}" >&2
+  echo "Using ${TZAI_BASE_URL} / ${TZAI_IMAGE_MODEL}${kind:+ / kind=${kind}}" >&2
 
   if [[ "$json_out" -eq 1 ]]; then
     python3 - <<PY
@@ -653,6 +774,7 @@ print(json.dumps({
   "ok": True,
   "path": """${image}""",
   "model": """${TZAI_IMAGE_MODEL}""",
+  "kind": """${kind}""",
   "base_url": """${TZAI_BASE_URL}""",
   "size": """${size}""",
 }, ensure_ascii=False))
@@ -668,22 +790,31 @@ PY
 
 print_help() {
   cat <<EOF
-tzai-image v$(skill_version) — image generation via TaoziAPI (${DEFAULT_BASE_URL})
+tzai-image v$(skill_version) — TaoziAPI image engine with scenario kinds
+
+Modules (分类功能，对齐 baoyu 场景 skill 思路，集于一个 CLI):
+  brand      icon logo moodboard mascot badge avatar
+  diagram    flowchart architecture mindmap diagram infographic dataviz
+  product    ui wireframe empty-state onboarding
+  marketing  slide banner email-header cover poster
+  social     xhs xhs-cover wechat          # 小红书 / 微信
+  photo      product photo landscape illustration storybook food
 
 Usage:
-  tzai-image init --api-key sk-... [options]
+  tzai-image kinds
+  tzai-image kinds xhs
+  tzai-image generate --kind flowchart --prompt "注册到激活" --image flow.png
+  tzai-image xhs --prompt "三步写周报" --image card.png
+  tzai-image icon --prompt "AI coding spark" --image icon.png
+  tzai-image init --api-key sk-...
   tzai-image doctor [--strict-auth]
-  tzai-image which-config | config-path
   tzai-image models
-  tzai-image generate --prompt "..." --image out.png [options]
   tzai-image --version
 
-API key (any one is enough):
-  1) export TZAI_API_KEY='sk-...'          # global env
-  2) tzai-image init --api-key sk-...      # durable file
-  3) --api-key on generate                 # one-shot
-
-Get a key: ${CONSOLE_URL}
+API key:
+  export TZAI_API_KEY='sk-...'   OR   tzai-image init --api-key sk-...
+  Console: ${CONSOLE_URL}
+  Default model: ${DEFAULT_IMAGE_MODEL}
 EOF
 }
 
@@ -725,6 +856,11 @@ case "$cmd" in
     cmd_models "$@"
     exit $?
     ;;
+  kinds|kind)
+    shift
+    cmd_kinds "$@"
+    exit $?
+    ;;
   generate|gen)
     shift
     cmd_generate "$@"
@@ -735,12 +871,19 @@ case "$cmd" in
     exit 0
     ;;
   *)
+    # Scenario alias: tzai-image flowchart --prompt ... 
+    if kind_line "$cmd" >/dev/null 2>&1; then
+      shift
+      cmd_generate --kind "$cmd" "$@"
+      exit $?
+    fi
     # allow bare generate flags for convenience
     if [[ "$cmd" == --* ]]; then
       cmd_generate "$@"
       exit $?
     fi
     echo "Unknown command: $cmd" >&2
+    echo "Try: tzai-image kinds" >&2
     print_help >&2
     exit 2
     ;;

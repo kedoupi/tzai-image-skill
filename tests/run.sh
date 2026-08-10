@@ -76,6 +76,22 @@ echo "== dry-run model override =="
 err="$("$BIN" generate --dry-run --prompt "a cat" --image /tmp/t.png --model demo-model 2>&1 >/dev/null)"
 assert_contains "dry-run override model" "demo-model" "$err"
 
+echo "== kinds catalog =="
+kinds_out="$("$BIN" kinds 2>&1)"
+assert_contains "kinds has flowchart" "flowchart" "$kinds_out"
+assert_contains "kinds has xhs" "xhs" "$kinds_out"
+assert_contains "kinds has icon" "icon" "$kinds_out"
+detail="$("$BIN" kinds flowchart 2>&1)"
+assert_contains "kind detail ar" "16:9" "$detail"
+
+echo "== kind enriches prompt (dry-run) =="
+err="$("$BIN" generate --dry-run --kind icon --prompt "spark AI" --image /tmp/i.png 2>&1 >/dev/null)"
+assert_contains "kind in dry-run" "kind=icon" "$err"
+assert_contains "kind default ar 1:1" "ar=1:1" "$err"
+err="$("$BIN" xhs --dry-run --prompt "三步周报" --image /tmp/x.png 2>&1 >/dev/null)"
+assert_contains "xhs alias kind" "kind=xhs" "$err"
+assert_contains "xhs ar 3:4" "ar=3:4" "$err"
+
 echo "== missing prompt =="
 assert_exit "empty prompt fails" 2 "$BIN" generate --dry-run --prompt "" --image /tmp/t.png --model m
 
