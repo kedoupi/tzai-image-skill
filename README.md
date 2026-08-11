@@ -2,9 +2,9 @@
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-**One engine. Plan C slash surface. Cover the image jobs people actually run.**
+**Describe the outcome. The agent plans the creative work, confirms the direction, and renders the assets.**
 
-Generate production-ready visuals from coding agents via **TaoziAPI** ([tzai.kdp.cool](https://tzai.kdp.cool)), default model **`gpt-image-2`**.
+Create single images or coordinated UI, social, publishing, brand, product, campaign, knowledge, deck, character, space, and narrative projects through **TaoziAPI** ([tzai.kdp.cool](https://tzai.kdp.cool)). Default model: **`gpt-image-2`**.
 
 Works with Claude Code, Codex, Cursor, Grok Build, and [70+ agents](https://github.com/vercel-labs/skills#supported-agents) via [skills CLI](https://skills.sh/).
 
@@ -14,24 +14,91 @@ Works with Claude Code, Codex, Cursor, Grok Build, and [70+ agents](https://gith
 
 ---
 
-## How to choose (teach yourself in 30 seconds)
+## Ask for the outcome
 
 ```text
-Know the exact scene?     →  high-freq slash   e.g. /tzai-xhs  /tzai-flowchart
-Only know the domain?     →  category hub      e.g. /tzai-brand  /tzai-diagram
-Anything else / long-tail →  engine            /tzai-image mindmap …
+Design the onboarding and dashboard flow for my app.
+Turn this article into a complete Xiaohongshu note with a cover and cards.
+Rewrite this draft for WeChat and create its cover.
+Read these chapters, propose useful illustration spots, then wait for approval.
+Create a starter visual identity for this new brand.
+Prepare a coordinated visual kit for this product launch.
 ```
 
-| Layer | Count | What it’s for |
-| --- | --- | --- |
-| **Engine** | 1 | `/tzai-image` — any kind, `doctor`, free-form |
-| **Category hubs** | 6 | Broad need → pick a kind |
-| **High-freq kinds** | 11 | One shot for mass-demand scenes |
-| **Long-tail kinds** | ~19 | Still in `kinds.tsv`; **no** thin slash — use engine |
+The agent infers workflows, patterns, kinds, ratios, and references internally. A coordinated project follows two approval gates: approve the content/asset plan, then approve one generated visual anchor before the remaining paid batch.
 
-Whitelist source: [`skills/tzai-image/references/slash-whitelist.txt`](./skills/tzai-image/references/slash-whitelist.txt).  
-Demo index: [`docs/demos.tsv`](./docs/demos.tsv).  
-Scene map: [`docs/SCENES.md`](./docs/SCENES.md) · Roadmap: [`docs/CAPABILITY-ROADMAP.md`](./docs/CAPABILITY-ROADMAP.md).
+| Internal layer | Count | Role |
+| --- | --- | --- |
+| **Creative workflows** | 27 | User outcomes, intake, approvals, deliverables, boundaries |
+| **Visual patterns** | 22 | Reusable composition and prompt methods |
+| **Image kinds** | 30 | Single-asset rendering primitives |
+| **Engine** | 1 | Auth, dry-run, generation/edit requests, safe output writes |
+
+Workflow catalog: [`docs/WORKFLOW-CATALOG.md`](./docs/WORKFLOW-CATALOG.md) · Pattern method: [`docs/PATTERN-LIBRARY.md`](./docs/PATTERN-LIBRARY.md) · Architecture: [`docs/CREATIVE-WORKFLOW-ARCHITECTURE.md`](./docs/CREATIVE-WORKFLOW-ARCHITECTURE.md).
+
+## Agent workflow examples
+
+| User says | The agent does | Deliverable |
+| --- | --- | --- |
+| “Design onboarding and a dashboard for this SaaS product.” | Infers users and key tasks, proposes a screen map, then generates one primary-screen anchor before the remaining screens | Screen map, UI copy, 1-8 coordinated UI images |
+| “Turn this article into a complete Xiaohongshu note.” | Rewrites the content, proposes a card storyboard, confirms the plan, then confirms one cover before creating the cards | `note.md`, cover, ordered cards, asset map |
+| “Rewrite this draft for WeChat and create the cover.” | Restructures the article, identifies useful visual positions, confirms the package, then produces the cover and approved section visuals | `article.md`, cover, optional illustrations, placement map |
+| “Read every chapter and propose illustrations before generating.” | Uses the real headings, recommends only useful illustration spots, and waits for approval before any paid render | Illustration plan, images, captions, alt text |
+| “Create a visual starter kit for this brand.” | Clarifies positioning and rights, proposes identity directions, then anchors the selected system | Moodboard, mark concepts, icon direction, touchpoint notes |
+| “Prepare all visuals for this product launch.” | Builds a channel-aware asset plan and keeps claims outside generated pixels | Product hero, campaign derivatives, usage map, copy-safe areas |
+
+### Example: article to Xiaohongshu note
+
+```text
+User
+Turn this article into a Xiaohongshu note for product managers. Keep it
+practical and professional. I want a cover and five content cards.
+
+Agent — plan approval
+I recommend a six-card package:
+01 Cover: “AI Agent 落地指南”
+02 Why chat alone is not an Agent
+03 Goal → plan → tools → result
+04 Three product-design decisions
+05 Common failure modes
+06 Save/share checklist and CTA
+
+Visual system: editorial coral + navy, strong mobile hierarchy, short labels.
+Paid scope: 6 images. I will generate only the cover after you approve this plan.
+
+User
+Approve the plan.
+
+Agent — anchor approval
+Generated assets/01-cover.png. Confirm this composition and visual system;
+only then will I use it as --ref for cards 02-06.
+```
+
+The final package is reviewable and resumable:
+
+```text
+xhs-ai-agent-guide/
+  brief.json
+  plan.md
+  note.md
+  asset-plan.json
+  deliverables.json
+  assets/
+    01-cover.png
+    02-why-agent.png
+    03-agent-loop.png
+    04-product-decisions.png
+    05-failure-modes.png
+    06-checklist.png
+```
+
+<p align="center">
+  <img src="docs/screenshots/xhs-cover.png" alt="Xiaohongshu cover example" width="210" />
+  <img src="docs/screenshots/xhs-card.png" alt="Xiaohongshu card example" width="210" />
+  <img src="docs/screenshots/ui-dashboard.png" alt="UI dashboard example" width="360" />
+</p>
+
+Single-image requests stay lightweight: a clear request can render directly. The plan and anchor gates apply to coordinated projects so the agent does not silently multiply paid calls.
 
 <p align="center">
   <img src="docs/screenshots/icon-app.png" alt="icon" width="120" />
@@ -505,7 +572,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds   # full catalog
 
 ---
 
-## Prompt tips (subject only)
+## Prompt tips for single assets
 
 | Job | Put in `--prompt` | Kind already handles |
 | --- | --- | --- |
@@ -515,7 +582,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds   # full catalog
 | Cover | topic + mood | title space, editorial light |
 | Arch | components list | isometric / layers |
 
-Avoid long style essays in the prompt unless you intentionally override the kind.
+For a single asset, keep the brief concise because the kind supplies baseline art direction. For projects, the agent composes a structured brief from the selected workflow and pattern.
 
 ---
 
@@ -523,9 +590,19 @@ Avoid long style essays in the prompt unless you intentionally override the kind
 
 | Job | Playbook |
 | --- | --- |
-| Article multi-spot art | `skills/tzai-image/references/workflows/article-illustrate.md` |
-| Multi-page deck visuals | `…/workflows/slide-deck.md` |
-| XHS card series | `…/workflows/xhs-series.md` |
+| Full workflow router | `skills/tzai-image/references/workflows/index.tsv` |
+| Complete XHS note | `…/workflows/xhs-note.md` |
+| WeChat article package | `…/workflows/wechat-article.md` |
+| Article illustration plan | `…/workflows/article-illustrate.md` |
+| Single/multi-screen UI | `…/workflows/ui-flow.md` |
+| Deck visual package | `…/workflows/deck-package.md` |
+
+Validate a saved plan offline:
+
+```bash
+python3 skills/tzai-image/scripts/validate-workflow-plan --for-anchor asset-plan.json
+python3 skills/tzai-image/scripts/validate-workflow-plan --for-batch asset-plan.json
+```
 
 Style anchor with reference image (`/v1/images/edits`):
 

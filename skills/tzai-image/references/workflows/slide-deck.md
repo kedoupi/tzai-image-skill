@@ -1,50 +1,17 @@
-# Workflow: Multi-page slide deck visuals
+# Slide Deck Compatibility Guide
 
-Use when the user wants a **set of presentation visuals** (not only one title slide).
+Use this entry for legacy requests such as "multi-page slide deck" or "presentation visuals." The canonical workflow is [Deck Package](./deck-package.md), which defines the complete 4-12 asset and handoff contract.
 
-Assumption: slides are **readable / shareable** (self-explanatory cards), not live-speaker-only sparse slides.
+## Shared Two-Stage Protocol
 
-## Agent steps
+1. Read the outline, infer audience and page roles, and ask only for material gaps.
+2. Create a page-role/content plan and obtain explicit approval before paid calls.
+3. Generate exactly one `slide` title-page anchor.
+4. Obtain explicit anchor approval before remaining assets.
+5. Produce approved `slide`, `infographic`, `flowchart`, `architecture`, or `ui` visuals using `--ref` to the anchor.
 
-1. **Ingest** outline or article.
-2. **Deck plan** (5–12 pages max for one batch):
-   - page role: title | section | content | diagram | closing
-   - one idea per page
-   - subject line for image gen
-3. **Shared visual system** (one line):  
-   e.g. `McKinsey deep navy + gold hairline, vast title space, no body paragraphs`
-4. **Confirm** page list unless 直接生成.
-5. **Generate**:
-   - page 1: `slide` (title) — style anchor
-   - later pages: same style token; use `slide` / `infographic` / `flowchart` / `architecture` by role
-   - optional `--ref` first page for consistency
-6. Deliver ordered PNG paths + suggested on-slide title (text layered by user in PPT).
+## Compatibility Contract
 
-## CLI sketch
+Deliver 4-12 numbered visual files with a page-role map, suggested overlay copy, placement notes, captions, and alt text. Keep final titles, dense labels, and verified numbers outside generated images.
 
-```bash
-E=~/.agents/skills/tzai-image/scripts/tzai-image
-SYS="premium consulting deck navy geometry gold hairline, empty title band, no dense body text"
-
-bash $E slide --prompt "Title: $TOPIC. $SYS" --image ./slides/01-title.png
-bash $E slide --prompt "Section: Market. $SYS" --image ./slides/02-section.png
-bash $E infographic --layout metrics --style clean-corporate \
-  --prompt "KPI overview for $TOPIC. $SYS" --image ./slides/03-metrics.png
-bash $E flowchart --prompt "Go-to-market steps … $SYS" --image ./slides/04-flow.png
-```
-
-## Kind by page role
-
-| Role | Kind |
-| --- | --- |
-| Title / closing | `slide` |
-| Section divider | `slide` |
-| Metrics wall | `infographic` |
-| Process | `flowchart` |
-| System | `architecture` |
-| Product shot | `ui` / `product-photo` |
-
-## Limits
-
-- One visual idea per page.
-- Prefer **title-safe empty areas** — user adds final Chinese titles in PPT if model text is unreliable.
+Regenerate only a failed or text-inaccurate page from the approved anchor, retain successful files, and report partial delivery. This produces visual assets for assembly, not a presentation file or validation of the deck's claims. Follow [Deck Package](./deck-package.md) for full intake, planning, kinds, and boundaries.

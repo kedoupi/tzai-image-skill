@@ -1,19 +1,20 @@
 ---
 name: tzai-image
 description: >
-  Use when the user wants to generate or draw images via TaoziAPI (tzai.kdp.cool):
-  icons, logos, flowcharts, architecture diagrams, infographics, Xiaohongshu/小红书 cards,
-  WeChat visuals, UI mocks, wireframes, posters, covers, product photos, mascots, or any
-  text-to-image job. Triggers: 画图, 生图, 图标, Logo, 流程图, 架构图, 信息图, 小红书,
-  配图, diagram, infographic, xhs, icon, logo, draw, image gen, tzai, TaoziAPI, /tzai-image.
-  Prefer --kind or kind subcommands (icon|flowchart|xhs|infographic|...). Not for Feishu push.
-  Plan C slash surface: this engine + 6 category hubs + ~11 high-freq kinds; long-tail via this skill.
+  Use for natural-language image creation and coordinated creative projects through TaoziAPI:
+  single images, UI screen flows, complete Xiaohongshu notes, WeChat article packages, article
+  illustration plans, brand starters, product launches, campaign kits, knowledge visuals, decks,
+  character/IP systems, ecommerce, publishing, photography, storyboards, spaces, and cultural or
+  R&D concepts. Triggers include 画图, 生图, 配图, UI设计, 小红书笔记, 公众号文章/封面, 逐章配图,
+  品牌视觉, 商品发布, Campaign, 信息图, PPT视觉, 角色设定, 分镜, 空间概念, diagram, image gen,
+  visual system, creative project, tzai, TaoziAPI, and /tzai-image. Infer workflows and kinds
+  internally; do not require users to know commands. Not for publishing to social platforms.
 argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到付费"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.4"
-  short-description: "TaoziAPI 生图（引擎 + 场景 kind，默认 gpt-image-2）"
+  version: "0.6.0"
+  short-description: "TaoziAPI 创作 Agent（自然语言工作流 + 生图引擎）"
 ---
 
 # tzai-image
@@ -103,9 +104,39 @@ Examples:
 
 Routing rules for agents:
 
-1. **Known high-freq scene** → direct slash (`/tzai-xhs`, `/tzai-flowchart`, …).
-2. **Broad category** → hub (`/tzai-brand`, …) then pick kind.
-3. **Anything else** → `/tzai-image` + `kinds` catalog or natural language → kind.
+1. **One independently useful image** → infer a kind and use the existing single-image path.
+2. **Coordinated project** (series, article, full note, deck, campaign, brand, screen flow) → select an internal workflow from `references/workflows/index.tsv`.
+3. **Broad or long-tail request** → infer the outcome; never require the user to choose a kind, pattern, or command.
+4. Direct slashes remain expert shortcuts, not a prerequisite for discovery.
+
+## Agent-led creative projects
+
+Kinds and patterns are internal implementation details. Start from the requested outcome.
+
+1. Decide whether the request is a **single asset** or a **project**.
+2. For a project, read `references/workflows/index.tsv`, then only the selected guide and referenced pattern/module files.
+3. Infer audience, channel, source facts, deliverables, and visual direction before asking questions. Ask only for missing decisions that materially change the result.
+4. Present the content/asset plan and exact image count. Make no paid call before explicit plan approval.
+5. Generate exactly one planned anchor, then obtain explicit anchor approval before the remaining batch.
+6. Use the approved anchor with `--ref` and a shared style token. Never retry a failed paid request automatically.
+7. Deliver reviewable content plus an ordered asset map; regenerate only rejected or failed assets.
+
+Workflow statuses:
+
+| Status | Meaning |
+| --- | --- |
+| `stable` | Complete intake, approval, production, and deliverable contract |
+| `guided` | Usable with documented boundaries; results require closer review |
+| `expert-review` | Requires rights, factual, policy, or professional review before batch production |
+
+Validate a saved plan offline before generation:
+
+```bash
+python3 <skill-dir>/scripts/validate-workflow-plan --for-anchor asset-plan.json
+python3 <skill-dir>/scripts/validate-workflow-plan --for-batch asset-plan.json
+```
+
+This validator is the mandatory readiness check for **agent-managed projects**. The low-level CLI intentionally remains a direct single-request primitive; invoking it approves only that one call and does not authorize a project batch.
 
 ## Locating the helper
 
@@ -134,6 +165,7 @@ bash <skill-dir>/scripts/tzai-image doctor
 ## Safety
 
 - Confirm prompt and output path before real (paid) generation when unclear  
+- For multi-asset projects, confirm the bounded plan, generate one anchor, then confirm the anchor before the rest
 - Prefer `--dry-run` for request preview (no network)  
 - User running the helper counts as approval for that invocation  
 - Never commit API keys  
@@ -171,7 +203,7 @@ bash <skill-dir>/scripts/tzai-image kinds flowchart
 Agent routing:
 
 1. Map user intent → **kind** (e.g. 小红书 → `xhs`, 流程图 → `flowchart`)  
-2. Put **subject only** in `--prompt` (kind injects professional art direction + default `--ar`)  
+2. For a **single asset**, put a concise visual brief in `--prompt` (kind injects baseline art direction + default `--ar`)
 3. Run generate  
 
 ```bash
@@ -199,9 +231,13 @@ Workflows (agent multi-image):
 
 | File | Use |
 | --- | --- |
-| `references/workflows/xhs-series.md` | 小红书多卡 |
-| `references/workflows/article-illustrate.md` | 文章多点配图 |
-| `references/workflows/slide-deck.md` | 多页 PPT 视觉 |
+| `references/workflows/index.tsv` | Full natural-language workflow router |
+| `references/workflows/xhs-note.md` | 完整小红书笔记 + 图卡 |
+| `references/workflows/wechat-article.md` | 公众号文章内容包 + 封面 |
+| `references/workflows/article-illustrate.md` | 文章章节配图规划与生成 |
+| `references/workflows/ui-flow.md` | 单页 / 多页面 UI 设计 |
+| `references/workflows/deck-package.md` | 多页 PPT 内容与视觉包 |
+| `references/patterns/index.tsv` | Internal visual pattern router |
 | `references/workflows/cover-dimensions.md` | 封面五维 |
 | `references/workflows/infographic-matrix.md` | 信息图矩阵 |
 
@@ -248,7 +284,7 @@ generate --kind <id> --prompt <text> --image <path>
 --version
 ```
 
-Catalog: `references/kinds.tsv` · matrices: `references/presets/` · workflows: `references/workflows/`.
+Catalog: `references/kinds.tsv` · patterns: `references/patterns/` · workflows: `references/workflows/` · schemas: `references/schemas/`.
 
 ## Troubleshooting
 

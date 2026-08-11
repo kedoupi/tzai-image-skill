@@ -2,9 +2,9 @@
 
 [English](./README.md) | [简体中文](./README.zh-CN.md)
 
-**一个引擎 · Plan C 斜杠面 · 覆盖大众真正会用的生图场景。**
+**描述你想完成的结果，Agent 负责理解、策划、确认并生成完整创作资产。**
 
-通过 **TaoziAPI**（[tzai.kdp.cool](https://tzai.kdp.cool)）在各类 Agent 里出图，默认模型 **`gpt-image-2`**。
+通过 **TaoziAPI**（[tzai.kdp.cool](https://tzai.kdp.cool)）生成单图，或完成 UI、社媒、出版、品牌、商品、Campaign、知识、PPT、角色、空间与叙事项目。默认模型 **`gpt-image-2`**。
 
 支持 Claude Code、Codex、Cursor、Grok Build 及 [skills CLI](https://skills.sh/) 下 [70+ Agent](https://github.com/vercel-labs/skills#supported-agents)。
 
@@ -14,24 +14,91 @@
 
 ---
 
-## 怎么选命令（30 秒自学）
+## 直接描述最终目标
 
 ```text
-场景已经很具体？     →  高频斜杠   例如 /tzai-xhs  /tzai-flowchart
-只知道大方向？       →  分类 hub   例如 /tzai-brand  /tzai-diagram
-长尾 / 任意 kind？   →  引擎       /tzai-image mindmap …
+为我的 App 设计 onboarding 和 Dashboard 流程。
+把这篇文章做成完整小红书笔记，包含封面和图卡。
+把这份草稿改成公众号文章并生成封面。
+分析每个章节需要什么配图，先给方案，确认后再生成。
+为新品牌做一套基础视觉方向。
+为新品发布准备一套统一的传播素材。
 ```
 
-| 层级 | 数量 | 用途 |
-| --- | --- | --- |
-| **引擎** | 1 | `/tzai-image` — 任意 kind、`doctor`、自由生图 |
-| **分类 hub** | 6 | 宽需求 → 再选具体 kind |
-| **高频 kind** | 11 | 大众刚需一句话直达 |
-| **长尾 kind** | ~19 | 仍在 `kinds.tsv`；**无**独立斜杠，走引擎 |
+Agent 会在内部选择工作流、Pattern、kind、比例与参考图。多资产项目先确认内容和资产方案，再生成一张视觉锚点；锚点确认后才批量调用付费生图。
 
-白名单：[`skills/tzai-image/references/slash-whitelist.txt`](./skills/tzai-image/references/slash-whitelist.txt)  
-Demo 索引：[`docs/demos.tsv`](./docs/demos.tsv)  
-场景总表：[`docs/SCENES.md`](./docs/SCENES.md) · 能力规划：[`docs/CAPABILITY-ROADMAP.md`](./docs/CAPABILITY-ROADMAP.md)
+| 内部层级 | 数量 | 作用 |
+| --- | --- | --- |
+| **创作工作流** | 27 | 用户目标、访谈、确认、交付物和边界 |
+| **视觉 Pattern** | 22 | 可复用构图与 Prompt 方法 |
+| **图片 kind** | 30 | 单张图片的底层渲染能力 |
+| **引擎** | 1 | 鉴权、dry-run、生成/编辑请求与安全写入 |
+
+工作流：[`docs/WORKFLOW-CATALOG.md`](./docs/WORKFLOW-CATALOG.md) · Pattern：[`docs/PATTERN-LIBRARY.md`](./docs/PATTERN-LIBRARY.md) · 架构：[`docs/CREATIVE-WORKFLOW-ARCHITECTURE.md`](./docs/CREATIVE-WORKFLOW-ARCHITECTURE.md)
+
+## Agent 工作流示例
+
+| 用户这样说 | Agent 会怎么做 | 最终交付 |
+| --- | --- | --- |
+| “为这个 SaaS 设计 onboarding 和 Dashboard。” | 推断用户与核心任务，先给页面地图，再生成一个主页面锚点，确认后完成其余页面 | 页面地图、UI 文案、1-8 张统一界面图 |
+| “把这篇文章做成完整小红书笔记。” | 改写内容、设计卡片 Storyboard、确认方案，再确认一张封面后生成系列图卡 | `note.md`、封面、顺序图卡、资产映射 |
+| “把草稿改成公众号文章并生成封面。” | 重构文章、判断正文配图位置、确认内容包，再生成封面与已批准插图 | `article.md`、封面、可选插图、插入位置 |
+| “逐章分析需要什么配图，先让我确认。” | 使用真实章节标题，只推荐有信息价值的图片，确认前不付费生图 | 配图方案、图片、Caption、Alt text |
+| “给新品牌做一套基础视觉。” | 理解定位与授权，提供视觉方向，再以选中方向作为系列锚点 | Moodboard、标志概念、Icon 方向、触点说明 |
+| “为新品发布准备完整视觉素材。” | 按渠道规划资产，把真实卖点与价格保留在外部文案层 | 商品 Hero、Campaign 衍生图、用途映射、安全文案区 |
+
+### 示例：文章转完整小红书笔记
+
+```text
+用户
+把这篇文章改成面向产品经理的小红书笔记，专业但要实用。
+需要一张封面和五张内容图卡。
+
+Agent — 方案确认
+建议制作 6 张图：
+01 封面：“AI Agent 落地指南”
+02 为什么普通聊天还不是 Agent
+03 目标 → 计划 → 工具 → 结果
+04 三个产品设计决策
+05 常见失败方式
+06 收藏清单与 CTA
+
+视觉系统：珊瑚红 + 深海军蓝，移动端强层级，只使用短标签。
+付费范围：6 张图。你确认方案后，我只先生成封面。
+
+用户
+确认方案。
+
+Agent — 首图确认
+已生成 assets/01-cover.png。请确认构图与视觉风格；
+确认后才会将它作为 --ref，继续生成 02-06。
+```
+
+最终交付是可审核、可恢复的内容包：
+
+```text
+xhs-ai-agent-guide/
+  brief.json
+  plan.md
+  note.md
+  asset-plan.json
+  deliverables.json
+  assets/
+    01-cover.png
+    02-why-agent.png
+    03-agent-loop.png
+    04-product-decisions.png
+    05-failure-modes.png
+    06-checklist.png
+```
+
+<p align="center">
+  <img src="docs/screenshots/xhs-cover.png" alt="小红书封面示例" width="210" />
+  <img src="docs/screenshots/xhs-card.png" alt="小红书图卡示例" width="210" />
+  <img src="docs/screenshots/ui-dashboard.png" alt="UI Dashboard 示例" width="360" />
+</p>
+
+单图请求仍然保持轻量：需求明确时可直接生成。只有完整项目才执行方案与首图两次确认，避免 Agent 静默扩大付费调用。
 
 <p align="center">
   <img src="docs/screenshots/icon-app.png" alt="icon" width="120" />
@@ -115,7 +182,7 @@ bash $E mindmap --prompt "产品战略拆解" --image ./mm.png   # 长尾
 # 画廊 · 对照教学
 
 每个区块：**什么时候用** → **这一层突出什么** → **斜杠 + CLI** → **效果图**。  
-`--prompt` 只写**主题内容**；美术方向由 kind 注入。
+单图的 `--prompt` 写精简视觉 brief；项目任务由 Agent 结合工作流与 Pattern 生成结构化方向。
 
 重新生成截图（需 Key）：
 
@@ -517,7 +584,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 
 ---
 
-## Prompt 小抄（只写主题）
+## 单图 Prompt 小抄
 
 | 场景 | `--prompt` 写什么 | kind 已处理 |
 | --- | --- | --- |
@@ -533,9 +600,19 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 
 | 场景 | 说明 |
 | --- | --- |
-| 文章多点配图 | `skills/tzai-image/references/workflows/article-illustrate.md` |
-| 多页 PPT 视觉 | `…/workflows/slide-deck.md` |
-| 小红书多卡 | `…/workflows/xhs-series.md` |
+| 完整工作流路由 | `skills/tzai-image/references/workflows/index.tsv` |
+| 完整小红书笔记 | `…/workflows/xhs-note.md` |
+| 公众号文章内容包 | `…/workflows/wechat-article.md` |
+| 文章章节配图 | `…/workflows/article-illustrate.md` |
+| 单页 / 多页面 UI | `…/workflows/ui-flow.md` |
+| PPT 内容与视觉包 | `…/workflows/deck-package.md` |
+
+离线校验已保存的资产计划：
+
+```bash
+python3 skills/tzai-image/scripts/validate-workflow-plan --for-anchor asset-plan.json
+python3 skills/tzai-image/scripts/validate-workflow-plan --for-batch asset-plan.json
+```
 
 参考图锚定（系列一致，走 `/v1/images/edits`）：
 

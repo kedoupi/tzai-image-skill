@@ -1,31 +1,17 @@
-# Workflow: Xiaohongshu multi-card series
+# XHS Series Compatibility Guide
 
-Use when the user wants **1–10 小红书图卡** with consistent style.
+Use this entry for legacy requests such as "Xiaohongshu multi-card series" or "XHS cards." The canonical workflow is [XHS Note](./xhs-note.md), which adds publishable note copy and the complete 2-10 card contract.
 
-## Steps (agent)
+## Shared Two-Stage Protocol
 
-1. Read content (md / paste). Extract title + 3–10 atomic points.
-2. Propose plan (confirm unless user said 直接生成 / `--yes`):
-   - card count (1–10)
-   - `--style` + `--layout` (+ optional `--palette`) or `--preset`
-   - which card is cover (`xhs-cover` or `xhs --layout sparse`)
-3. Generate **card 1 first** (style anchor).
-4. Generate cards 2..N with the **same** style/layout/palette; mention “same series visual system as card 1” in subject if needed.
-5. Return ordered paths; do **not** paint over wrong on-image text — regenerate.
+1. Infer the topic, audience, claim, and card count; ask only for material gaps.
+2. Prepare and obtain explicit approval for the `note.md` draft and card storyboard before paid calls.
+3. Generate exactly one `xhs-cover` anchor.
+4. Obtain explicit anchor approval before remaining assets.
+5. Generate the planned `xhs` cards with `--ref` to the approved cover.
 
-## CLI examples
+## Compatibility Contract
 
-```bash
-E=~/.agents/skills/tzai-image/scripts/tzai-image
-bash $E xhs --preset knowledge-card --prompt "封面：三步写好周报" --image 01-cover.png
-bash $E xhs --style notion --layout dense --prompt "步骤1：列清单 …" --image 02.png
-bash $E xhs --style notion --layout dense --prompt "步骤2：写重点 …" --image 03.png
-```
+Deliver `note.md` with title, body, hashtags, and CTA; numbered card files; and the storyboard/asset map. Use 2-10 assets in total, keep on-image text short, and treat `note.md` as the source of final copy.
 
-## Defaults
-
-| | Default |
-| --- | --- |
-| style | `cute` if unset |
-| layout | `balanced` if unset |
-| AR | `3:4` (kind default) |
+Regenerate an unreadable or failed card from the approved anchor, retaining successful files and reporting partial delivery. Verify claims externally; this guide does not publish content or guarantee performance. For intake detail, kinds, caption rules, and boundaries, follow [XHS Note](./xhs-note.md).

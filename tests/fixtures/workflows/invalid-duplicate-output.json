@@ -1,0 +1,36 @@
+{
+  "schema_version": "1",
+  "workflow_id": "xhs-note",
+  "project_root": "./invalid-output",
+  "shared_style_token": "test",
+  "approval": {
+    "plan": "approved",
+    "anchor": "approved"
+  },
+  "assets": [
+    {
+      "id": "cover",
+      "sequence": 1,
+      "role": "cover",
+      "kind": "xhs-cover",
+      "ar": "3:4",
+      "prompt_subject": "cover",
+      "output": "assets/same.png",
+      "anchor": true,
+      "depends_on": [],
+      "status": "anchor-generated"
+    },
+    {
+      "id": "card",
+      "sequence": 2,
+      "role": "card",
+      "kind": "xhs",
+      "ar": "3:4",
+      "prompt_subject": "card",
+      "output": "assets/same.png",
+      "anchor": false,
+      "depends_on": ["cover"],
+      "status": "approved-for-batch"
+    }
+  ]
+}

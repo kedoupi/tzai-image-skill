@@ -60,52 +60,52 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 
 ---
 
-## Full scene list (slash × category)
+## Full primitive list (invocation × category)
 
 ### 品牌识别 `/tzai-brand`
 
-| Slash | Kind | Use |
+| Invocation | Kind | Use |
 | --- | --- | --- |
 | `/tzai-icon` | icon | App 图标 |
 | `/tzai-logo` | logo | Logo / monogram |
-| `/tzai-moodboard` | moodboard | 品牌情绪板 |
-| `/tzai-mascot` | mascot | 吉祥物 |
-| `/tzai-badge` | badge | 徽章 / 贴纸 |
-| `/tzai-avatar` | avatar | 职业头像 |
+| `/tzai-image moodboard` | moodboard | 品牌情绪板 |
+| `/tzai-image mascot` | mascot | 吉祥物 |
+| `/tzai-image badge` | badge | 徽章 / 贴纸 |
+| `/tzai-image avatar` | avatar | 职业头像 |
 
 ### 结构图示 `/tzai-diagram`
 
-| Slash | Kind | Use |
+| Invocation | Kind | Use |
 | --- | --- | --- |
 | `/tzai-flowchart` | flowchart | 流程图 / 业务流程 |
 | `/tzai-architecture` | architecture | 系统架构图 |
-| `/tzai-mindmap` | mindmap | 思维导图 |
-| `/tzai-diagram` | diagram | 通用技术示意图 |
+| `/tzai-image mindmap` | mindmap | 思维导图 |
+| `/tzai-image diagram` | diagram | 通用技术示意图 |
 | `/tzai-infographic` | infographic | 信息图 |
-| `/tzai-dataviz` | dataviz | 数据可视化艺术 |
+| `/tzai-image dataviz` | dataviz | 数据可视化艺术 |
 
 ### 产品设计 `/tzai-product`
 
-| Slash | Kind | Use |
+| Invocation | Kind | Use |
 | --- | --- | --- |
 | `/tzai-ui` | ui | UI / 仪表盘示意 |
-| `/tzai-wireframe` | wireframe | 线框图 |
-| `/tzai-empty-state` | empty-state | 空状态插画 |
-| `/tzai-onboarding` | onboarding | 引导主视觉 |
+| `/tzai-image wireframe` | wireframe | 线框图 |
+| `/tzai-image empty-state` | empty-state | 空状态插画 |
+| `/tzai-image onboarding` | onboarding | 引导主视觉 |
 
 ### 市场内容 `/tzai-marketing`
 
-| Slash | Kind | Use |
+| Invocation | Kind | Use |
 | --- | --- | --- |
 | `/tzai-slide` | slide | PPT 封面底图 |
-| `/tzai-banner` | banner | 投放 Banner |
-| `/tzai-email-header` | email-header | 邮件头图 |
+| `/tzai-image banner` | banner | 投放 Banner |
+| `/tzai-image email-header` | email-header | 邮件头图 |
 | `/tzai-cover` | cover | 文章封面 |
-| `/tzai-poster` | poster | 竖版海报 |
+| `/tzai-image poster` | poster | 竖版海报 |
 
 ### 社交种草 `/tzai-social`
 
-| Slash | Kind | Use |
+| Invocation | Kind | Use |
 | --- | --- | --- |
 | `/tzai-xhs` | xhs | 小红书图卡 |
 | `/tzai-xhs-cover` | xhs-cover | 小红书封面 |
@@ -113,7 +113,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-...
 
 ### 影像插画 `/tzai-photo`
 
-| Slash | Kind | Use |
+| Invocation | Kind | Use |
 | --- | --- | --- |
 | — | product-photo | 商品目录摄影（`/tzai-image product-photo`；别名 `product`） |
 | — | photo | 通用摄影 |
@@ -160,6 +160,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image presets xhs
 | Multi-agent skill install | **Done** (`-g --all`) |
 | Plan C slash surface | **Done** |
 | XHS / infographic / cover matrices | **Done** (v0.5) |
-| XHS multi-card series (1–10) | P1 |
-| Article multi-spot illustrator | P1 |
-| Full slide deck batch | P1 |
+| Natural-language workflow router | **Done** (v0.6) |
+| 27 project workflows / 22 patterns | **Done** (v0.6) |
+| Plan + anchor approval protocol | **Done** (v0.6) |
+| Offline workflow plan validation | **Done** (v0.6) |

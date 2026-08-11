@@ -3,13 +3,13 @@ name: tzai-social
 description: >
   Category hub for 社交种草 (social) image generation via TaoziAPI.
   Use when the user runs /tzai-social or wants any social visual: xhs, xhs-cover, wechat.
-  Pick a concrete kind then call the tzai-image engine. Requires TZAI_API_KEY.
+  Infer a single kind or route a coordinated project through the engine workflow catalog. Requires TZAI_API_KEY.
   Plan C: hub routes; high-frequency kinds also have direct slashes.
 argument-hint: "kind prompt…  e.g. xhs <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.4"
+  version: "0.6.0"
   tzai-generated-by: tzai-image-skill
   short-description: "社交种草分类 · social"
   tzai-category: "social"
@@ -18,7 +18,7 @@ metadata:
 
 # /tzai-social — 社交种草 (Social content)
 
-**Category hub** (Plan C). Do **not** invent a new kind — pick one below, then generate.
+**Category hub** (Plan C). Infer the user's outcome; do not make the user learn this taxonomy.
 
 Xiaohongshu (小红书), WeChat visuals.
 
@@ -54,9 +54,10 @@ fi
 
 ## Agent flow
 
-1. If user already named a kind in the table → use it.
-2. Else infer from intent (e.g. 图标→`icon`, 流程图→`flowchart`) or ask once.
-3. Subject only in `--prompt`:
+1. Distinguish one asset from a coordinated project.
+2. For a project, read the engine's `references/workflows/index.tsv`, select the matching guide, and follow both approval gates.
+3. For one asset, infer the kind from intent; ask once only if ambiguity materially changes the result.
+4. Put the concise visual brief in `--prompt`:
 
 ```bash
 bash "$ENGINE" <kind> \
@@ -66,8 +67,7 @@ bash "$ENGINE" <kind> \
 
 ## Teaching tip
 
-Use this hub when the user says a **broad** need (“做点品牌图”“来张结构图”).  
-If they already know the scene (“小红书图卡”“架构图”), prefer the **direct slash** for fewer turns.
+Use this hub when the user expresses a broad outcome. Kinds and direct slashes are internal shortcuts; present a recommendation, not a command menu.
 
 ## See also
 

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kedoupi/tzai-image-skill/schemas/creative-brief.schema.json",
+  "title": "tzai-image creative brief",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "workflow_id",
+    "project_title",
+    "goal",
+    "audience",
+    "channel",
+    "content_language",
+    "visual_direction",
+    "image_text_policy"
+  ],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "workflow_id": {"type": "string", "minLength": 1},
+    "project_title": {"type": "string", "minLength": 1},
+    "goal": {"type": "string", "minLength": 1},
+    "audience": {"type": "string", "minLength": 1},
+    "channel": {"type": "string", "minLength": 1},
+    "source_summary": {"type": "string"},
+    "content_language": {"type": "string", "minLength": 2},
+    "brand_constraints": {"type": "array", "items": {"type": "string"}},
+    "visual_direction": {"type": "string", "minLength": 1},
+    "style_token": {"type": "string"},
+    "reference_assets": {"type": "array", "items": {"type": "string"}},
+    "image_text_policy": {
+      "enum": ["none", "short-labels-only", "title-only", "external-overlay"]
+    }
+  },
+  "additionalProperties": true
+}

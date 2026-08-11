@@ -1,0 +1,36 @@
+{
+  "schema_version": "1",
+  "workflow_id": "xhs-note",
+  "project_root": "./batch-output",
+  "shared_style_token": "editorial coral and navy, consistent card system",
+  "approval": {
+    "plan": "approved",
+    "anchor": "approved"
+  },
+  "assets": [
+    {
+      "id": "cover",
+      "sequence": 1,
+      "role": "cover card",
+      "kind": "xhs-cover",
+      "ar": "3:4",
+      "prompt_subject": "AI Agent 入门：从目标到行动",
+      "output": "assets/01-cover.png",
+      "anchor": true,
+      "depends_on": [],
+      "status": "anchor-generated"
+    },
+    {
+      "id": "step-one",
+      "sequence": 2,
+      "role": "insight card",
+      "kind": "xhs",
+      "ar": "3:4",
+      "prompt_subject": "第一步：先定义清晰目标",
+      "output": "assets/02-step-one.png",
+      "anchor": false,
+      "depends_on": ["cover"],
+      "status": "approved-for-batch"
+    }
+  ]
+}

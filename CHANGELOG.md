@@ -2,6 +2,22 @@
 
 All notable changes to **tzai-image-skill** are documented here.
 
+## [0.6.0] — 2026-08-11
+
+### Added
+- Natural-language Creative Agent routing for single assets and coordinated projects.
+- 27 outcome workflows with 10 stable, 13 guided, and 4 expert-review routes.
+- 22 independently written visual patterns derived from generalized design methods, without copying third-party images or full prompts.
+- Two-stage project approval: approve the bounded plan, then approve one visual anchor before the remaining paid batch.
+- Creative brief, asset plan, and deliverables schemas.
+- Offline `validate-workflow-plan` tool with catalog, approval-state, dependency, output-path, and expert-review checks.
+- Intent-routing and workflow-plan fixtures; offline suite now covers project contracts in addition to engine safety.
+
+### Changed
+- Main and generated skills infer user outcomes instead of requiring users to choose commands or kinds.
+- Existing XHS, article, and deck playbooks now use the shared plan/anchor approval protocol.
+- README and architecture docs lead with complete creative outcomes while preserving Plan C as an expert shortcut.
+
 ## [0.5.4] — 2026-08-10
 
 ### Fixed

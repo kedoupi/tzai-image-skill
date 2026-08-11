@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.5.4"
+  version: "0.6.0"
   tzai-generated-by: tzai-image-skill
   short-description: "UI仪表盘 · 产品设计"
   tzai-kind: "ui"
@@ -42,7 +42,16 @@ if [ -z "$ENGINE" ]; then
 fi
 ```
 
-## Run
+## Route before running
+
+Determine the requested outcome before selecting a command:
+
+- One independently useful image → continue with this kind.
+- A complete note/article, multi-screen flow, deck, campaign, brand system, or coordinated series → do not collapse it into one image. Read the engine's `references/workflows/index.tsv` and follow the matching project guide, including plan approval and one-anchor approval.
+
+The user does not need to know the kind, pattern, matrix, or CLI.
+
+## Run a single asset
 
 Slash arguments / remaining user text = **subject only** (art direction is injected by kind).
 

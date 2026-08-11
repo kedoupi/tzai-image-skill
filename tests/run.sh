@@ -35,6 +35,7 @@ cp -R "$SOURCE_ROOT/." "$TEST_ROOT"
 # Exercise only a disposable skill package and config tree. Never touch a real local config.
 ROOT="$TEST_ROOT"
 BIN="${ROOT}/skills/tzai-image/scripts/tzai-image"
+VALIDATOR="${ROOT}/skills/tzai-image/scripts/validate-workflow-plan"
 export HOME="$TEST_HOME"
 PASS=0
 FAIL=0
@@ -144,6 +145,9 @@ mock_curl_calls() {
 echo "== syntax =="
 bash -n "$BIN"
 echo "  PASS  bash -n"
+PASS=$((PASS + 1))
+python3 -m py_compile "$VALIDATOR"
+echo "  PASS  workflow validator syntax"
 PASS=$((PASS + 1))
 
 echo "== help / version =="
@@ -420,6 +424,97 @@ for code in 503 000; do
   assert_fails "HTTP ${code} fails without retry" "${mock_env[@]}" MOCK_CURL_CODE="$code" "$BIN" generate --prompt "x" --image "${ROOT}/http-${code}.png"
   assert_eq "HTTP ${code} makes one curl" "1" "$(mock_curl_calls)"
 done
+
+echo "== agent workflow catalogs =="
+catalog_json="$("$VALIDATOR" --catalog-only --json)"
+assert_contains "catalog has 27 workflows" '"workflows": 27' "$catalog_json"
+assert_contains "catalog has 22 patterns" '"patterns": 22' "$catalog_json"
+assert_contains "catalog has existing kinds" '"kinds": 30' "$catalog_json"
+assert_ok "creative brief schema" test -f "${ROOT}/skills/tzai-image/references/schemas/creative-brief.schema.json"
+assert_ok "asset plan schema" test -f "${ROOT}/skills/tzai-image/references/schemas/asset-plan.schema.json"
+assert_ok "deliverables schema" test -f "${ROOT}/skills/tzai-image/references/schemas/deliverables.schema.json"
+assert_ok "intent routing fixtures" test -f "${ROOT}/tests/fixtures/intent-routing.tsv"
+stable_count="$(awk -F '\t' '$1 !~ /^#/ && $3 == "stable" {n++} END {print n+0}' "${ROOT}/skills/tzai-image/references/workflows/index.tsv")"
+assert_eq "ten stable workflows" "10" "$stable_count"
+
+echo "== workflow approval validator =="
+wf_fixtures="${ROOT}/tests/fixtures/workflows"
+assert_ok "ready for anchor" "$VALIDATOR" --for-anchor "${wf_fixtures}/xhs-ready-anchor.json"
+assert_exit "anchor pending blocks batch" 2 "$VALIDATOR" --for-batch "${wf_fixtures}/xhs-ready-anchor.json"
+mkdir -p "${wf_fixtures}/batch-output/assets"
+printf '%s' 'approved-anchor' >"${wf_fixtures}/batch-output/assets/01-cover.png"
+assert_ok "ready for batch" "$VALIDATOR" --for-batch "${wf_fixtures}/xhs-ready-batch.json"
+assert_exit "duplicate output rejected" 2 "$VALIDATOR" --for-batch "${wf_fixtures}/invalid-duplicate-output.json"
+
+pending_plan="${ROOT}/pending-plan.json"
+python3 - "${wf_fixtures}/xhs-ready-anchor.json" "$pending_plan" <<'PY'
+import json, pathlib, sys
+data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+data["approval"]["plan"] = "pending"
+pathlib.Path(sys.argv[2]).write_text(json.dumps(data))
+PY
+assert_exit "pending plan blocks anchor" 2 "$VALIDATOR" --for-anchor "$pending_plan"
+
+traversal_plan="${ROOT}/traversal-plan.json"
+python3 - "${wf_fixtures}/xhs-ready-batch.json" "$traversal_plan" <<'PY'
+import json, pathlib, sys
+data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+data["assets"][1]["output"] = "../escape.png"
+pathlib.Path(sys.argv[2]).write_text(json.dumps(data))
+PY
+assert_exit "path traversal rejected" 2 "$VALIDATOR" --for-batch "$traversal_plan"
+
+bad_kind_plan="${ROOT}/bad-kind-plan.json"
+python3 - "${wf_fixtures}/xhs-ready-anchor.json" "$bad_kind_plan" <<'PY'
+import json, pathlib, sys
+data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+data["assets"][1]["kind"] = "icon"
+pathlib.Path(sys.argv[2]).write_text(json.dumps(data))
+PY
+assert_exit "workflow kind mismatch rejected" 2 "$VALIDATOR" --for-anchor "$bad_kind_plan"
+
+missing_field_plan="${ROOT}/missing-field-plan.json"
+python3 - "${wf_fixtures}/xhs-ready-anchor.json" "$missing_field_plan" <<'PY'
+import json, pathlib, sys
+data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+del data["assets"][1]["role"]
+pathlib.Path(sys.argv[2]).write_text(json.dumps(data))
+PY
+assert_exit "missing required asset field rejected" 2 "$VALIDATOR" --for-anchor "$missing_field_plan"
+
+bad_force_plan="${ROOT}/bad-force-plan.json"
+python3 - "${wf_fixtures}/xhs-ready-anchor.json" "$bad_force_plan" <<'PY'
+import json, pathlib, sys
+data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+data["assets"][0]["force"] = "true"
+pathlib.Path(sys.argv[2]).write_text(json.dumps(data))
+PY
+assert_exit "non-boolean force rejected" 2 "$VALIDATOR" --for-anchor "$bad_force_plan"
+
+directory_output_plan="${ROOT}/directory-output-plan.json"
+python3 - "${wf_fixtures}/xhs-ready-anchor.json" "$directory_output_plan" <<'PY'
+import json, pathlib, sys
+data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+data["assets"][0]["output"] = "."
+data["assets"][0]["force"] = True
+pathlib.Path(sys.argv[2]).write_text(json.dumps(data))
+PY
+assert_exit "project root output rejected" 2 "$VALIDATOR" --for-anchor "$directory_output_plan"
+
+bad_anchor_state="${ROOT}/bad-anchor-state.json"
+python3 - "${wf_fixtures}/xhs-ready-batch.json" "$bad_anchor_state" <<'PY'
+import json, pathlib, sys
+data = json.loads(pathlib.Path(sys.argv[1]).read_text())
+data["project_root"] = str(pathlib.Path(sys.argv[2]).parent / "bad-anchor-output")
+data["assets"][0]["status"] = "planned"
+pathlib.Path(sys.argv[2]).write_text(json.dumps(data))
+PY
+assert_exit "batch requires generated anchor state and file" 2 "$VALIDATOR" --for-batch "$bad_anchor_state"
+
+make_mock_curl
+rm -f "$MOCK_COUNT"
+PATH="${MOCK_BIN}:$PATH" MOCK_CURL_COUNT="$MOCK_COUNT" "$VALIDATOR" --catalog-only >/dev/null
+assert_eq "validator makes no curl calls" "0" "$(mock_curl_calls)"
 
 echo "== live smoke (optional TZAI_LIVE=1) =="
 if [[ "${TZAI_LIVE:-}" == "1" ]]; then

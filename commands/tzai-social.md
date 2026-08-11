@@ -8,7 +8,7 @@ tzai-generated-by: tzai-image-skill
 
 **社交种草** category hub. Kinds: xhs, xhs-cover, wechat
 
-1. Pick kind → 2. subject prompt → 3. generate:
+1. Infer outcome → 2. route project or single kind → 3. generate after the required approval:
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image <kind> --prompt "<主题>" --image out.png

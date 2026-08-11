@@ -167,7 +167,16 @@ High-frequency scene entry (Plan C). Generation uses the **tzai-image** engine (
 
 {engine_resolve_block()}
 
-## Run
+## Route before running
+
+Determine the requested outcome before selecting a command:
+
+- One independently useful image → continue with this kind.
+- A complete note/article, multi-screen flow, deck, campaign, brand system, or coordinated series → do not collapse it into one image. Read the engine's `references/workflows/index.tsv` and follow the matching project guide, including plan approval and one-anchor approval.
+
+The user does not need to know the kind, pattern, matrix, or CLI.
+
+## Run a single asset
 
 Slash arguments / remaining user text = **subject only** (art direction is injected by kind).
 
@@ -241,17 +250,18 @@ Generate **{r["label_zh"]}** ({r["label_en"]}) with TaoziAPI · Plan C high-freq
 
 ## Steps
 
-1. Engine: `~/.agents/skills/tzai-image/scripts/tzai-image` (or ~/.claude|codex|grok/skills/...)
-2. Install if missing: `npx skills add kedoupi/tzai-image-skill -g --all`
-3. Ensure `TZAI_API_KEY` or `tzai-image init`
-4. Slash args = **subject only**
-5. Run:
+1. If the request is a coordinated project, route through the engine workflow catalog instead of this single-asset wrapper.
+2. Engine: `~/.agents/skills/tzai-image/scripts/tzai-image` (or ~/.claude|codex|grok/skills/...)
+3. Install if missing: `npx skills add kedoupi/tzai-image-skill -g --all`
+4. Ensure `TZAI_API_KEY` or `tzai-image init`
+5. For a single asset, slash args = **subject only**
+6. Run:
 
 ```bash
 bash <engine> {kid} --prompt "<subject>" --image "./tzai-{kid}-$(date +%Y%m%d-%H%M%S).png"
 ```
 
-6. Report output path. Default model: **gpt-image-2**.
+7. Report output path. Default model: **gpt-image-2**.
 '''
     command_outputs[skill_name] = cmd
 
@@ -277,7 +287,7 @@ name: {skill_name}
 description: >
   Category hub for {zh} ({cat}) image generation via TaoziAPI.
   Use when the user runs /{skill_name} or wants any {cat} visual: {kinds_list}.
-  Pick a concrete kind then call the tzai-image engine. Requires TZAI_API_KEY.
+  Infer a single kind or route a coordinated project through the engine workflow catalog. Requires TZAI_API_KEY.
   Plan C: hub routes; high-frequency kinds also have direct slashes.
 argument-hint: "kind prompt…  e.g. {first} <主题>"
 user-invocable: true
@@ -292,7 +302,7 @@ metadata:
 
 # /{skill_name} — {zh} ({en})
 
-**Category hub** (Plan C). Do **not** invent a new kind — pick one below, then generate.
+**Category hub** (Plan C). Infer the user's outcome; do not make the user learn this taxonomy.
 
 {desc}.
 
@@ -309,9 +319,10 @@ metadata:
 
 ## Agent flow
 
-1. If user already named a kind in the table → use it.
-2. Else infer from intent (e.g. 图标→`icon`, 流程图→`flowchart`) or ask once.
-3. Subject only in `--prompt`:
+1. Distinguish one asset from a coordinated project.
+2. For a project, read the engine's `references/workflows/index.tsv`, select the matching guide, and follow both approval gates.
+3. For one asset, infer the kind from intent; ask once only if ambiguity materially changes the result.
+4. Put the concise visual brief in `--prompt`:
 
 ```bash
 bash "$ENGINE" <kind> \\
@@ -321,8 +332,7 @@ bash "$ENGINE" <kind> \\
 
 ## Teaching tip
 
-Use this hub when the user says a **broad** need (“做点品牌图”“来张结构图”).  
-If they already know the scene (“小红书图卡”“架构图”), prefer the **direct slash** for fewer turns.
+Use this hub when the user expresses a broad outcome. Kinds and direct slashes are internal shortcuts; present a recommendation, not a command menu.
 
 ## See also
 
@@ -341,7 +351,7 @@ argument-hint: "kind prompt…"
 
 **{zh}** category hub. Kinds: {kinds_list}
 
-1. Pick kind → 2. subject prompt → 3. generate:
+1. Infer outcome → 2. route project or single kind → 3. generate after the required approval:
 
 ```bash
 bash ~/.agents/skills/tzai-image/scripts/tzai-image <kind> --prompt "<主题>" --image out.png

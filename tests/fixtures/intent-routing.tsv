@@ -1,0 +1,17 @@
+# utterance	expected_route
+Design a single SaaS dashboard	single:ui
+Design the onboarding and dashboard flow for my app	workflow:ui-flow
+做一张小红书封面	single:xhs-cover
+把这篇文章做成完整小红书笔记	workflow:xhs-note
+给公众号文章画一张头图	single:wechat
+把这篇文章改成公众号稿并做封面	workflow:wechat-article
+给这篇文章逐章规划配图，确认后再生成	workflow:article-illustrate
+给新品牌做一套基础视觉	workflow:brand-starter
+为新品发布准备完整视觉素材	workflow:product-launch
+做一张活动海报	single:poster
+为活动做一套跨渠道 Campaign	workflow:campaign-kit
+解释这个注册流程	single:flowchart
+把这份研究做成一组科普信息图	workflow:knowledge-visual
+做一张 PPT 封面	single:slide
+把这份提纲做成完整汇报视觉包	workflow:deck-package
+为原创角色制作设定和动作系列	workflow:character-ip

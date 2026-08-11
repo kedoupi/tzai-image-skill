@@ -6,7 +6,7 @@ This file is the **source of truth**. Optional `CLAUDE.md` only points here.
 
 ## Purpose
 
-Installable **tzai-image** skill family: text-to-image via TaoziAPI (`https://tzai.kdp.cool`).
+Installable **tzai-image** Creative Agent family: natural-language project planning plus image generation via TaoziAPI (`https://tzai.kdp.cool`).
 
 ```bash
 npx skills add kedoupi/tzai-image-skill -g --all
@@ -24,7 +24,12 @@ skills/
       kinds.tsv               # all scene kinds
       slash-whitelist.txt     # Plan C slash surface
       presets/                # style/layout/cover matrices
-      workflows/              # multi-card / matrix guides
+      patterns/               # reusable visual methods + index
+      workflows/              # outcome playbooks + modules + index
+      schemas/                # brief / plan / deliverable contracts
+    scripts/
+      tzai-image
+      validate-workflow-plan  # offline project-plan validator
   tzai-*/                     # thin slash skills (generated)
 commands/                     # client slash wrappers (generated)
 scripts/
@@ -59,6 +64,9 @@ After editing kinds or whitelist: `bash scripts/gen-kind-skills.sh`.
 - Durable config: `~/.agents/skills/.skill-data/tzai-image/config.env` (or skills-parent `.skill-data/`).
 - Config files are **KEY=VALUE only** (parser does **not** `source` shell).
 - `--dry-run` must stay offline.
+- Workflow plan validation must stay offline and enforce plan/anchor approvals before batch work.
+- Multi-asset workflows require one approved plan and one approved anchor; never silently batch paid requests.
+- Do not copy third-party example images or full prompts into patterns.
 - `doctor` must print console URL + export/init examples when key missing.
 - Bump `metadata.version` in `skills/tzai-image/SKILL.md` when behavior changes.
 - Prefer bash + python3 + curl; no bun required.
@@ -79,7 +87,9 @@ bash $E cover --type hero --palette dark --text none --prompt "主题" --image c
 Matrix flags: `--style` `--layout` `--palette` `--preset` `--type` `--rendering` `--text` `--mood`.  
 Reference image: `--ref path.png` (uses edits endpoint; repeatable).
 
-Multi-image agent workflows: `skills/tzai-image/references/workflows/`.
+Agent workflows: `skills/tzai-image/references/workflows/index.tsv`.
+Visual patterns: `skills/tzai-image/references/patterns/index.tsv`.
+Plan validation: `python3 skills/tzai-image/scripts/validate-workflow-plan --catalog-only`.
 
 ## Validation
 

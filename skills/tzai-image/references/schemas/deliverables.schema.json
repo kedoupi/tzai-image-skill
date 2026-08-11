@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kedoupi/tzai-image-skill/schemas/deliverables.schema.json",
+  "title": "tzai-image workflow deliverables",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "workflow_id",
+    "brief_path",
+    "content_path",
+    "asset_plan_path",
+    "assets",
+    "render_summary"
+  ],
+  "properties": {
+    "schema_version": {"const": "1"},
+    "workflow_id": {"type": "string", "minLength": 1},
+    "brief_path": {"type": "string", "minLength": 1},
+    "content_path": {"type": "string", "minLength": 1},
+    "asset_plan_path": {"type": "string", "minLength": 1},
+    "assets": {"type": "array", "items": {"type": "object"}},
+    "render_summary": {
+      "type": "object",
+      "required": ["planned", "generated", "failed"],
+      "properties": {
+        "planned": {"type": "integer", "minimum": 0},
+        "generated": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0}
+      }
+    }
+  },
+  "additionalProperties": true
+}
