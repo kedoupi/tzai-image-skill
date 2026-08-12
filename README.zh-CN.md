@@ -120,16 +120,26 @@ git clone https://github.com/kedoupi/tzai-image-skill.git && cd tzai-image-skill
 bash scripts/install-slash-commands.sh
 ```
 
-### API Key
+### 安装后（复制粘贴）
+
+**安装 ≠ 配置。** 真正生图前才需要 Key；规划 / dry-run 可不配。
 
 ```bash
-export TZAI_API_KEY='sk-xxxxxxxx'
-bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-xxxxxxxx
-bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
+E=~/.agents/skills/tzai-image/scripts/tzai-image
+
+bash $E doctor   # 缺 Key 时会打印可复制 setup
+
+# 推荐：写 durable 文件（update 不会冲掉；不要写进 ~/.zshrc）
+bash $E init --api-key 'sk-YOUR_TOKEN'
+# → ~/.config/kedoupi/tzai-image/config.env  (chmod 600)
+
+bash $E which-config
+bash $E doctor
 ```
 
-在 [控制台](https://tzai.kdp.cool/console) 创建 Key；**不要**提交密钥。
-
+1. 在 [控制台](https://tzai.kdp.cool/console) 创建 Key  
+2. 优先 **`init` 写文件**；`export TZAI_API_KEY=…` 仅适合 CI  
+3. **不要**提交密钥，也不要只写在 skill 包目录里
 ### CLI 速查
 
 ```bash
@@ -685,6 +695,12 @@ bash $E cover --type hero --palette dark --rendering digital \
 
 ## 配置
 
+推荐路径（`init` 默认）：
+
+```text
+~/.config/kedoupi/tzai-image/config.env
+```
+
 | 变量 | 含义 | 默认 |
 | --- | --- | --- |
 | `TZAI_API_KEY` | API Key | 真调用必填 |
@@ -692,8 +708,10 @@ bash $E cover --type hero --palette dark --rendering digital \
 | `TZAI_IMAGE_MODEL` | 图片模型 | **`gpt-image-2`** |
 | `TZAI_DEFAULT_AR` | 画幅 | `1:1` |
 | `TZAI_TIMEOUT_SEC` | 超时 | `120` |
+| `TZAI_IMAGE_CONFIG` | 显式 env 文件 | 空 |
 
-**加载顺序（后者覆盖）：** `.skill-data` → 进程环境 → `$TZAI_IMAGE_CONFIG` → CLI。
+**加载顺序（文件后覆盖前，再环境变量 / CLI）：**  
+旧版 `~/.config/tzai-image/` 与 `.skill-data/` → **`~/.config/kedoupi/tzai-image/config.env`** → `config.local.env` → `$TZAI_IMAGE_CONFIG` → 环境变量 / CLI。
 
 ## 维护
 

@@ -123,20 +123,25 @@ bash scripts/install-slash-commands.sh
 
 ### After install (copy-paste)
 
-Install does **not** include an API key. Configure when you want real generation:
+Install does **not** include an API key. **Install ≠ configure.**  
+Configure when you want a **real** generation (planning / dry-run works without a key):
 
 ```bash
 E=~/.agents/skills/tzai-image/scripts/tzai-image
 
 bash $E doctor   # prints setup block if key missing
 
-# Recommended — file under ~/.config/kedoupi/tzai-image/ (not ~/.zshrc)
+# Recommended — durable file (survives npx skills update; not ~/.zshrc)
 bash $E init --api-key 'sk-YOUR_TOKEN'
+# → ~/.config/kedoupi/tzai-image/config.env  (chmod 600)
+
+bash $E which-config
+bash $E doctor
 ```
 
-Key from [tzai.kdp.cool/console](https://tzai.kdp.cool/console).  
-CI-only alternative: `export TZAI_API_KEY=…`. Never commit secrets.
-
+1. Create a key: [tzai.kdp.cool/console](https://tzai.kdp.cool/console)  
+2. Prefer **`init`** (kedoupi file). `export TZAI_API_KEY=…` is OK for **CI only**.  
+3. Never commit secrets or put keys only inside the skill package directory.
 ### CLI quick start
 
 ```bash
@@ -668,6 +673,12 @@ Prefer `--text none` / title-safe empty areas over long baked-in titles.
 
 ## Configuration
 
+Recommended path (default for `init`):
+
+```text
+~/.config/kedoupi/tzai-image/config.env
+```
+
 | Variable | Meaning | Default |
 | --- | --- | --- |
 | `TZAI_API_KEY` | API key | required for real calls |
@@ -675,8 +686,10 @@ Prefer `--text none` / title-safe empty areas over long baked-in titles.
 | `TZAI_IMAGE_MODEL` | Image model | **`gpt-image-2`** |
 | `TZAI_DEFAULT_AR` | Aspect | `1:1` |
 | `TZAI_TIMEOUT_SEC` | Timeout | `120` |
+| `TZAI_IMAGE_CONFIG` | Explicit env file | unset |
 
-**Load order (later wins):** `.skill-data` → process env → `$TZAI_IMAGE_CONFIG` → CLI.
+**Load order (later wins among files, then process env / CLI):**  
+legacy `~/.config/tzai-image/` and `.skill-data/` → **`~/.config/kedoupi/tzai-image/config.env`** → `config.local.env` → `$TZAI_IMAGE_CONFIG` → env / CLI.
 
 | `--ar` | Best for |
 | --- | --- |
