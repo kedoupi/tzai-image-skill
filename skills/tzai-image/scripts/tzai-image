@@ -26,11 +26,15 @@ DEFAULT_BASE_URL="https://tzai.kdp.cool"
 # Best image model currently available on TaoziAPI (override via env/CLI if needed).
 DEFAULT_IMAGE_MODEL="gpt-image-2"
 DEFAULT_AR="1:1"
-DEFAULT_TIMEOUT=120
+# Large/high-detail images on the gateway often need several minutes; 120s/300s were too tight.
+DEFAULT_TIMEOUT=600
 CONSOLE_URL="https://tzai.kdp.cool/console"
 
 # Only these keys may be loaded from config files (no arbitrary shell source).
 ALLOWED_CONFIG_KEYS="TZAI_API_KEY TZAI_BASE_URL TZAI_IMAGE_MODEL TZAI_DEFAULT_AR TZAI_TIMEOUT_SEC"
+
+# Auto-migrate only from init/doctor (dry-run / which-config stay side-effect free).
+ALLOW_CONFIG_MIGRATE="${ALLOW_CONFIG_MIGRATE:-0}"
 
 # Snapshot process env so files cannot clobber exported globals (plan: env > files).
 _ENV_API_KEY="${TZAI_API_KEY-}"
@@ -135,8 +139,11 @@ EOF
 # Safe KEY=VALUE loader: never `source` (avoids shell injection from config files).
 # Accepts: KEY=value | KEY='value' | KEY="value"  for ALLOWED_CONFIG_KEYS only.
 # Ignores blank lines, comments (# ...), and unknown keys.
+# load_env_file <path> [strict=0]
+# strict=1 → refuse insecure perms (for TZAI_IMAGE_CONFIG). Else skip that layer.
 load_env_file() {
   local file="$1"
+  local strict="${2:-0}"
   [[ -f "$file" ]] || return 0
 
   # Configs may contain API keys: permit owner-only permissions (0600 or stricter).
@@ -151,8 +158,12 @@ load_env_file() {
     return 1
   fi
   if (( (8#$mode & 0077) != 0 )); then
-    echo "Refuse config with group/other permissions (must be 0600 or stricter): $file" >&2
-    return 1
+    if [[ "$strict" == "1" ]]; then
+      echo "Refuse config with group/other permissions (must be 0600 or stricter): $file" >&2
+      return 1
+    fi
+    echo "Warning: skipping config with group/other permissions (want 0600): $file" >&2
+    return 0
   fi
 
   local line key val
@@ -190,6 +201,9 @@ load_env_file() {
 }
 
 ensure_kedoupi_config() {
+  if [[ "${ALLOW_CONFIG_MIGRATE:-0}" != "1" ]]; then
+    return 0
+  fi
   if [[ -f "$KEDOUPI_CONFIG_FILE" ]]; then
     return 0
   fi
@@ -262,7 +276,7 @@ load_all_configs() {
       echo "TZAI_IMAGE_CONFIG must name an existing regular file: ${TZAI_IMAGE_CONFIG}" >&2
       return 1
     fi
-    load_env_file "$TZAI_IMAGE_CONFIG"
+    load_env_file "$TZAI_IMAGE_CONFIG" 1
     if [[ -n "${TZAI_API_KEY-}" ]]; then
       KEY_SOURCE="explicit-file"
     fi
@@ -716,6 +730,7 @@ EOF
 # ---------------------------------------------------------------------------
 
 cmd_init() {
+  ALLOW_CONFIG_MIGRATE=1
   local api_key="" base_url="$DEFAULT_BASE_URL" model="" force=0 target="kedoupi"
 
   while [[ $# -gt 0 ]]; do
@@ -815,6 +830,7 @@ EOF
 # ---------------------------------------------------------------------------
 
 cmd_doctor() {
+  ALLOW_CONFIG_MIGRATE=1
   local strict=0
   while [[ $# -gt 0 ]]; do
     case "$1" in

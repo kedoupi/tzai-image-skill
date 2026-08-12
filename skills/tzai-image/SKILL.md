@@ -13,7 +13,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.7.1"
+  version: "0.7.4"
   short-description: "TaoziAPI 创作 Agent（自然语言工作流 + 生图引擎）"
 ---
 
@@ -315,3 +315,4 @@ Catalog: `references/kinds.tsv` · patterns: `references/patterns/` · compile: 
 2. Confirm key at https://tzai.kdp.cool/console  
 3. Wrong scene quality → pick a better `--kind` (`kinds` list)  
 4. `which-config` to see whether key comes from `env` vs `file`  
+5. **HTTP 000 / curl timeout** on large images: default client wait is **`TZAI_TIMEOUT_SEC=600`** (10 min). Raise further for very slow jobs, e.g. `TZAI_TIMEOUT_SEC=900` in `~/.config/kedoupi/tzai-image/config.env` or one-shot env. The CLI still does **not** auto-retry after timeout.  

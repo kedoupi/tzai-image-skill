@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.7.1"
+  version: "0.7.4"
   tzai-generated-by: tzai-image-skill
   short-description: "文章封面 · 市场内容"
   tzai-kind: "cover"

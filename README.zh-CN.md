@@ -707,7 +707,7 @@ bash $E cover --type hero --palette dark --rendering digital \
 | `TZAI_BASE_URL` | 网关 | `https://tzai.kdp.cool` |
 | `TZAI_IMAGE_MODEL` | 图片模型 | **`gpt-image-2`** |
 | `TZAI_DEFAULT_AR` | 画幅 | `1:1` |
-| `TZAI_TIMEOUT_SEC` | 超时 | `120` |
+| `TZAI_TIMEOUT_SEC` | 超时（单次生图） | `600` |
 | `TZAI_IMAGE_CONFIG` | 显式 env 文件 | 空 |
 
 **加载顺序（文件后覆盖前，再环境变量 / CLI）：**  

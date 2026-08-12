@@ -2,6 +2,24 @@
 
 All notable changes to **tzai-image-skill** are documented here.
 
+## [0.7.4] — 2026-08-12
+
+### Changed
+- Default `TZAI_TIMEOUT_SEC` raised from `300` to **`600`** (10 minutes) for large / high-detail generations.
+
+## [0.7.3] — 2026-08-12
+
+### Fixed
+- Stock config layers with group/other permissions are skipped with a warning instead of failing the whole CLI when a valid `0600` kedoupi config exists (`TZAI_IMAGE_CONFIG` still hard-refuses insecure perms).
+- Config migrate (`ensure_kedoupi_config`) only runs from `init` / `doctor` — dry-run and which-config no longer write to `~/.config/kedoupi/`.
+- `validate-workflow-plan` resolves `project_root` (fixes macOS `/tmp` → `/private/tmp` false rejects).
+
+## [0.7.2] — 2026-08-12
+
+### Changed
+- Default `TZAI_TIMEOUT_SEC` raised from `120` to **`300`** (5 minutes) so large / high-detail images are less likely to hit client-side curl timeouts before the gateway finishes.
+- `config.example.env` and README config tables updated to match.
+
 ## [0.6.1] — 2026-08-11
 
 ### Added

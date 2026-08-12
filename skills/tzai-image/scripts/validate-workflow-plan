@@ -162,8 +162,11 @@ def validate_plan(
     project_root = Path(root_value)
     if not project_root.is_absolute():
         project_root = plan_path.parent / project_root
-    if project_root.is_symlink():
-        raise ValidationError(f"project_root must not be a symlink: {project_root}")
+    # Resolve roots like macOS /tmp → /private/tmp; reject only if unresolvable.
+    try:
+        project_root = project_root.resolve(strict=False)
+    except OSError as exc:
+        raise ValidationError(f"invalid project_root: {root_value}") from exc
     approval = plan.get("approval")
     if not isinstance(approval, dict):
         raise ValidationError("approval must be an object")

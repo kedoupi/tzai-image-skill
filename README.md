@@ -685,7 +685,7 @@ Recommended path (default for `init`):
 | `TZAI_BASE_URL` | Gateway | `https://tzai.kdp.cool` |
 | `TZAI_IMAGE_MODEL` | Image model | **`gpt-image-2`** |
 | `TZAI_DEFAULT_AR` | Aspect | `1:1` |
-| `TZAI_TIMEOUT_SEC` | Timeout | `120` |
+| `TZAI_TIMEOUT_SEC` | Timeout (per generate) | `600` |
 | `TZAI_IMAGE_CONFIG` | Explicit env file | unset |
 
 **Load order (later wins among files, then process env / CLI):**  
