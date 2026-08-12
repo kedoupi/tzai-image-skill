@@ -13,7 +13,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.7.0"
+  version: "0.7.1"
   short-description: "TaoziAPI 创作 Agent（自然语言工作流 + 生图引擎）"
 ---
 
@@ -56,25 +56,31 @@ bash <skill-dir>/scripts/tzai-image doctor
 | **curl** | HTTP | macOS usually has it |
 | **Default model** | Built-in **`gpt-image-2`** (best on this gateway) | Override with `--model` / `TZAI_IMAGE_MODEL` if needed |
 
-### How users get and set the key
+### Onboarding (install ≠ configure)
 
-Skill install **does not** include a key. Never invent or hardcode keys.
+Skill install **does not** include a key. **Do not** demand a key merely because
+the user installed the skill or is chatting casually.
 
-1. Open https://tzai.kdp.cool/console → register/login → create API token  
-2. Configure **one** of:
+| When | Agent action |
+| --- | --- |
+| User only explores kinds / dry-run | Proceed; no key |
+| User wants a **real** generation and key missing | Why + copy-paste `init` + console link; wait for key or degrade to dry-run / plan only |
+| User asks doctor / setup | Run `doctor` (prints setup block when key missing) |
 
 ```bash
-# A) Global env (enough by itself — no init required)
-export TZAI_API_KEY='sk-...'
+# After: npx skills add kedoupi/tzai-image-skill -g --all
+bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
 
-# B) Durable file (survives npx skills update)
-bash <skill-dir>/scripts/tzai-image init --api-key sk-...
-
-# C) One-shot flag
-bash <skill-dir>/scripts/tzai-image generate --api-key sk-... --prompt "..." --image out.png
+# Recommended config file (not shell rc):
+bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key 'sk-YOUR_TOKEN'
+# → ~/.config/kedoupi/tzai-image/config.env
 ```
 
-Do **not** put secrets only inside the skill package directory.
+1. Open https://tzai.kdp.cool/console → create API token  
+2. Prefer **`init`** (kedoupi file). Process `export` is OK for CI only.  
+3. One-shot: `--api-key` on generate  
+
+Never invent keys; never store them only inside the skill package.
 
 ## Slash commands (multi-agent)
 
@@ -166,10 +172,11 @@ Script uses `pwd -P` so symlinks resolve correctly.
 ## Config load order (later wins)
 
 1. Built-in defaults (`BASE_URL=https://tzai.kdp.cool`)  
-2. Config files under XDG / `.skill-data` / `config.local.env`  
-3. **Process environment** `TZAI_API_KEY`, `TZAI_BASE_URL`, `TZAI_IMAGE_MODEL`, …  
-4. File pointed by `$TZAI_IMAGE_CONFIG`  
-5. CLI flags  
+2. Legacy files (`~/.config/tzai-image/`, `.skill-data/`) then **`~/.config/kedoupi/tzai-image/config.env`**  
+3. `config.local.env` (wiped on update)  
+4. Process environment `TZAI_*` (CI override; avoid `~/.zshrc` for secrets)  
+5. `$TZAI_IMAGE_CONFIG`  
+6. CLI flags  
 
 Inspect:
 

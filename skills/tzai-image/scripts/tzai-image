@@ -113,22 +113,22 @@ mask_key() {
 
 print_key_howto() {
   cat <<EOF >&2
-No API key found.
 
-Get a key:
-  1) Open ${CONSOLE_URL}
-  2) Sign in / register, create an API token
+== After install / missing API key ==
+Get a token:  ${CONSOLE_URL}  → create API key
 
-Configure (pick one):
-  A) Kedoupi config file (recommended for agents / open-source installs):
-       bash ${SCRIPT_DIR}/tzai-image init --api-key sk-...
-       # → ~/.config/kedoupi/tzai-image/config.env
-  B) Process env (CI / temporary shell; avoid putting secrets in ~/.zshrc):
-       export TZAI_API_KEY='sk-...'
-  C) One-shot CLI:
-       bash ${SCRIPT_DIR}/tzai-image generate --api-key sk-... --prompt "..." --image out.png
+Copy-paste (recommended — writes ~/.config/kedoupi/tzai-image/config.env):
 
-Never commit the key or put it only inside the skill package (wiped by npx skills update).
+  bash ${SCRIPT_DIR}/tzai-image init --api-key 'sk-YOUR_TOKEN'
+
+Alternatives:
+  # CI / temporary shell only (prefer not putting secrets in ~/.zshrc)
+  export TZAI_API_KEY='sk-YOUR_TOKEN'
+  # One-shot flag
+  bash ${SCRIPT_DIR}/tzai-image generate --api-key 'sk-YOUR_TOKEN' --prompt "..." --image out.png
+
+Then:  bash ${SCRIPT_DIR}/tzai-image doctor
+Never commit keys or store them only inside the skill package.
 EOF
 }
 

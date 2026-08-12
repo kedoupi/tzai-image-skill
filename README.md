@@ -121,16 +121,21 @@ git clone https://github.com/kedoupi/tzai-image-skill.git && cd tzai-image-skill
 bash scripts/install-slash-commands.sh
 ```
 
-### API key
+### After install (copy-paste)
+
+Install does **not** include an API key. Configure when you want real generation:
 
 ```bash
-export TZAI_API_KEY='sk-xxxxxxxx'
-# or durable:
-bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-xxxxxxxx
-bash ~/.agents/skills/tzai-image/scripts/tzai-image doctor
+E=~/.agents/skills/tzai-image/scripts/tzai-image
+
+bash $E doctor   # prints setup block if key missing
+
+# Recommended — file under ~/.config/kedoupi/tzai-image/ (not ~/.zshrc)
+bash $E init --api-key 'sk-YOUR_TOKEN'
 ```
 
-Key from [tzai.kdp.cool/console](https://tzai.kdp.cool/console). Never commit secrets.
+Key from [tzai.kdp.cool/console](https://tzai.kdp.cool/console).  
+CI-only alternative: `export TZAI_API_KEY=…`. Never commit secrets.
 
 ### CLI quick start
 
