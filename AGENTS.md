@@ -67,21 +67,22 @@ tzai-image-skill/                 # child repo root (not the install package)
 | Long-tail | remaining kinds in `kinds.tsv` → engine only |
 
 Whitelist: `skills/tzai-image/references/slash-whitelist.txt`.  
-After editing kinds or whitelist: `bash scripts/gen-kind-skills.sh`.
+After editing kinds, whitelist, **or the engine version**: `bash scripts/gen-kind-skills.sh`.
+All generated entrypoints release lockstep with the primary engine.
 
 ## Editing rules
 
 - Keep engine `SKILL.md` under ~500 lines; strong description triggers.
 - Never hardcode API keys; never commit secrets.
 - Support **global env** `TZAI_API_KEY` without requiring `init`.
-- Durable config: `~/.agents/skills/.skill-data/tzai-image/config.env` (or skills-parent `.skill-data/`).
+- Recommended durable config: `~/.config/kedoupi/tzai-image/config.env`; legacy `.skill-data/` paths are read/migrate-only.
 - Config files are **KEY=VALUE only** (parser does **not** `source` shell).
 - `--dry-run` must stay offline.
 - Workflow plan validation must stay offline and enforce plan/anchor approvals before batch work.
 - Multi-asset workflows require one approved plan and one approved anchor; never silently batch paid requests.
 - Do not copy third-party example images or full prompts into patterns.
 - `doctor` must print console URL + export/init examples when key missing.
-- Bump `metadata.version` in `skills/tzai-image/SKILL.md` when behavior changes.
+- Bump `metadata.version` in `skills/tzai-image/SKILL.md` when behavior changes, then regenerate lockstep entrypoints.
 - Prefer bash + python3 + curl; no bun required.
 - Prefer English README default + `README.zh-CN.md` for user-facing copy.
 

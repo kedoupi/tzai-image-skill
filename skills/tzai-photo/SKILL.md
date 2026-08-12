@@ -9,7 +9,7 @@ argument-hint: "kind prompt…  e.g. product-photo <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.1"
+  version: "0.7.1"
   tzai-generated-by: tzai-image-skill
   short-description: "影像插画分类 · photo"
   tzai-category: "photo"

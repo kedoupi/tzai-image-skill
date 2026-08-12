@@ -9,7 +9,7 @@ argument-hint: "kind prompt…  e.g. xhs <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.1"
+  version: "0.7.1"
   tzai-generated-by: tzai-image-skill
   short-description: "社交种草分类 · social"
   tzai-category: "social"

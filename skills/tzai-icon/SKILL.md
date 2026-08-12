@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.1"
+  version: "0.7.1"
   tzai-generated-by: tzai-image-skill
   short-description: "App图标 · 品牌识别"
   tzai-kind: "icon"
