@@ -14,35 +14,48 @@ npx skills add kedoupi/tzai-image-skill -g --all
 
 ## Layout
 
+Product skill contract (docs vs tests vs artifacts):
+
 ```text
-skills/
-  tzai-image/                 # engine (required)
-    SKILL.md
-    config.example.env
-    scripts/tzai-image
-    references/
-      kinds.tsv               # all scene kinds
-      slash-whitelist.txt     # Plan C slash surface
-      presets/                # style/layout/cover matrices
-      patterns/               # reusable visual methods + index
-      workflows/              # outcome playbooks + modules + index
-      schemas/                # brief / plan / deliverable contracts
-    scripts/
-      tzai-image
-      validate-workflow-plan  # offline project-plan validator
-  tzai-*/                     # thin slash skills (generated)
-commands/                     # client slash wrappers (generated)
-scripts/
-  gen-kind-skills.sh          # regenerate thin skills + commands + skills.sh.json
-  install-slash-commands.sh
-  gen-demos.sh
-docs/
-  SCENES.md
-  CAPABILITY-ROADMAP.md
-  demos.tsv
-  screenshots/
-tests/run.sh
+tzai-image-skill/                 # child repo root (not the install package)
+├── skills/
+│   ├── tzai-image/               # installable engine package
+│   │   ├── SKILL.md
+│   │   ├── config.example.env
+│   │   ├── scripts/
+│   │   │   ├── tzai-image
+│   │   │   └── validate-workflow-plan
+│   │   └── references/           # kinds, patterns, workflows, presets, schemas
+│   └── tzai-*/                   # thin slash skills (generated)
+├── commands/                     # client slash wrappers (generated)
+├── scripts/                      # repo tooling (not installed as the skill)
+│   ├── gen-kind-skills.sh
+│   ├── install-slash-commands.sh
+│   ├── gen-demos.sh              # → docs/screenshots/
+│   └── run-live-compare.sh       # → artifacts/live/
+├── docs/                         # human product docs + curated gallery
+│   ├── README.md
+│   ├── SCENES.md
+│   ├── demos.tsv
+│   ├── screenshots/              # README gallery only
+│   ├── architecture/             # roadmap, workflow, patterns catalog
+│   └── research/                 # external methodology notes
+├── tests/                        # offline CI + live *specs*
+│   ├── README.md
+│   ├── run.sh
+│   ├── fixtures/
+│   └── live/<suite>/             # cases.tsv + rubric (no PNGs)
+└── artifacts/                    # generated outputs (not installable)
+    ├── README.md
+    └── live/<suite>/<version>/   # pairs/ + report.md
 ```
+
+| Tree | Responsibility |
+| --- | --- |
+| `skills/` | What `npx skills add` installs |
+| `docs/` | Guides, architecture, curated screenshots |
+| `tests/` | Offline tests + live case definitions |
+| `artifacts/` | Paid/live image outputs and run reports |
 
 ## Plan C slash surface
 
@@ -95,12 +108,17 @@ Plan validation: `python3 skills/tzai-image/scripts/validate-workflow-plan --cat
 
 ```bash
 bash tests/run.sh
-# optional live API smoke (costs credits):
+# optional one-shot live smoke inside run.sh (costs credits):
 TZAI_LIVE=1 bash tests/run.sh
+
+# versioned before/after live suite → artifacts/live/<suite>/<version>/
+bash scripts/run-live-compare.sh --suite pattern-compile --version v0.6.2
 
 bash scripts/gen-kind-skills.sh   # if whitelist/kinds changed
 bash skills/tzai-image/scripts/tzai-image doctor
 ```
+
+See `docs/README.md`, `tests/README.md`, `artifacts/README.md`.
 
 ## Naming note
 

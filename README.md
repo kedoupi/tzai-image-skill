@@ -34,7 +34,7 @@ The agent infers workflows, patterns, kinds, ratios, and references internally. 
 | **Image kinds** | 30 | Single-asset rendering primitives |
 | **Engine** | 1 | Auth, dry-run, generation/edit requests, safe output writes |
 
-Workflow catalog: [`docs/WORKFLOW-CATALOG.md`](./docs/WORKFLOW-CATALOG.md) · Pattern method: [`docs/PATTERN-LIBRARY.md`](./docs/PATTERN-LIBRARY.md) · Architecture: [`docs/CREATIVE-WORKFLOW-ARCHITECTURE.md`](./docs/CREATIVE-WORKFLOW-ARCHITECTURE.md).
+Workflow catalog: [`docs/architecture/WORKFLOW-CATALOG.md`](./docs/architecture/WORKFLOW-CATALOG.md) · Pattern method: [`docs/architecture/PATTERN-LIBRARY.md`](./docs/architecture/PATTERN-LIBRARY.md) · Architecture: [`docs/architecture/CREATIVE-WORKFLOW-ARCHITECTURE.md`](./docs/architecture/CREATIVE-WORKFLOW-ARCHITECTURE.md) · Docs index: [`docs/README.md`](./docs/README.md).
 
 ## Agent workflow examples
 

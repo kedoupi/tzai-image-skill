@@ -32,15 +32,26 @@ The public Plan C surface remains one engine, six category hubs, and eleven high
 | Existing `--ref` edits and opt-in live smoke | Done since v0.5.3 |
 | Single-attempt paid calls and atomic output safety | Done since v0.5.4 |
 
+## v0.6.1 Delivered
+
+| Capability | Status |
+| --- | --- |
+| Gap matrix vs awesome-gpt-image-2 methodology | Done (`docs/research/awesome-gpt-image-2-gap.md`) |
+| Six patterns productionized (slots + compile + negatives) | Done |
+| Single-image compile guide + SKILL routing | Done |
+| Chinese social text lock on social kinds | Done |
+| Before/after live compare samples | `artifacts/live/pattern-compile/v0.6.1/` · specs `tests/live/pattern-compile/` |
+
 ## Next Validation Work
 
 | Priority | Work |
 | --- | --- |
-| P1 | Run owned benchmark briefs across stable workflows and record composition, text, and consistency scores |
-| P1 | Improve weak patterns and add matrices only where prose controls are insufficient |
+| P1 | Expand owned benchmark briefs; score composition, text, consistency |
+| P1 | Render-brief schema + optional compile script (Phase 2) |
+| P1 | Poster/UI matrices only where prose still fails |
 | P1 | Add resumable execution only if agent-managed manifests prove inadequate |
 | P2 | Promote guided workflows after repeated real use and review |
-| P2 | Add engine-only kinds such as storyboard or packaging only when existing primitives cannot represent the result |
+| P2 | Add engine-only kinds only when existing primitives cannot represent the result |
 
 ## Explicit Boundaries
 
@@ -72,3 +83,4 @@ TZAI_LIVE=1 bash tests/run.sh
 | v0.5 | Plan C, kinds, matrices, reference edits, multi-image playbooks |
 | v0.5.4 | Paid-call, config, response, output, generator, and installer hardening |
 | v0.6.0 | Agent-led workflow/pattern architecture, two-stage approvals, schemas, and offline validation |
+| v0.6.1 | Production pattern compile for six high-freq methods + CN social text lock + gap matrix |

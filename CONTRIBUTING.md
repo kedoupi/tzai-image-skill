@@ -50,5 +50,6 @@ bash skills/tzai-image/scripts/tzai-image doctor
 | --- | --- |
 | `README.md` / `README.zh-CN.md` | Public product + teaching gallery |
 | `docs/SCENES.md` | Full scene / slash catalog |
-| `docs/CAPABILITY-ROADMAP.md` | Priority roadmap |
+| `docs/architecture/CAPABILITY-ROADMAP.md` | Priority roadmap |
+| `docs/` · `tests/` · `artifacts/` | Guides · offline+live specs · generated outputs (see each README) |
 | `AGENTS.md` | Agent maintainer SoT |

@@ -12,3 +12,6 @@ skills-lock.json
 .claude/
 .agents/
 .cursor/
+
+# Local live experiments (use --version _scratch/... or this dir)
+artifacts/live/_scratch/

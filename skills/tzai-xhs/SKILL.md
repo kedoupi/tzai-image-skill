@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.0"
+  version: "0.6.1"
   tzai-generated-by: tzai-image-skill
   short-description: "小红书图卡 · 社交种草"
   tzai-kind: "xhs"
@@ -73,7 +73,7 @@ Series workflow: engine `references/workflows/xhs-series.md`.
 
 ## Kind direction
 
-Ultra-premium Xiaohongshu knowledge card, magazine-grade hierarchy, refined title zone, clean steps or points with delicate icons, sophisticated palette (not childish clipart), design-agency social content quality, Chinese feed-friendly, avoid messy watermarks and dense fake paragraphs.
+Ultra-premium Xiaohongshu knowledge card, magazine-grade hierarchy, refined title zone, clean steps or points with delicate icons, sophisticated palette (not childish clipart), design-agency social content quality, Chinese feed-friendly. Chinese short titles and labels must be clear and readable; no garbled characters, no nonsense Latin filler, no dense fake paragraphs, no watermark; keep module count small.
 
 ## Teaching tip
 

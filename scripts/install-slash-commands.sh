@@ -121,6 +121,6 @@ echo "  export TZAI_API_KEY='sk-...'"
 echo "  # or: bash ~/.agents/skills/tzai-image/scripts/tzai-image init --api-key sk-..."
 echo
 echo "Plan C: engine + 6 hubs + 11 high-freq kinds (see slash-whitelist.txt)"
-echo "Scene catalog: docs/SCENES.md · Capability: docs/CAPABILITY-ROADMAP.md"
+echo "Scene catalog: docs/SCENES.md · Capability: docs/architecture/CAPABILITY-ROADMAP.md"
 echo "Demos: docs/demos.tsv · regenerate: bash scripts/gen-demos.sh"
 echo "Then open any agent and type /  → search tzai-"

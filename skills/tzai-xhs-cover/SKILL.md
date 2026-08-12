@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.0"
+  version: "0.6.1"
   tzai-generated-by: tzai-image-skill
   short-description: "小红书封面 · 社交种草"
   tzai-kind: "xhs-cover"
@@ -73,7 +73,7 @@ Series workflow: engine `references/workflows/xhs-series.md`.
 
 ## Kind direction
 
-Xiaohongshu FEED COVER card (not product catalog photo): 3:4 social thumbnail designed to stop scrolling, bold graphic cover layout with large primary title zone (short Chinese title ok, max ~8 chars if any) plus optional subtitle band, strong visual hierarchy like a magazine cover or knowledge poster, high-contrast color blocks or refined lifestyle scene as BACKGROUND support only (not a white-studio e-commerce product shot), punchy composition for mobile feed, design-agency social creative, minimal clutter, no watermark, no long paragraphs.
+Xiaohongshu FEED COVER card (not product catalog photo): 3:4 social thumbnail designed to stop scrolling, bold graphic cover layout with large primary title zone (short Chinese title ok, max ~8 chars if any) plus optional subtitle band, strong visual hierarchy like a magazine cover or knowledge poster, high-contrast color blocks or refined lifestyle scene as BACKGROUND support only (not a white-studio e-commerce product shot), punchy composition for mobile feed, design-agency social creative. Readable Chinese only in title zone when used; no garbled text, minimal clutter, no watermark, no long paragraphs.
 
 ## Teaching tip
 

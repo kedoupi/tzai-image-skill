@@ -7,6 +7,10 @@ SKILL_ROOT="$(cd -- "${SCRIPT_DIR}/.." && pwd -P)"
 SKILL_NAME="$(basename -- "$SKILL_ROOT")"
 SKILLS_PARENT="$(dirname -- "$SKILL_ROOT")"
 
+# Recommended brand+XDG config (default for init)
+KEDOUPI_CONFIG_DIR="${HOME}/.config/kedoupi/${SKILL_NAME}"
+KEDOUPI_CONFIG_FILE="${KEDOUPI_CONFIG_DIR}/config.env"
+
 DURABLE_CONFIG_DIR="${SKILLS_PARENT}/.skill-data/${SKILL_NAME}"
 DURABLE_CONFIG_FILE="${DURABLE_CONFIG_DIR}/config.env"
 GLOBAL_SHARED_CONFIG_FILE="${HOME}/.agents/skills/.skill-data/${SKILL_NAME}/config.env"
@@ -116,10 +120,11 @@ Get a key:
   2) Sign in / register, create an API token
 
 Configure (pick one):
-  A) Global env (recommended for shell users):
-       export TZAI_API_KEY='sk-...'
-  B) Durable file (recommended for agents):
+  A) Kedoupi config file (recommended for agents / open-source installs):
        bash ${SCRIPT_DIR}/tzai-image init --api-key sk-...
+       # → ~/.config/kedoupi/tzai-image/config.env
+  B) Process env (CI / temporary shell; avoid putting secrets in ~/.zshrc):
+       export TZAI_API_KEY='sk-...'
   C) One-shot CLI:
        bash ${SCRIPT_DIR}/tzai-image generate --api-key sk-... --prompt "..." --image out.png
 
@@ -184,6 +189,23 @@ load_env_file() {
   done <"$file"
 }
 
+ensure_kedoupi_config() {
+  if [[ -f "$KEDOUPI_CONFIG_FILE" ]]; then
+    return 0
+  fi
+  local src
+  for src in "$DURABLE_CONFIG_FILE" "$GLOBAL_SHARED_CONFIG_FILE" "$XDG_CONFIG_FILE"; do
+    if [[ -f "$src" && -s "$src" ]]; then
+      mkdir -p "$KEDOUPI_CONFIG_DIR"
+      cp "$src" "$KEDOUPI_CONFIG_FILE"
+      chmod 600 "$KEDOUPI_CONFIG_FILE" 2>/dev/null || true
+      echo "tzai-image: migrated config → ${KEDOUPI_CONFIG_FILE}" >&2
+      echo "  (from ${src})" >&2
+      return 0
+    fi
+  done
+}
+
 # Files first, then re-apply process env (env wins over files).
 # Then optional TZAI_IMAGE_CONFIG (explicit path, overrides env).
 load_all_configs() {
@@ -195,11 +217,13 @@ load_all_configs() {
   BASE_SOURCE="default"
   MODEL_SOURCE="default"
 
+  ensure_kedoupi_config
   load_env_file "$XDG_CONFIG_FILE"
   load_env_file "$GLOBAL_SHARED_CONFIG_FILE"
   if [[ "$DURABLE_CONFIG_FILE" != "$GLOBAL_SHARED_CONFIG_FILE" ]]; then
     load_env_file "$DURABLE_CONFIG_FILE"
   fi
+  load_env_file "$KEDOUPI_CONFIG_FILE"
   load_env_file "$LOCAL_CONFIG_FILE"
 
   if [[ -n "${TZAI_API_KEY-}" ]]; then
@@ -264,8 +288,9 @@ print_config_paths() {
   cat <<EOF
 Skill root:           ${SKILL_ROOT}
 Version:              $(skill_version)
-Durable config:       ${DURABLE_CONFIG_FILE}$([[ -f "$DURABLE_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
-Global shared config: ${GLOBAL_SHARED_CONFIG_FILE}$([[ -f "$GLOBAL_SHARED_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
+Kedoupi config:       ${KEDOUPI_CONFIG_FILE}$([[ -f "$KEDOUPI_CONFIG_FILE" ]] && echo "  [exists · recommended]" || echo "  [missing · run: tzai-image init]")
+Legacy durable:       ${DURABLE_CONFIG_FILE}$([[ -f "$DURABLE_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
+Global shared:        ${GLOBAL_SHARED_CONFIG_FILE}$([[ -f "$GLOBAL_SHARED_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
 Local (in skill):     ${LOCAL_CONFIG_FILE}$([[ -f "$LOCAL_CONFIG_FILE" ]] && echo "  [exists · wiped on skills update]" || echo "  [missing]")
 XDG legacy:           ${XDG_CONFIG_FILE}$([[ -f "$XDG_CONFIG_FILE" ]] && echo "  [exists]" || echo "  [missing]")
 Explicit override:    ${TZAI_IMAGE_CONFIG:-"(unset)"}
@@ -691,7 +716,7 @@ EOF
 # ---------------------------------------------------------------------------
 
 cmd_init() {
-  local api_key="" base_url="$DEFAULT_BASE_URL" model="" force=0 target="durable"
+  local api_key="" base_url="$DEFAULT_BASE_URL" model="" force=0 target="kedoupi"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -704,7 +729,10 @@ cmd_init() {
         cat <<EOF
 Usage: tzai-image init [options]
 
-Save API credentials to a durable config file (not inside the skill package).
+Save API credentials outside the skill package.
+
+Default path (recommended):
+  ~/.config/kedoupi/tzai-image/config.env
 
 Get a key first: ${CONSOLE_URL}
 
@@ -712,12 +740,11 @@ Options:
   --api-key <sk-...>   TaoziAPI key (required)
   --base-url <url>     Default: ${DEFAULT_BASE_URL}
   --model <id>         Default image model (default if omitted: ${DEFAULT_IMAGE_MODEL})
-  --target <where>     durable | global | local (default: durable)
+  --target <where>     kedoupi | durable | global | local (default: kedoupi)
   --force              Overwrite existing config
 
-Alternatively, skip init and use a global env var:
+CI / temporary shell (prefer not putting secrets in ~/.zshrc):
   export TZAI_API_KEY='sk-...'
-  # model defaults to ${DEFAULT_IMAGE_MODEL} unless you set TZAI_IMAGE_MODEL
 EOF
         return 0
         ;;
@@ -735,10 +762,11 @@ EOF
 
   local out_file
   case "$target" in
+    kedoupi|default) out_file="$KEDOUPI_CONFIG_FILE" ;;
     durable) out_file="$DURABLE_CONFIG_FILE" ;;
     global) out_file="$GLOBAL_SHARED_CONFIG_FILE" ;;
     local) out_file="$LOCAL_CONFIG_FILE" ;;
-    *) echo "Invalid --target: $target" >&2; return 2 ;;
+    *) echo "Invalid --target: $target (use kedoupi|durable|global|local)" >&2; return 2 ;;
   esac
 
   if [[ -f "$out_file" && "$force" -ne 1 ]]; then

@@ -11,6 +11,9 @@
 
 The repository is a research input for identifying recurring creative-work patterns: structured prompt components, content hierarchy, series consistency, and workflow-oriented creative direction. It informs the methodology described in [Pattern Library](../PATTERN-LIBRARY.md); it is not a dependency, asset source, or prompt corpus for tzai-image.
 
+Gap actions and coverage status: [awesome-gpt-image-2-gap.md](./awesome-gpt-image-2-gap.md).  
+v0.6.1 deepens six production patterns. Live compare **specs**: `tests/live/pattern-compile/`; **outputs**: `artifacts/live/pattern-compile/v0.6.1/`.
+
 ## Provenance and Licensing
 
 The repository itself is MIT-licensed. That license applies to the repository's licensable code and authored materials; it does not establish commercial reuse rights for every example, image, prompt, brand, logo, person, or linked public source included in the collection.

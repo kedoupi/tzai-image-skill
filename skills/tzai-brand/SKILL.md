@@ -9,7 +9,7 @@ argument-hint: "kind prompt…  e.g. icon <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.0"
+  version: "0.6.1"
   tzai-generated-by: tzai-image-skill
   short-description: "品牌识别分类 · brand"
   tzai-category: "brand"

@@ -13,7 +13,7 @@ argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.0"
+  version: "0.7.0"
   short-description: "TaoziAPI 创作 Agent（自然语言工作流 + 生图引擎）"
 ---
 
@@ -104,10 +104,25 @@ Examples:
 
 Routing rules for agents:
 
-1. **One independently useful image** → infer a kind and use the existing single-image path.
+1. **One independently useful image** → infer a kind, match a pattern when useful, **compile slots into `--prompt`** (see below), then generate.
 2. **Coordinated project** (series, article, full note, deck, campaign, brand, screen flow) → select an internal workflow from `references/workflows/index.tsv`.
-3. **Broad or long-tail request** → infer the outcome; never require the user to choose a kind, pattern, or command.
+3. **Broad or long-tail request** → infer the outcome; never require the user to know a kind, pattern, or command.
 4. Direct slashes remain expert shortcuts, not a prerequisite for discovery.
+5. **Raw / free-form** only when the user explicitly wants an unstructured prompt.
+
+## Single-image production compile (v0.6.1+)
+
+Do not send a one-line vague prompt when a documented pattern applies. Method:
+
+1. Map intent → `kind` (+ matrix flags for xhs / infographic / cover when useful).
+2. Read `references/patterns/index.tsv`, then the matched pattern doc (six deep patterns: `ui-screen-system`, `infographic-explainer`, `poster-layout`, `product-commerce`, `brand-identity`, `document-publishing`).
+3. Fill **required slots**. Ask at most 1–3 questions for missing slots that change the result.
+4. If visual direction is ambiguous, offer **2–3 short directions**, then compile.
+5. Build `--prompt` in the pattern’s **compile order** (task → structure → visual system → short labels → constraints). Full skeleton: `references/patterns/compile-guide.md`.
+6. Append pattern **negatives** and **text policy**. For Chinese `xhs` / `xhs-cover` / `wechat`, always apply the **Chinese social text lock** in `document-publishing`.
+7. Optional `--dry-run`, then one paid call. Never auto-retry failures; adjust slots and re-confirm.
+
+Kinds inject baseline art direction; the compiled user prompt supplies hierarchy, slots, and locks.
 
 ## Agent-led creative projects
 
@@ -120,6 +135,7 @@ Kinds and patterns are internal implementation details. Start from the requested
 5. Generate exactly one planned anchor, then obtain explicit anchor approval before the remaining batch.
 6. Use the approved anchor with `--ref` and a shared style token. Never retry a failed paid request automatically.
 7. Deliver reviewable content plus an ordered asset map; regenerate only rejected or failed assets.
+8. Each asset may still use single-image slot compile for its own `--prompt`.
 
 Workflow statuses:
 
@@ -203,7 +219,7 @@ bash <skill-dir>/scripts/tzai-image kinds flowchart
 Agent routing:
 
 1. Map user intent → **kind** (e.g. 小红书 → `xhs`, 流程图 → `flowchart`)  
-2. For a **single asset**, put a concise visual brief in `--prompt` (kind injects baseline art direction + default `--ar`)
+2. For a **single asset**, compile a **slot-based visual brief** into `--prompt` (kind injects baseline art direction + default `--ar`; pattern supplies structure/negatives)
 3. Run generate  
 
 ```bash
@@ -284,7 +300,7 @@ generate --kind <id> --prompt <text> --image <path>
 --version
 ```
 
-Catalog: `references/kinds.tsv` · patterns: `references/patterns/` · workflows: `references/workflows/` · schemas: `references/schemas/`.
+Catalog: `references/kinds.tsv` · patterns: `references/patterns/` · compile: `references/patterns/compile-guide.md` · workflows: `references/workflows/` · schemas: `references/schemas/`.
 
 ## Troubleshooting
 

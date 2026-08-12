@@ -2,6 +2,23 @@
 
 All notable changes to **tzai-image-skill** are documented here.
 
+## [0.6.1] — 2026-08-11
+
+### Added
+- Production pattern docs for six high-frequency methods: `ui-screen-system`, `infographic-explainer`, `poster-layout`, `product-commerce`, `brand-identity`, `document-publishing` (required slots, compile order, negatives, failure retries).
+- `references/patterns/compile-guide.md` for single-image slot compile.
+- Chinese social text lock on `xhs` / `xhs-cover` / `wechat` kind prefixes and `document-publishing`.
+- Research gap matrix: `docs/research/awesome-gpt-image-2-gap.md`.
+- Live compare suite: specs in `tests/live/pattern-compile/`, outputs in `artifacts/live/pattern-compile/`.
+- `scripts/run-live-compare.sh` to regenerate versioned pair runs.
+
+### Changed
+- Repo layout: `docs/` (guides + gallery) · `tests/` (offline + live specs) · `artifacts/` (generated outputs). Architecture docs under `docs/architecture/`.
+
+### Changed
+- SKILL.md single-image path requires pattern slot compile (not one-line vague prompts) unless the user asks for raw mode.
+- `patterns/index.tsv` prompt_blocks / pitfalls / text_policy aligned with deep patterns.
+
 ## [0.6.0] — 2026-08-11
 
 ### Added

@@ -9,7 +9,7 @@ argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.6.0"
+  version: "0.6.1"
   tzai-generated-by: tzai-image-skill
   short-description: "微信配图 · 社交种草"
   tzai-kind: "wechat"
@@ -63,7 +63,7 @@ bash "$ENGINE" wechat \
 
 ## Kind direction
 
-Premium WeChat Official Account header/illustration, soft professional teal-blue editorial style, refined composition, high-end Chinese tech-media aesthetic, no dense fake text, no watermark.
+Premium WeChat Official Account header/illustration, soft professional teal-blue editorial style, refined composition, high-end Chinese tech-media aesthetic. Prefer short readable Chinese if any on-image text; no garbled characters, no dense fake paragraphs, no watermark.
 
 ## Teaching tip
 

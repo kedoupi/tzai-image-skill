@@ -34,7 +34,7 @@ Agent 会在内部选择工作流、Pattern、kind、比例与参考图。多资
 | **图片 kind** | 30 | 单张图片的底层渲染能力 |
 | **引擎** | 1 | 鉴权、dry-run、生成/编辑请求与安全写入 |
 
-工作流：[`docs/WORKFLOW-CATALOG.md`](./docs/WORKFLOW-CATALOG.md) · Pattern：[`docs/PATTERN-LIBRARY.md`](./docs/PATTERN-LIBRARY.md) · 架构：[`docs/CREATIVE-WORKFLOW-ARCHITECTURE.md`](./docs/CREATIVE-WORKFLOW-ARCHITECTURE.md)
+工作流：[`docs/architecture/WORKFLOW-CATALOG.md`](./docs/architecture/WORKFLOW-CATALOG.md) · Pattern：[`docs/architecture/PATTERN-LIBRARY.md`](./docs/architecture/PATTERN-LIBRARY.md) · 架构：[`docs/architecture/CREATIVE-WORKFLOW-ARCHITECTURE.md`](./docs/architecture/CREATIVE-WORKFLOW-ARCHITECTURE.md) · 文档索引：[`docs/README.md`](./docs/README.md)
 
 ## Agent 工作流示例
 
