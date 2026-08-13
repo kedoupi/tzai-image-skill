@@ -19,3 +19,13 @@ xhs	kind	/tzai-xhs	xhs	3:4	xhs-card.png	小红书高质感知识卡《三步写�
 xhs-cover	kind	/tzai-xhs-cover	xhs-cover	3:4	xhs-cover.png	小红书信息流封面（非商品图）：大标题「周报模板」+副标题「职场干货」，杂志封面式色块排版	信息流封面排版
 wechat	kind	/tzai-wechat	wechat	16:9	wechat-visual.png	公众号头图：远程协作与灵感碰撞，柔和青蓝插画、半透明界面隐喻、出版级留白与光感，无杂乱假字	微信内容气质
 ui	kind	/tzai-ui	ui	16:9	ui-dashboard.png	企业级 Revenue OS 仪表盘：KPI 条、多序列图表、侧栏导航、浅色精密 UI、接近 Linear/Stripe 质感	SaaS 产品演示
+mindmap	kind	/tzai-image	mindmap	16:9	mindmap-strategy.png	产品战略拆解：中心节点+六条分支，咨询白板清晰度	长尾 kind 样张
+wireframe	kind	/tzai-image	wireframe	9:16	wireframe-mobile.png	移动端低保真多屏线框	长尾 kind 样张
+food	kind	/tzai-image	food	1:1	food-macro.png	拉花拿铁，木桌，晨光浅景深	长尾 kind 样张
+moodboard	kind	/tzai-image	moodboard	16:9	brand-moodboard.png	品牌情绪板：材质、色块与字体方向	长尾 kind 样张
+empty-state	kind	/tzai-image	empty-state	16:9	empty-state.png	产品空状态插画	长尾 kind 样张
+onboarding	kind	/tzai-image	onboarding	16:9	onboarding-hero.png	引导页主视觉	长尾 kind 样张
+banner	kind	/tzai-image	banner	16:9	banner-campaign.png	活动横幅	长尾 kind 样张
+poster	kind	/tzai-image	poster	16:9	poster-tech.png	科技海报	长尾 kind 样张
+mascot	kind	/tzai-image	mascot	1:1	3d-mascot.png	三维吉祥物	长尾 kind 样张
+landscape	kind	/tzai-image	landscape	16:9	landscape-dawn.png	黎明风光	长尾 kind 样张

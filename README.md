@@ -592,7 +592,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds   # full catalog
 | Cover | topic + mood | title space, editorial light |
 | Arch | components list | isometric / layers |
 
-For a single asset, keep the brief concise because the kind supplies baseline art direction. For projects, the agent composes a structured brief from the selected workflow and pattern.
+Kind supplies baseline art direction. For a one-off CLI call, keep `--prompt` to the subject and required labels. Agents should still compile slots via `references/patterns/compile-guide.md` (not a one-line subject) unless the user asked for raw/free-form. Projects use the selected workflow and pattern.
 
 ---
 

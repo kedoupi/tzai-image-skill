@@ -192,7 +192,7 @@ bash $E mindmap --prompt "产品战略拆解" --image ./mm.png   # 长尾
 # 画廊 · 对照教学
 
 每个区块：**什么时候用** → **这一层突出什么** → **斜杠 + CLI** → **效果图**。  
-单图的 `--prompt` 写精简视觉 brief；项目任务由 Agent 结合工作流与 Pattern 生成结构化方向。
+kind 已注入基础美术方向。人手直接调 CLI 时，`--prompt` 写主题和必填标签即可。Agent 应按 `references/patterns/compile-guide.md` 编译槽位，不要只丢一句主题（用户明确要求 raw 除外）。多图项目走工作流 + Pattern。
 
 重新生成截图（需 Key）：
 
@@ -726,7 +726,7 @@ bash tests/run.sh
 
 1. 缺 Key 先 `doctor`  
 2. 高频 → 直达斜杠；宽需求 → hub；其余 → 引擎 + `kinds`  
-3. `--prompt` 只写主题  
+3. `--prompt` 按 compile-guide 编译槽位（人手 CLI 可只写主题）  
 4. 默认 `gpt-image-2`  
 5. 回报路径  
 
