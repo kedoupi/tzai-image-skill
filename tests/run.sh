@@ -74,6 +74,17 @@ assert_contains() {
   fi
 }
 
+assert_not_contains() {
+  local name="$1" needle="$2" hay="$3"
+  if [[ "$hay" != *"$needle"* ]]; then
+    echo "  PASS  $name"
+    PASS=$((PASS + 1))
+  else
+    echo "  FAIL  $name (unexpected '$needle')"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
 assert_exit() {
   local name="$1" want="$2"
   shift 2
@@ -201,6 +212,11 @@ while IFS= read -r command; do
   marker="$(awk '/tzai-generated-by: tzai-image-skill/{print; exit}' "$command")"
   assert_contains "command generated marker ($(basename "$command"))" "tzai-generated-by: tzai-image-skill" "$marker"
 done < <(find "${ROOT}/commands" -maxdepth 1 -name 'tzai-*.md' | sort)
+icon_skill="${ROOT}/skills/tzai-icon/SKILL.md"
+assert_contains "kind skill points at compile-guide" "compile-guide" "$(<"$icon_skill")"
+assert_not_contains "kind skill not subject-only" "subject only" "$(<"$icon_skill")"
+wechat_head="$(sed -n '1,16p' "${ROOT}/skills/tzai-wechat/SKILL.md")"
+assert_contains "tzai-wechat not-when writing" "wechat-mp" "$wechat_head"
 
 echo "== generated/install ownership boundaries =="
 mkdir -p "${ROOT}/skills/tzai-handwritten"

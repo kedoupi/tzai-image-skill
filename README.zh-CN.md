@@ -19,7 +19,7 @@
 ```text
 为我的 App 设计 onboarding 和 Dashboard 流程。
 把这篇文章做成完整小红书笔记，包含封面和图卡。
-把这份草稿改成公众号文章并生成封面。
+给这篇已写好的公众号成稿做封面和正文配图。
 分析每个章节需要什么配图，先给方案，确认后再生成。
 为新品牌做一套基础视觉方向。
 为新品发布准备一套统一的传播素材。
@@ -42,7 +42,7 @@ Agent 会在内部选择工作流、Pattern、kind、比例与参考图。多资
 | --- | --- | --- |
 | “为这个 SaaS 设计 onboarding 和 Dashboard。” | 推断用户与核心任务，先给页面地图，再生成一个主页面锚点，确认后完成其余页面 | 页面地图、UI 文案、1-8 张统一界面图 |
 | “把这篇文章做成完整小红书笔记。” | 改写内容、设计卡片 Storyboard、确认方案，再确认一张封面后生成系列图卡 | `note.md`、封面、顺序图卡、资产映射 |
-| “把草稿改成公众号文章并生成封面。” | 重构文章、判断正文配图位置、确认内容包，再生成封面与已批准插图 | `article.md`、封面、可选插图、插入位置 |
+| “给这篇已有公众号成稿做封面和配图。” | 读取已定稿（或 `wechat-mp-out/<slug>/`），确认视觉地图，再生成头图与已批准插图 | `cover.png`、可选配图、插入位置（不改写 `article.md`） |
 | “逐章分析需要什么配图，先让我确认。” | 使用真实章节标题，只推荐有信息价值的图片，确认前不付费生图 | 配图方案、图片、Caption、Alt text |
 | “给新品牌做一套基础视觉。” | 理解定位与授权，提供视觉方向，再以选中方向作为系列锚点 | Moodboard、标志概念、Icon 方向、触点说明 |
 | “为新品发布准备完整视觉素材。” | 按渠道规划资产，把真实卖点与价格保留在外部文案层 | 商品 Hero、Campaign 衍生图、用途映射、安全文案区 |
@@ -612,7 +612,7 @@ bash ~/.agents/skills/tzai-image/scripts/tzai-image kinds
 | --- | --- |
 | 完整工作流路由 | `skills/tzai-image/references/workflows/index.tsv` |
 | 完整小红书笔记 | `…/workflows/xhs-note.md` |
-| 公众号文章内容包 | `…/workflows/wechat-article.md` |
+| 已有公众号成稿的配图 | `…/workflows/wechat-article.md` |
 | 文章章节配图 | `…/workflows/article-illustrate.md` |
 | 单页 / 多页面 UI | `…/workflows/ui-flow.md` |
 | PPT 内容与视觉包 | `…/workflows/deck-package.md` |

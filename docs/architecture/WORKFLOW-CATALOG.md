@@ -25,7 +25,7 @@ Workflows describe useful user outcomes; kinds describe single rendering primiti
 | --- | --- |
 | `ui-flow` | One UI screen or a coordinated 1-8 screen product flow |
 | `xhs-note` | Complete Xiaohongshu note copy, cover, and card series |
-| `wechat-article` | WeChat-ready Markdown article, cover, and optional section visuals |
+| `wechat-article` | Header and optional section visuals for an existing WeChat article (body stays in wechat-mp) |
 | `article-illustrate` | Real-heading illustration plan, images, captions, and alt text |
 | `brand-starter` | Identity direction, moodboard, mark concepts, and touchpoint notes |
 | `product-launch` | Product hero and coordinated launch-channel assets |

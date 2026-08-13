@@ -140,6 +140,12 @@ command_outputs = {}
 def write_kind_skill(r):
     skill_name = f"tzai-{r['id']}"
     kid = r["id"]
+    extra_desc = ""
+    if kid == "wechat":
+        extra_desc = (
+            "  Not for writing 公众号正文, 推文, or WeChat drafts (use wechat-mp). "
+            "This skill generates header/illustration pixels only.\n"
+        )
     body = f'''---
 name: {skill_name}
 description: >
@@ -147,6 +153,7 @@ description: >
   Use when the user runs /{skill_name}, /tzai-image {kid}, or asks for {r["label_zh"]} / {r["label_en"]}.
   Category: {r["category"]} ({r["category_zh"]}). Default aspect {r["ar"]}. Requires tzai-image engine + TZAI_API_KEY.
   High-frequency Plan C slash entry.
+{extra_desc}
 argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
@@ -178,11 +185,11 @@ The user does not need to know the kind, pattern, matrix, or CLI.
 
 ## Run a single asset
 
-Slash arguments / remaining user text = **subject only** (art direction is injected by kind).
+Read the engine `references/patterns/compile-guide.md` and the matched pattern from `references/patterns/index.tsv`. Compile required slots into `--prompt` (task → structure → visual system → short labels → constraints). Kind injects baseline art direction; do not send a one-line vague subject unless the user asked for raw/free-form.
 
 ```bash
 bash "$ENGINE" {kid} \\
-  --prompt "<user subject>" \\
+  --prompt "<compiled visual brief>" \\
   --image "./tzai-{kid}-$(date +%Y%m%d-%H%M%S).png"
 ```
 '''
@@ -197,7 +204,7 @@ bash "$ENGINE" {kid} --style notion --layout dense --prompt "<subject>" --image 
 bash "$ENGINE" {kid} --preset knowledge-card --prompt "<subject>" --image out.png
 ```
 
-Series workflow: engine `references/workflows/xhs-series.md`.
+Series workflow: engine `references/workflows/xhs-note.md`.
 '''
     elif kid == "infographic":
         body += '''
@@ -224,7 +231,7 @@ bash "$ENGINE" cover --type hero --palette dark --mood bold --text none --prompt
 
 ## Teaching tip
 
-- Put **what to draw** in the prompt, not style essays — kind already sets professional direction.
+- Compile slots via `compile-guide.md`; put **what to draw** in the brief, not style essays — kind already sets professional direction.
 - Override aspect only when needed: `--ar 1:1|16:9|9:16|3:4`.
 - Long-tail scenes in the same category: open `/tzai-{r["category"]}` or `/tzai-image <kind>`.
 
@@ -254,11 +261,11 @@ Generate **{r["label_zh"]}** ({r["label_en"]}) with TaoziAPI · Plan C high-freq
 2. Engine: `~/.agents/skills/tzai-image/scripts/tzai-image` (or ~/.claude|codex|grok/skills/...)
 3. Install if missing: `npx skills add kedoupi/tzai-image-skill -g --all`
 4. Ensure `TZAI_API_KEY` or `tzai-image init`
-5. For a single asset, slash args = **subject only**
+5. For a single asset, compile slots via engine `references/patterns/compile-guide.md` (not a one-line subject unless the user asked for raw)
 6. Run:
 
 ```bash
-bash <engine> {kid} --prompt "<subject>" --image "./tzai-{kid}-$(date +%Y%m%d-%H%M%S).png"
+bash <engine> {kid} --prompt "<compiled visual brief>" --image "./tzai-{kid}-$(date +%Y%m%d-%H%M%S).png"
 ```
 
 7. Report output path. Default model: **gpt-image-2**.
@@ -322,11 +329,11 @@ metadata:
 1. Distinguish one asset from a coordinated project.
 2. For a project, read the engine's `references/workflows/index.tsv`, select the matching guide, and follow both approval gates.
 3. For one asset, infer the kind from intent; ask once only if ambiguity materially changes the result.
-4. Put the concise visual brief in `--prompt`:
+4. Compile slots into `--prompt` using the engine `references/patterns/compile-guide.md` (not a one-line subject unless the user asked for raw):
 
 ```bash
 bash "$ENGINE" <kind> \\
-  --prompt "<subject>" \\
+  --prompt "<compiled visual brief>" \\
   --image "./tzai-<kind>-$(date +%Y%m%d-%H%M%S).png"
 ```
 

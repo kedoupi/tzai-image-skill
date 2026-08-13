@@ -19,7 +19,7 @@ Works with Claude Code, Codex, Cursor, Grok Build, and [70+ agents](https://gith
 ```text
 Design the onboarding and dashboard flow for my app.
 Turn this article into a complete Xiaohongshu note with a cover and cards.
-Rewrite this draft for WeChat and create its cover.
+Add a cover and section visuals to this existing WeChat article.
 Read these chapters, propose useful illustration spots, then wait for approval.
 Create a starter visual identity for this new brand.
 Prepare a coordinated visual kit for this product launch.
@@ -42,7 +42,7 @@ Workflow catalog: [`docs/architecture/WORKFLOW-CATALOG.md`](./docs/architecture/
 | --- | --- | --- |
 | “Design onboarding and a dashboard for this SaaS product.” | Infers users and key tasks, proposes a screen map, then generates one primary-screen anchor before the remaining screens | Screen map, UI copy, 1-8 coordinated UI images |
 | “Turn this article into a complete Xiaohongshu note.” | Rewrites the content, proposes a card storyboard, confirms the plan, then confirms one cover before creating the cards | `note.md`, cover, ordered cards, asset map |
-| “Rewrite this draft for WeChat and create the cover.” | Restructures the article, identifies useful visual positions, confirms the package, then produces the cover and approved section visuals | `article.md`, cover, optional illustrations, placement map |
+| “Add a cover and section visuals to this existing WeChat article.” | Reads the sealed article (or `wechat-mp-out/<slug>/`), confirms a visual map, then produces the header and approved section visuals | `cover.png`, optional figures, placement map (does not rewrite `article.md`) |
 | “Read every chapter and propose illustrations before generating.” | Uses the real headings, recommends only useful illustration spots, and waits for approval before any paid render | Illustration plan, images, captions, alt text |
 | “Create a visual starter kit for this brand.” | Clarifies positioning and rights, proposes identity directions, then anchors the selected system | Moodboard, mark concepts, icon direction, touchpoint notes |
 | “Prepare all visuals for this product launch.” | Builds a channel-aware asset plan and keeps claims outside generated pixels | Product hero, campaign derivatives, usage map, copy-safe areas |
@@ -602,7 +602,7 @@ For a single asset, keep the brief concise because the kind supplies baseline ar
 | --- | --- |
 | Full workflow router | `skills/tzai-image/references/workflows/index.tsv` |
 | Complete XHS note | `…/workflows/xhs-note.md` |
-| WeChat article package | `…/workflows/wechat-article.md` |
+| WeChat visuals for an existing article | `…/workflows/wechat-article.md` |
 | Article illustration plan | `…/workflows/article-illustrate.md` |
 | Single/multi-screen UI | `…/workflows/ui-flow.md` |
 | Deck visual package | `…/workflows/deck-package.md` |

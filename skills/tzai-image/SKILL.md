@@ -1,19 +1,20 @@
 ---
 name: tzai-image
 description: >
-  Use for natural-language image creation and coordinated creative projects through TaoziAPI:
-  single images, UI screen flows, complete Xiaohongshu notes, WeChat article packages, article
+  Use for natural-language image creation and coordinated visual projects through TaoziAPI:
+  single images, UI screen flows, Xiaohongshu card sets, WeChat header/section visuals, article
   illustration plans, brand starters, product launches, campaign kits, knowledge visuals, decks,
   character/IP systems, ecommerce, publishing, photography, storyboards, spaces, and cultural or
-  R&D concepts. Triggers include 画图, 生图, 配图, UI设计, 小红书笔记, 公众号文章/封面, 逐章配图,
+  R&D concepts. Triggers include 画图, 生图, 配图, UI设计, 小红书笔记, 公众号配图/封面, 逐章配图,
   品牌视觉, 商品发布, Campaign, 信息图, PPT视觉, 角色设定, 分镜, 空间概念, diagram, image gen,
   visual system, creative project, tzai, TaoziAPI, and /tzai-image. Infer workflows and kinds
-  internally; do not require users to know commands. Not for publishing to social platforms.
+  internally; do not require users to know commands. Not for writing 公众号正文 or WeChat drafts
+  (use wechat-mp); not for publishing to social platforms.
 argument-hint: "[kind] prompt…  e.g. xhs 三步写周报 / flowchart 注册到付费"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.7.4"
+  version: "0.7.5"
   short-description: "TaoziAPI 创作 Agent（自然语言工作流 + 生图引擎）"
 ---
 
@@ -256,7 +257,7 @@ Workflows (agent multi-image):
 | --- | --- |
 | `references/workflows/index.tsv` | Full natural-language workflow router |
 | `references/workflows/xhs-note.md` | 完整小红书笔记 + 图卡 |
-| `references/workflows/wechat-article.md` | 公众号文章内容包 + 封面 |
+| `references/workflows/wechat-article.md` | 已有公众号成稿的封面/配图（正文走 wechat-mp） |
 | `references/workflows/article-illustrate.md` | 文章章节配图规划与生成 |
 | `references/workflows/ui-flow.md` | 单页 / 多页面 UI 设计 |
 | `references/workflows/deck-package.md` | 多页 PPT 内容与视觉包 |

@@ -5,11 +5,13 @@ description: >
   Use when the user runs /tzai-wechat, /tzai-image wechat, or asks for 微信配图 / WeChat article visual.
   Category: social (社交种草). Default aspect 16:9. Requires tzai-image engine + TZAI_API_KEY.
   High-frequency Plan C slash entry.
+  Not for writing 公众号正文, 推文, or WeChat drafts (use wechat-mp). This skill generates header/illustration pixels only.
+
 argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.7.4"
+  version: "0.7.5"
   tzai-generated-by: tzai-image-skill
   short-description: "微信配图 · 社交种草"
   tzai-kind: "wechat"
@@ -53,11 +55,11 @@ The user does not need to know the kind, pattern, matrix, or CLI.
 
 ## Run a single asset
 
-Slash arguments / remaining user text = **subject only** (art direction is injected by kind).
+Read the engine `references/patterns/compile-guide.md` and the matched pattern from `references/patterns/index.tsv`. Compile required slots into `--prompt` (task → structure → visual system → short labels → constraints). Kind injects baseline art direction; do not send a one-line vague subject unless the user asked for raw/free-form.
 
 ```bash
 bash "$ENGINE" wechat \
-  --prompt "<user subject>" \
+  --prompt "<compiled visual brief>" \
   --image "./tzai-wechat-$(date +%Y%m%d-%H%M%S).png"
 ```
 
@@ -67,7 +69,7 @@ Premium WeChat Official Account header/illustration, soft professional teal-blue
 
 ## Teaching tip
 
-- Put **what to draw** in the prompt, not style essays — kind already sets professional direction.
+- Compile slots via `compile-guide.md`; put **what to draw** in the brief, not style essays — kind already sets professional direction.
 - Override aspect only when needed: `--ar 1:1|16:9|9:16|3:4`.
 - Long-tail scenes in the same category: open `/tzai-social` or `/tzai-image <kind>`.
 

@@ -9,7 +9,7 @@ argument-hint: "kind prompt…  e.g. flowchart <主题>"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.7.4"
+  version: "0.7.5"
   tzai-generated-by: tzai-image-skill
   short-description: "结构图示分类 · diagram"
   tzai-category: "diagram"
@@ -60,11 +60,11 @@ fi
 1. Distinguish one asset from a coordinated project.
 2. For a project, read the engine's `references/workflows/index.tsv`, select the matching guide, and follow both approval gates.
 3. For one asset, infer the kind from intent; ask once only if ambiguity materially changes the result.
-4. Put the concise visual brief in `--prompt`:
+4. Compile slots into `--prompt` using the engine `references/patterns/compile-guide.md` (not a one-line subject unless the user asked for raw):
 
 ```bash
 bash "$ENGINE" <kind> \
-  --prompt "<subject>" \
+  --prompt "<compiled visual brief>" \
   --image "./tzai-<kind>-$(date +%Y%m%d-%H%M%S).png"
 ```
 

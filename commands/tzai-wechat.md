@@ -16,11 +16,11 @@ Generate **微信配图** (WeChat article visual) with TaoziAPI · Plan C high-f
 2. Engine: `~/.agents/skills/tzai-image/scripts/tzai-image` (or ~/.claude|codex|grok/skills/...)
 3. Install if missing: `npx skills add kedoupi/tzai-image-skill -g --all`
 4. Ensure `TZAI_API_KEY` or `tzai-image init`
-5. For a single asset, slash args = **subject only**
+5. For a single asset, compile slots via engine `references/patterns/compile-guide.md` (not a one-line subject unless the user asked for raw)
 6. Run:
 
 ```bash
-bash <engine> wechat --prompt "<subject>" --image "./tzai-wechat-$(date +%Y%m%d-%H%M%S).png"
+bash <engine> wechat --prompt "<compiled visual brief>" --image "./tzai-wechat-$(date +%Y%m%d-%H%M%S).png"
 ```
 
 7. Report output path. Default model: **gpt-image-2**.

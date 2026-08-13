@@ -4,7 +4,7 @@ Design the onboarding and dashboard flow for my app	workflow:ui-flow
 做一张小红书封面	single:xhs-cover
 把这篇文章做成完整小红书笔记	workflow:xhs-note
 给公众号文章画一张头图	single:wechat
-把这篇文章改成公众号稿并做封面	workflow:wechat-article
+给已有公众号成稿做封面和配图	workflow:wechat-article
 给这篇文章逐章规划配图，确认后再生成	workflow:article-illustrate
 给新品牌做一套基础视觉	workflow:brand-starter
 为新品发布准备完整视觉素材	workflow:product-launch

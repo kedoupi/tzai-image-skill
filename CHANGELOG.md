@@ -2,6 +2,13 @@
 
 All notable changes to **tzai-image-skill** are documented here.
 
+## [0.7.5] — 2026-08-13
+
+### Changed
+- Slash facades now point at `compile-guide.md` instead of telling agents to send a one-line subject.
+- `wechat-article` is visuals-only for an existing article; writing 公众号正文 is owned by `wechat-mp`.
+- Engine and `tzai-wechat` descriptions exclude WeChat article writing.
+
 ## [0.7.4] — 2026-08-12
 
 ### Changed

@@ -5,11 +5,12 @@ description: >
   Use when the user runs /tzai-icon, /tzai-image icon, or asks for App图标 / App icon.
   Category: brand (品牌识别). Default aspect 1:1. Requires tzai-image engine + TZAI_API_KEY.
   High-frequency Plan C slash entry.
+
 argument-hint: "prompt…  e.g. 你的主题内容"
 user-invocable: true
 metadata:
   author: kedoupi
-  version: "0.7.4"
+  version: "0.7.5"
   tzai-generated-by: tzai-image-skill
   short-description: "App图标 · 品牌识别"
   tzai-kind: "icon"
@@ -53,11 +54,11 @@ The user does not need to know the kind, pattern, matrix, or CLI.
 
 ## Run a single asset
 
-Slash arguments / remaining user text = **subject only** (art direction is injected by kind).
+Read the engine `references/patterns/compile-guide.md` and the matched pattern from `references/patterns/index.tsv`. Compile required slots into `--prompt` (task → structure → visual system → short labels → constraints). Kind injects baseline art direction; do not send a one-line vague subject unless the user asked for raw/free-form.
 
 ```bash
 bash "$ENGINE" icon \
-  --prompt "<user subject>" \
+  --prompt "<compiled visual brief>" \
   --image "./tzai-icon-$(date +%Y%m%d-%H%M%S).png"
 ```
 
@@ -67,7 +68,7 @@ Ultra-premium App Store icon, rounded continuous-corner square, single clear met
 
 ## Teaching tip
 
-- Put **what to draw** in the prompt, not style essays — kind already sets professional direction.
+- Compile slots via `compile-guide.md`; put **what to draw** in the brief, not style essays — kind already sets professional direction.
 - Override aspect only when needed: `--ar 1:1|16:9|9:16|3:4`.
 - Long-tail scenes in the same category: open `/tzai-brand` or `/tzai-image <kind>`.
 
